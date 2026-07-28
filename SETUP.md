@@ -6,7 +6,7 @@
        the greeting is yours. goals come later, with tiles
 - [x] 3. GitHub. one browser sign in, the mentor does the git         RECOMMENDED
        your work is saved, and it is the door to going live
-- [ ] 4. Supabase. free project, run supabase/sync.sql               RECOMMENDED
+- [x] 4. Supabase. free project, run supabase/sync.sql               RECOMMENDED
        your vault tables, made and waiting. the board runs on this device
        for now; the live sync arrives in a later episode
 - [ ] 5. Vercel. import the repo, hit deploy                          RECOMMENDED
