@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-title" content="Liam" />
 <link rel="apple-touch-icon" href="apple-touch-icon.png" />
 <link rel="icon" type="image/svg+xml" href="icon.svg" />
-<title>Fitness Band · Liam</title>
+<title>Vitals · Liam</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -185,31 +185,7 @@ body{ background:var(--vk-bg); color:var(--vk-fg); font-family:'Inter',-apple-sy
 @media (max-width:560px){ .footer{ flex-direction:column; align-items:flex-start; } }
 
 /* ---------- Recovery tab (rc-*) ---------- */
-.rc-hero{ display:flex; align-items:center; justify-content:center; gap:32px; flex-wrap:wrap; }
-.rc-ringWrap{ display:flex; flex-direction:column; align-items:center; gap:10px; }
-.rc-ring{ position:relative; width:150px; height:150px; display:grid; place-items:center; flex-shrink:0; overflow:visible; }
-.rc-ring[data-tone="good"]{ color:var(--vk-mint); } .rc-ring[data-tone="watch"]{ color:var(--vk-amber); } .rc-ring[data-tone="low"]{ color:var(--vk-red); } .rc-ring[data-tone="muted"]{ color:var(--vk-muted); }
-.rc-ring::before{ content:''; position:absolute; inset:-18px; border-radius:50%; background:radial-gradient(closest-side,currentColor,transparent 70%); opacity:.3; filter:blur(14px); pointer-events:none; z-index:0; animation:rcPulse 3.6s var(--vk-ease) infinite; }
-.rc-ring[data-tone="muted"]::before{ opacity:.1; animation:none; }
 @keyframes rcPulse{ 0%,100%{opacity:.24} 50%{opacity:.42} }
-.rc-ring svg{ position:absolute; inset:0; transform:rotate(-90deg); overflow:visible; z-index:1; }
-.rc-track{ fill:none; stroke:rgba(255,255,255,.07); stroke-width:10; }
-.rc-fill{ fill:none; stroke:currentColor; stroke-width:10; stroke-linecap:round; transition:stroke-dashoffset 800ms var(--vk-ease-premium); filter:drop-shadow(0 0 4px currentColor) drop-shadow(0 0 13px currentColor); }
-.rc-inner{ position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; justify-content:center; max-width:120px; }
-.rc-num{ color:var(--vk-fg); font-family:var(--vk-font-serif),serif; font-size:2.6rem; line-height:1; font-variant-numeric:tabular-nums; }
-.rc-num small{ font-size:1.1rem; color:var(--vk-muted-strong); }
-.rc-cap{ font-family:var(--en-mono); font-size:8px; letter-spacing:.1em; text-transform:uppercase; color:var(--vk-muted); margin-top:5px; white-space:nowrap; }
-.rc-sub{ font-family:var(--vk-font-serif),serif; font-size:1.15rem; font-variant-numeric:tabular-nums; color:var(--vk-fg); }
-.rc-status{ text-align:center; margin-top:20px; }
-.rc-word{ font-family:var(--vk-font-serif),serif; font-size:1.5rem; }
-.rc-word[data-tone="good"]{ color:var(--vk-mint); } .rc-word[data-tone="watch"]{ color:var(--vk-amber); } .rc-word[data-tone="low"]{ color:var(--vk-red); }
-.rc-line{ font-size:14px; color:var(--vk-muted-strong); line-height:1.5; margin:6px auto 0; max-width:44ch; }
-.rc-statRow{ display:flex; gap:10px; flex-wrap:wrap; margin-top:20px; }
-.rc-stat{ flex:1; min-width:96px; background:var(--vk-card-elevated); border:1px solid var(--vk-border); border-radius:13px; padding:12px 14px; }
-.rc-statLabel{ font-family:var(--en-mono); font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:var(--vk-muted); }
-.rc-statVal{ font-family:var(--vk-font-serif),serif; font-size:1.5rem; margin-top:4px; font-variant-numeric:tabular-nums; }
-.rc-statVal small{ font-size:11px; color:var(--vk-muted); font-family:'Inter',sans-serif; }
-.rc-srcBadge{ float:right; font-family:var(--en-mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase; padding:5px 11px; border-radius:var(--vk-radius-pill); border:1px solid var(--vk-border); background:var(--vk-card); color:var(--vk-muted-strong); }
 .rc-chartHead{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
 .rc-seg{ display:inline-flex; background:var(--vk-card); border:1px solid var(--vk-border); border-radius:var(--vk-radius-pill); padding:3px; gap:2px; }
 .rc-segBtn{ appearance:none; background:transparent; border:0; color:var(--vk-muted); font-family:var(--en-mono); font-size:10px; letter-spacing:.08em; padding:6px 12px; border-radius:var(--vk-radius-pill); cursor:pointer; }
@@ -217,12 +193,6 @@ body{ background:var(--vk-bg); color:var(--vk-fg); font-family:'Inter',-apple-sy
 .rc-chart{ width:100%; height:130px; display:block; overflow:visible; margin-top:16px; }
 .rc-legend{ display:flex; gap:16px; margin-top:8px; }
 .rc-legItem{ display:inline-flex; align-items:center; gap:6px; font-family:var(--en-mono); font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:var(--vk-muted); }
-.rc-legDot{ width:12px; height:3px; border-radius:2px; }
-.rc-tip{ display:flex; gap:12px; padding:13px 14px; border-radius:13px; background:var(--vk-card-elevated); border:1px solid var(--vk-border); margin-bottom:10px; }
-.rc-tip:last-child{ margin-bottom:0; }
-.rc-tipIcon{ font-size:18px; flex-shrink:0; }
-.rc-tipText{ font-size:13.5px; line-height:1.5; color:var(--vk-muted-strong); }
-.rc-tipText b{ color:var(--vk-fg); }
 .rc-note{ font-size:11px; color:var(--vk-muted); font-style:italic; margin-top:12px; }
 .rc-empty{ text-align:center; padding:24px 16px; }
 .rc-emptyTitle{ font-family:var(--vk-font-serif),serif; font-size:1.3rem; }
@@ -257,16 +227,11 @@ body{ background:var(--vk-bg); color:var(--vk-fg); font-family:'Inter',-apple-sy
   <div class="vk-shell en-shell">
     <header class="vk-header en-header">
       <div>
-        <h1 class="vk-greeting">Fitness <span class="vk-greeting-name">band</span></h1>
-        <p class="vk-date">recovery · sleep · strain · trends</p>
+        <h1 class="vk-greeting">Your <span class="vk-greeting-name">vitals</span></h1>
+        <p class="vk-date">HRV · resting HR · sleep · trends</p>
       </div>
       <a class="en-back" href="index.html">← Liam</a>
     </header>
-
-    <nav class="en-tabs" id="fbTabs" role="tablist">
-      <button class="en-tab" data-tab="band" role="tab">Band</button>
-      <button class="en-tab" data-tab="recovery"  role="tab">Recovery</button>
-    </nav>
 
     <div id="panel"></div>
   </div>
@@ -300,19 +265,64 @@ function renderPanel(){
 }
 
 /* =====================================================================
- * MODULE: BAND — sources (Whoop / Fitbit / Apple Health) + today's
- * dashboard (recovery hero, stats, sleep debt, coach, ticker).
- * Ported from the standalone whoop.html, restyled to the Rowan4 kit.
+ * VITALS — the single source of truth for this page. Reads the suite
+ * vitals record (patron_health_v1, typed in on the dashboard) and keeps
+ * one daily history so both tabs draw the same trends.
+ * ===================================================================== */
+const VITALS=(function(){
+  const LS='recovery_standalone_v1';
+  let state={ history:[] };
+
+  function health(){ const d=readLS(HEALTH_KEY); return (d&&d.connected)?d:null; }
+  function clamp01(x){ return Math.max(0,Math.min(1,x)); }
+  /* Readiness estimated from the three numbers you enter — HRV weighted
+   * heaviest, then resting HR, then sleep. Same formula as the dashboard. */
+  function estRecovery(h){
+    if(!h)return null; if(h.recovery!=null)return h.recovery; const parts=[],w=[];
+    if(typeof h.hrv==='number'){ parts.push(clamp01((h.hrv-20)/(90-20))*100); w.push(0.5); }
+    if(typeof h.rhr==='number'){ parts.push(clamp01((80-h.rhr)/(80-42))*100); w.push(0.25); }
+    if(typeof h.sleepPerf==='number'){ parts.push(Math.min(100,h.sleepPerf)); w.push(0.25); }
+    else if(typeof h.sleepHours==='number'){ parts.push(clamp01(h.sleepHours/(h.sleepTargetHours||8))*100); w.push(0.25); }
+    if(!parts.length)return null; const sw=w.reduce((a,b)=>a+b,0); let s=0; for(let i=0;i<parts.length;i++)s+=parts[i]*w[i]; return Math.max(1,Math.min(99,Math.round(s/sw)));
+  }
+  function isEst(h){ return !!(h&&h.recovery==null&&estRecovery(h)!=null); }
+  function tone(r){ if(r==null)return 'muted'; if(r>=67)return 'good'; if(r>=34)return 'watch'; return 'low'; }
+
+  function todayKey(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  function load(){ const r=readLS(LS); return { history:(r&&Array.isArray(r.history))?r.history:[] }; }
+  function save(){ try{localStorage.setItem(LS,JSON.stringify(state));}catch(e){} if(window.PatronDB&&PatronDB.isCloud())PatronDB.set('recovery',state); }
+
+  /* One row per day — re-saving today's vitals overwrites today, never appends. */
+  function snapshotToday(){
+    const h=health(); if(!h)return; const rec=estRecovery(h);
+    const snap={ dateKey:todayKey(), recovery:rec,
+      sleepHours:(typeof h.sleepHours==='number'?h.sleepHours:null),
+      sleepPerf:(typeof h.sleepPerf==='number'?h.sleepPerf:null),
+      hrv:(typeof h.hrv==='number'?h.hrv:null),
+      rhr:(typeof h.rhr==='number'?h.rhr:null) };
+    if(rec==null&&snap.sleepHours==null&&snap.hrv==null&&snap.rhr==null)return;
+    state.history=state.history.filter(x=>x.dateKey!==snap.dateKey).concat([snap]).sort((a,b)=>a.dateKey.localeCompare(b.dateKey));
+    if(state.history.length>180)state.history.shift(); save();
+  }
+  function history(){ return state.history; }
+
+  function hydrate(){
+    state=load(); snapshotToday();
+    if(!window.PatronDB||!PatronDB.isCloud())return;
+    PatronDB.get('recovery').then(cs=>{
+      if(cs&&Array.isArray(cs.history)){ state={history:cs.history}; try{localStorage.setItem(LS,JSON.stringify(state));}catch(e){} snapshotToday(); renderPanel(); }
+      else { snapshotToday(); PatronDB.set('recovery',state); }
+    }).catch(()=>{});
+  }
+  return { health, estRecovery, isEst, tone, snapshotToday, history, hydrate };
+})();
+
+/* =====================================================================
+ * MODULE: BAND — today's vitals (the numbers you type in on the
+ * dashboard) plus HRV and resting-HR trends. No device sync: this page
+ * only ever reads patron_health_v1.
  * ===================================================================== */
 const BAND=(function(){
-  const SAMPLE = {
-    date:'today', recovery:92, hrv:218, rhr:32, sleepPerf:85, sleepHours:7+40/60, strain:4.0,
-    hrvBaseline:null, rhrBaseline:null, sleepPerfBaseline:null, strainWeeklyAvg:7.8, hrvAnomalous:true,
-    recoveryTrend:[78,92],
-    sleepDebt7d:[{day:'Sun',hours:6.7},{day:'Tue',hours:7+40/60}],
-    sleepTargetHours:SLEEP_TARGET, vitalityScore:73, vitalityTier:'Solid', lastSyncedMinutes:12, daysAvailable:2,
-  };
-
   function recoveryTone(r){ if(r==null)return 'muted'; if(r>=67)return 'good'; if(r>=34)return 'watch'; return 'low'; }
   function formatHM(h){ if(h==null)return '—'; const hh=Math.floor(h),mm=Math.round((h-hh)*60); return hh+'h '+String(mm).padStart(2,'0')+'m'; }
   function formatDebt(minutes){ const sign=minutes<0?'-':'+'; const abs=Math.abs(minutes); const h=Math.floor(abs/60); const m=abs%60; return sign+h+'h '+String(m).padStart(2,'0')+'m'; }
@@ -367,16 +377,63 @@ const BAND=(function(){
   function statHtml(label,value,unit,sub,delta,deltaTone){
     return '<div class="stat"><div class="statLabel">'+label+'</div><div class="statValueRow"><span class="statValue">'+esc(value)+'</span>'+(unit?'<span class="statUnit">'+unit+'</span>':'')+'</div><div class="statSub">'+esc(sub)+'</div>'+(delta?'<div class="statDelta" data-tone="'+deltaTone+'">'+esc(delta)+'</div>':'')+'</div>';
   }
+  /* The three tracked vitals. Deltas compare against your own 7-day baseline
+   * from the history, so they only appear once there's a baseline to beat. */
   function statGridHtml(d){
     const hrvDelta=(d.hrv!=null&&d.hrvBaseline!=null)?Math.round(d.hrv-d.hrvBaseline):null;
     const rhrDelta=(d.rhr!=null&&d.rhrBaseline!=null)?Math.round(d.rhr-d.rhrBaseline):null;
-    const sleepDelta=(d.sleepPerf!=null&&d.sleepPerfBaseline!=null)?Math.round((d.sleepPerf-d.sleepPerfBaseline)*10)/10:null;
+    const sleepDelta=(d.sleepHours!=null&&d.sleepBaseline!=null)?Math.round((d.sleepHours-d.sleepBaseline)*10)/10:null;
     return '<section class="en-card"><p class="en-eyebrow">Today</p><div class="grid">'
-      + statHtml('Sleep',formatHM(d.sleepHours),'',d.sleepPerf!=null?Math.round(d.sleepPerf)+'% efficiency':'—', sleepDelta!=null?(sleepDelta>=0?'↗ +'+sleepDelta+'%':'↘ '+sleepDelta+'%'):null, sleepDelta!=null&&sleepDelta>=0?'good':'watch')
-      + statHtml('Strain',d.strain!=null?d.strain.toFixed(1):'—','','today', d.strainWeeklyAvg!=null?'wk avg '+d.strainWeeklyAvg.toFixed(1):null, (d.strainWeeklyAvg!=null&&d.strain!=null&&d.strain>d.strainWeeklyAvg+1)?'watch':'neutral')
-      + statHtml('HRV',d.hrv!=null?String(Math.round(d.hrv)):'—','ms',d.hrvAnomalous?'reading flagged':'rmssd', hrvDelta!=null?(hrvDelta>=0?'↑ +'+hrvDelta+' ms':'↓ '+hrvDelta+' ms'):null, hrvDelta!=null&&hrvDelta>=0?'good':'watch')
-      + statHtml('RHR',d.rhr!=null?String(Math.round(d.rhr)):'—','bpm','resting', rhrDelta!=null?(rhrDelta<=0?'↓ '+rhrDelta+' bpm':'↑ +'+rhrDelta+' bpm'):null, rhrDelta!=null&&rhrDelta<=0?'good':'watch')
+      + statHtml('HRV',d.hrv!=null?String(Math.round(d.hrv)):'—','ms',d.hrvBaseline!=null?'7d avg '+Math.round(d.hrvBaseline)+'ms':'rmssd', hrvDelta!=null?(hrvDelta>=0?'↑ +'+hrvDelta+' ms':'↓ '+hrvDelta+' ms'):null, hrvDelta!=null&&hrvDelta>=0?'good':'watch')
+      + statHtml('RHR',d.rhr!=null?String(Math.round(d.rhr)):'—','bpm',d.rhrBaseline!=null?'7d avg '+Math.round(d.rhrBaseline)+'bpm':'resting', rhrDelta!=null?(rhrDelta<=0?'↓ '+rhrDelta+' bpm':'↑ +'+rhrDelta+' bpm'):null, rhrDelta!=null&&rhrDelta<=0?'good':'watch')
+      + statHtml('Slept',formatHM(d.sleepHours),'',d.sleepPerf!=null?Math.round(d.sleepPerf)+'% of target':'hours', sleepDelta!=null?(sleepDelta>=0?'↗ +'+sleepDelta+'h':'↘ '+sleepDelta+'h'):null, sleepDelta!=null&&sleepDelta>=0?'good':'watch')
       + '</div></section>';
+  }
+
+  /* ---- HRV / RHR trend charts ---- */
+  let trendRange=14;
+  function metricChartHtml(key,label,unit,invert){
+    const hist=VITALS.history().slice(-trendRange).filter(x=>typeof x[key]==='number');
+    if(hist.length<2){
+      return '<div class="rc-chartHead"><p class="en-eyebrow" style="margin:0">'+label+'</p></div>'
+        + '<p class="rc-note">Two days of '+label+' readings and this chart draws itself — enter today\'s on the dashboard.</p>';
+    }
+    const W=320,H=110,padY=12,padX=2;
+    const vals=hist.map(x=>x[key]);
+    let min=Math.min.apply(null,vals), max=Math.max.apply(null,vals);
+    if(max-min<1e-9){ min-=1; max+=1; }
+    const pad=(max-min)*0.15; min-=pad; max+=pad;
+    const xOf=i=>padX+(i/(hist.length-1))*(W-padX*2);
+    const yOf=v=>H-padY-((v-min)/(max-min))*(H-padY*2);
+    const pts=hist.map((x,i)=>[xOf(i),yOf(x[key])]);
+    const line=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+    const area=line+' L'+pts[pts.length-1][0].toFixed(1)+' '+H+' L'+pts[0][0].toFixed(1)+' '+H+' Z';
+    const dots=pts.map((p,i)=>'<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="'+(i===pts.length-1?3.2:2)+'" fill="#6EE7B7"'+(i===pts.length-1?' style="filter:drop-shadow(0 0 5px #6EE7B7)"':' opacity=".55"')+'/>').join('');
+    const first=vals[0], last=vals[vals.length-1];
+    const delta=Math.round((last-first)*10)/10;
+    // For resting HR a fall is the good direction, so the tone inverts.
+    const good=invert?delta<=0:delta>=0;
+    const gradId='grad-'+key;
+    return '<div class="rc-chartHead"><p class="en-eyebrow" style="margin:0">'+label+'</p>'
+      + '<span class="trendDelta '+(good?'trendUp':'trendDown')+'">'+(delta>=0?'↑ +':'↓ ')+Math.abs(delta)+' '+unit+' over '+hist.length+'d</span></div>'
+      + '<svg class="rc-chart" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" aria-hidden="true">'
+      +   '<defs><linearGradient id="'+gradId+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6EE7B7" stop-opacity=".28"/><stop offset="100%" stop-color="#6EE7B7" stop-opacity="0"/></linearGradient></defs>'
+      +   '<path d="'+area+'" fill="url(#'+gradId+')"/>'
+      +   '<path d="'+line+'" fill="none" stroke="#6EE7B7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 5px rgba(110,231,183,.7))"/>'
+      +   dots
+      + '</svg>'
+      + '<div class="rc-legend"><span class="rc-legItem">low '+Math.round(Math.min.apply(null,vals))+unit+'</span>'
+      + '<span class="rc-legItem">high '+Math.round(Math.max.apply(null,vals))+unit+'</span>'
+      + '<span class="rc-legItem">now '+Math.round(last)+unit+'</span></div>';
+  }
+  function trendsHtml(){
+    return '<section class="en-card">'
+      + '<div class="rc-chartHead"><p class="en-eyebrow" style="margin:0">Trends</p>'
+      +   '<div class="rc-seg">'+[7,14,30].map(n=>'<button class="rc-segBtn '+(trendRange===n?'on':'')+'" data-action="trend-range" data-range="'+n+'">'+n+'d</button>').join('')+'</div>'
+      + '</div>'
+      + '<div style="margin-top:18px">'+metricChartHtml('hrv','HRV','ms',false)+'</div>'
+      + '<div style="margin-top:26px">'+metricChartHtml('rhr','Resting HR','bpm',true)+'</div>'
+      + '</section>';
   }
 
   /* ---- sleep debt ---- */
@@ -399,261 +456,100 @@ const BAND=(function(){
     return '<section class="en-card"><div class="cardHead"><span class="serifTitle">How to improve today</span></div><ul class="coachList">'+lis+'</ul></section>';
   }
 
-  /* ---- suite publish (only ever publish real live data) ---- */
-  function publishWhoopData(d){ const snap={ source:'whoop',connected:true,ts:Date.now(),recovery:d.recovery,hrv:d.hrv,rhr:d.rhr,sleepPerf:d.sleepPerf,sleepHours:d.sleepHours,sleepTargetHours:d.sleepTargetHours,strain:d.strain,vitalityScore:d.vitalityScore }; try{localStorage.setItem(WHOOP_SHARE_KEY,JSON.stringify(snap));}catch(e){} try{localStorage.setItem(HEALTH_KEY,JSON.stringify(snap));}catch(e){} }
-  function clearWhoopData(){ try{localStorage.removeItem(WHOOP_SHARE_KEY);}catch(e){} try{ const cur=JSON.parse(localStorage.getItem(HEALTH_KEY)||'null'); if(cur&&cur.source==='whoop')localStorage.removeItem(HEALTH_KEY); }catch(e){} }
-  function publishFitbitData(d){ const snap={ source:'fitbit',connected:true,ts:Date.now(),recovery:d.recovery,hrv:d.hrv,rhr:d.rhr,sleepPerf:d.sleepPerf,sleepHours:d.sleepHours,sleepTargetHours:d.sleepTargetHours,strain:d.strain,bedtime:d.bedtime,wakeTime:d.wakeTime,vitalityScore:d.vitalityScore }; try{localStorage.setItem(HEALTH_KEY,JSON.stringify(snap));}catch(e){} }
-  function clearFitbitData(){ try{ const cur=JSON.parse(localStorage.getItem(HEALTH_KEY)||'null'); if(cur&&cur.source==='fitbit')localStorage.removeItem(HEALTH_KEY); }catch(e){} }
-
-  /* ---- Apple Health (manual entry, tagged Apple Watch) ---- */
-  let appleData=null, editingApple=false;
-  function loadApple(){ try{ const cur=JSON.parse(localStorage.getItem(HEALTH_KEY)||'null'); if(cur&&cur.source==='apple')appleData=cur; }catch(e){} }
-  function clearApple(){ appleData=null; try{ const cur=JSON.parse(localStorage.getItem(HEALTH_KEY)||'null'); if(cur&&cur.source==='apple')localStorage.removeItem(HEALTH_KEY); }catch(e){} }
-  function saveAppleEntry(){
-    const num=(id)=>{ const el=document.getElementById(id); if(!el||el.value==='')return null; const n=Number(el.value); return isFinite(n)?n:null; };
-    const recovery=num('a-rec'), sleepHours=num('a-sleep'), hrv=num('a-hrv'), rhr=num('a-rhr'), strain=num('a-strain'); const target=num('a-target')||8;
-    if(recovery==null&&sleepHours==null&&hrv==null&&rhr==null&&strain==null){ alert('Enter at least one reading (recovery or sleep).'); return; }
-    const sleepPerf=sleepHours!=null?Math.round(Math.min(100,(sleepHours/target)*100)):null;
-    const snap={ source:'apple',connected:true,ts:Date.now(),recovery,hrv,rhr,sleepPerf,sleepHours,sleepTargetHours:target,strain,vitalityScore:null };
-    appleData=snap; try{localStorage.setItem(HEALTH_KEY,JSON.stringify(snap));}catch(e){} editingApple=false; refresh();
+  /* ---- build the view model from the suite vitals + daily history ---- */
+  function avgOf(rows,key){
+    const v=rows.map(x=>x[key]).filter(n=>typeof n==='number');
+    return v.length?v.reduce((a,b)=>a+b,0)/v.length:null;
+  }
+  function dayLabel(dateKey){
+    const p=String(dateKey||'').split('-').map(Number);
+    const d=new Date(p[0],(p[1]||1)-1,p[2]||1);
+    return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()]||'';
+  }
+  function buildFromVitals(){
+    const h=VITALS.health(); if(!h)return null;
+    const hist=VITALS.history();
+    // Baselines exclude today, so "vs baseline" compares against past days only.
+    const prior=hist.filter(x=>x.dateKey!==(hist.length?hist[hist.length-1].dateKey:'')).slice(-7);
+    return {
+      date:'today',
+      recovery:VITALS.estRecovery(h),
+      hrv:(typeof h.hrv==='number'?h.hrv:null),
+      rhr:(typeof h.rhr==='number'?h.rhr:null),
+      sleepHours:(typeof h.sleepHours==='number'?h.sleepHours:null),
+      sleepPerf:(typeof h.sleepPerf==='number'?h.sleepPerf:null),
+      strain:null, strainWeeklyAvg:null, hrvAnomalous:false,
+      hrvBaseline:avgOf(prior,'hrv'),
+      rhrBaseline:avgOf(prior,'rhr'),
+      sleepBaseline:avgOf(prior,'sleepHours'),
+      sleepPerfBaseline:avgOf(prior,'sleepPerf'),
+      recoveryTrend:hist.map(x=>x.recovery).filter(v=>typeof v==='number'),
+      sleepDebt7d:hist.slice(-7).filter(x=>typeof x.sleepHours==='number').map(x=>({day:dayLabel(x.dateKey),hours:x.sleepHours})),
+      sleepTargetHours:h.sleepTargetHours||SLEEP_TARGET,
+      daysAvailable:hist.length,
+      lastSyncedMinutes:h.ts?Math.round((Date.now()-h.ts)/60000):null
+    };
   }
 
-  /* ---- connection state ---- */
-  const LS_KEY='whoop_standalone_connected_v1';
-  let connected=false; try{ connected=localStorage.getItem(LS_KEY)==='1'; }catch(e){}
-  let syncing=false; let connectSource='whoop';
-  function setConnected(v){ connected=v; try{localStorage.setItem(LS_KEY,v?'1':'0');}catch(e){} refresh(); }
+  /* Device sync lives on the dashboard now: whatever source writes patron_health_v1
+   * (manual today, Fitbit later) shows up here automatically. */
 
-  const ON_SERVER=location.protocol==='http:'||location.protocol==='https:';
-  let liveData=null, liveConnected=false, fitbitData=null, fitbitConnected=false, activeKind=null;
-  function buildLiveData(j){
-    const trend=Array.isArray(j.recoveryTrend)&&j.recoveryTrend.length?j.recoveryTrend:(j.recovery!=null?[j.recovery]:[]);
-    return { date:'today', recovery:j.recovery,hrv:j.hrv,rhr:j.rhr, sleepPerf:j.sleepPerf,sleepHours:j.sleepHours,strain:j.strain, hrvBaseline:null,rhrBaseline:null,sleepPerfBaseline:null, strainWeeklyAvg:j.strainWeeklyAvg!=null?j.strainWeeklyAvg:null, hrvAnomalous:false, recoveryTrend:trend, sleepDebt7d:Array.isArray(j.sleepDebt7d)?j.sleepDebt7d:[], sleepTargetHours:j.sleepTargetHours||8, vitalityScore:null,vitalityTier:'', lastSyncedMinutes:0, daysAvailable:trend.length };
+  function footerHtml(d){
+    const when=d.lastSyncedMinutes==null?'entered by hand'
+      : d.lastSyncedMinutes<1?'updated just now'
+      : d.lastSyncedMinutes<60?'updated '+d.lastSyncedMinutes+'m ago'
+      : 'updated '+Math.round(d.lastSyncedMinutes/60)+'h ago';
+    return '<section class="en-card"><div class="footer"><div class="legend"><span class="legendDot" data-tone="good"></span> Good<span class="legendDot" data-tone="watch"></span> Watch<span class="legendDot" data-tone="low"></span> Low</div>'
+      + '<div class="footerActions"><span class="synced">'+when+' · manual</span><a class="en-ghost" href="index.html">edit vitals</a></div></div></section>';
   }
-  async function syncWhoopLive(){ if(!ON_SERVER)return; syncing=true; refresh(); try{ const r=await fetch('/api/whoop/data',{cache:'no-store'}); const j=await r.json(); if(j&&j.connected){ liveData=buildLiveData(j); liveConnected=true; } else { liveData=null; liveConnected=false; } }catch(e){ liveData=null; liveConnected=false; } syncing=false; refresh(); }
-  async function syncFitbitLive(){ if(!ON_SERVER)return; syncing=true; refresh(); try{ const r=await fetch('/api/fitbit/data',{cache:'no-store'}); const j=await r.json(); if(j&&j.connected){ fitbitData=buildLiveData(j); fitbitData.bedtime=j.bedtime; fitbitData.wakeTime=j.wakeTime; fitbitConnected=true; } else { fitbitData=null; fitbitConnected=false; } }catch(e){ fitbitData=null; fitbitConnected=false; } syncing=false; refresh(); }
-
-  /* ---- source segment + connect / form ---- */
-  function sourceTabsHtml(){
-    const tab=(key,emoji,label)=>'<button type="button" class="srcTab '+(connectSource===key?'srcTabActive':'')+'" data-action="src-tab" data-src="'+key+'"><span aria-hidden>'+emoji+'</span>'+label+'</button>';
-    return '<div class="srcSeg" role="tablist" aria-label="Data source">'+tab('whoop','🔋','Whoop')+tab('fitbit','💠','Fitbit')+tab('apple','⌚','Apple Health')+'</div>';
-  }
-  function whoopConnectBodyHtml(){
-    const cta=ON_SERVER
-      ? '<a class="en-btn connectCta" href="/api/whoop/login">Connect Whoop</a><p class="setupNote"><strong>Setup note:</strong> needs your WHOOP API keys set on the host (see <em>WHOOP_SETUP.md</em>). Then this is a real one-tap sign-in — recovery, sleep &amp; strain sync automatically.</p>'
-      : '<button type="button" class="en-btn connectCta" data-action="connect">Preview with sample data</button><p class="setupNote"><strong>Setup note:</strong> live WHOOP sync runs on the deployed app. Opened locally, tap above to preview the dashboard with sample numbers — these are <em>not</em> saved into the suite.</p>';
-    return '<p class="connectIntro">Bring your <em>recovery</em>, <em>sleep</em>, and <em>strain</em> into Liam. One tap. Sign in with Whoop, allow access, you’re back here.</p><p class="connectSub">We never see your Whoop password. You can disconnect anytime.</p>'+cta;
-  }
-  function fitbitConnectBodyHtml(){
-    const cta=ON_SERVER
-      ? '<a class="en-btn connectCta" href="/api/fitbit/login">Connect Fitbit</a><p class="setupNote"><strong>Setup note:</strong> needs your Fitbit API keys set on the host (see <em>FITBIT_SETUP.md</em>). Then this is a real one-tap sign-in — sleep, HRV, resting HR &amp; your bed/wake times sync automatically.</p>'
-      : '<p class="setupNote"><strong>Setup note:</strong> live Fitbit sync runs on the deployed app (Vercel) with your Fitbit keys. Opened locally, use <strong>Apple Health</strong> to enter numbers by hand.</p>';
-    return '<p class="connectIntro">Bring your <em>sleep</em>, <em>HRV</em>, and <em>resting HR</em> into Liam. One tap. Sign in with Fitbit, allow access, you’re back here.</p><p class="connectSub">We never see your Fitbit password. Fitbit has no recovery score, so that ring stays blank — everything else fills in.</p>'+cta;
-  }
-  function appleFieldHtml(id,label,ph,val,attrs,full){ return '<div class="field'+(full?' fieldFull':'')+'"><label class="fieldLabel" for="'+id+'">'+label+'</label><input id="'+id+'" class="en-input" type="number" placeholder="'+esc(ph)+'" value="'+esc(val)+'" '+attrs+' /></div>'; }
-  function appleFormHtml(){
-    const a=appleData||{}; const v=(k)=>(a[k]!=null?a[k]:''); const savedNote=appleData?'<p class="connectSub">Editing your saved Apple Watch readings.</p>':'';
-    return '<p class="connectIntro">Add today’s <em>recovery</em>, <em>sleep</em> &amp; <em>HRV</em> from Apple Health. They feed the same dashboard and supplement picks as Whoop.</p>'+savedNote
-      + '<div class="fieldGrid">'
-      + appleFieldHtml('a-rec','Recovery / readiness %','—',v('recovery'),'min="0" max="100" inputmode="numeric"')
-      + appleFieldHtml('a-sleep','Sleep (hours)','7.5',v('sleepHours'),'min="0" max="24" step="0.1" inputmode="decimal"')
-      + appleFieldHtml('a-hrv','HRV (ms)','—',v('hrv'),'min="0" max="300" inputmode="numeric"')
-      + appleFieldHtml('a-rhr','Resting HR (bpm)','—',v('rhr'),'min="20" max="150" inputmode="numeric"')
-      + appleFieldHtml('a-strain','Strain (0–21, optional)','—',v('strain'),'min="0" max="21" step="0.1" inputmode="decimal"')
-      + appleFieldHtml('a-target','Sleep target (hours)','8',(a.sleepTargetHours!=null?a.sleepTargetHours:8),'min="4" max="12" step="0.5" inputmode="decimal"',true)
-      + '</div>'
-      + '<p class="setupNote"><strong>Setup note:</strong> Apple Health has no web API — a browser can’t read HealthKit directly. Open the Health app, copy today’s <em>HRV</em>, <em>resting HR</em> &amp; <em>time asleep</em> in here. Saved into the suite tagged <strong>Apple Watch</strong>.</p>'
-      + '<div class="formActions">'+(appleData?'<button type="button" class="en-link" data-action="remove-apple">remove</button>':'')+'<button type="button" class="en-btn" data-action="save-apple">Save readings</button></div>';
-  }
-  function connectPanelHtml(){
-    const body=connectSource==='apple'?appleFormHtml():connectSource==='fitbit'?fitbitConnectBodyHtml():whoopConnectBodyHtml();
-    return '<section class="en-card"><p class="en-eyebrow">Connect a source</p>'+sourceTabsHtml()+'<div style="margin-top:16px">'+body+'</div></section>';
+  function emptyHtml(){
+    return '<section class="en-card"><p class="en-eyebrow">Vitals</p><div class="rc-empty">'
+      + '<div class="rc-emptyTitle">No vitals yet</div>'
+      + '<p class="rc-emptyBody">This page reads the numbers you enter on the dashboard — HRV, resting heart rate and hours slept. Add today\'s and your readiness ring, stats and trends fill in here.</p>'
+      + '<p style="margin-top:18px"><a class="en-btn" href="index.html">Add today\'s vitals</a></p>'
+      + '</div></section>';
   }
 
-  function dataPanelFooter(d,kind){
-    const actions=kind==='apple'
-      ? '<span class="synced">entered manually · Apple Watch</span><button type="button" class="en-ghost" data-action="edit-apple">edit readings</button><button type="button" class="en-link" data-action="remove-apple">remove</button>'
-      : '<span class="synced">'+(d.lastSyncedMinutes!=null?'last synced '+d.lastSyncedMinutes+'m ago':'sync time unknown')+'</span><button type="button" class="en-ghost" data-action="sync"'+(syncing?' disabled':'')+'>'+(syncing?'syncing…':'sync now')+'</button><button type="button" class="en-link" data-action="disconnect">disconnect</button>';
-    return '<section class="en-card"><div class="footer"><div class="legend"><span class="legendDot" data-tone="good"></span> Good<span class="legendDot" data-tone="watch"></span> Watch<span class="legendDot" data-tone="low"></span> Low</div><div class="footerActions">'+actions+'</div></div></section>';
-  }
-
-  /* ---- resolve active source + publish (runs even off the Band tab) ---- */
-  function resolve(){
-    let d=null,kind=null;
-    if(liveData){ d=liveData; kind='whoop-live'; }
-    else if(fitbitData){ d=fitbitData; kind='fitbit-live'; }
-    else if(appleData&&!editingApple){ d=buildLiveData(appleData); kind='apple'; }
-    else if(!ON_SERVER&&connected){ d=SAMPLE; kind='sample'; }
-    activeKind=kind;
-    if(kind==='whoop-live')publishWhoopData(liveData);
-    else if(kind==='fitbit-live')publishFitbitData(fitbitData);
-    return { d, kind };
-  }
-  /* re-resolve + publish, then repaint whichever tab is open */
-  function refresh(){ resolve(); renderPanel(); }
+  function refresh(){ VITALS.snapshotToday(); renderPanel(); }
 
   function html(){
-    const { d, kind }=resolve();
-    let out='<div class="fb-band">'+sourceTabsHtml();
+    VITALS.snapshotToday();
+    const d=buildFromVitals();
+    let out='<div class="fb-band">';
     if(d){
-      if(kind==='sample')out+='<div class="statusChip sample"><span class="pulse" aria-hidden></span>Sample data · connect WHOOP for live numbers</div>';
-      else if(kind==='apple')out+='<div class="statusChip"><span class="pulse" aria-hidden></span>Apple Health · entered manually</div>';
-      else if(kind==='fitbit-live')out+='<div class="statusChip"><span class="pulse" aria-hidden></span>Fitbit · live (no recovery score)</div>';
-      else out+='<div class="statusChip"><span class="pulse" aria-hidden></span>Whoop · live</div>';
-      out+=tickerHtml(d)+recoveryHeroHtml(d)+statGridHtml(d)+sleepDebtHtml(d)+coachHtml(d)+dataPanelFooter(d,kind);
+      out+='<div class="statusChip"><span class="pulse" aria-hidden></span>Your vitals · entered manually</div>'
+        + tickerHtml(d)+recoveryHeroHtml(d)+statGridHtml(d)+trendsHtml()+sleepDebtHtml(d)+coachHtml(d)+footerHtml(d);
     } else {
-      out+=connectPanelHtml();
+      out+=emptyHtml();
     }
     return out+'</div>';
   }
-  function after(){
-    // the source seg lives outside the connect card too — keep them in sync
-    document.querySelectorAll('.fb-band .srcTab').forEach(b=>b.classList.toggle('srcTabActive', b.dataset.src===connectSource));
-  }
+  function after(){}
 
   /* events (scoped to the Band tab) */
   document.addEventListener('click',e=>{
-    if(activeTab!=='band')return; const btn=e.target.closest('[data-action]'); if(!btn)return; const action=btn.getAttribute('data-action');
-    if(action==='src-tab'){ connectSource=btn.getAttribute('data-src'); renderPanel(); return; }
-    if(action==='save-apple'){ saveAppleEntry(); return; }
-    if(action==='edit-apple'){ editingApple=true; connectSource='apple'; renderPanel(); return; }
-    if(action==='remove-apple'){ if(confirm('Remove your Apple Health readings from the suite?')){ clearApple(); editingApple=false; refresh(); } return; }
-    if(action==='connect'){ setConnected(true); return; }
-    if(action==='disconnect'){
-      if(activeKind==='fitbit-live'){ fetch('/api/fitbit/logout').catch(()=>{}).then(()=>{ fitbitConnected=false; fitbitData=null; clearFitbitData(); refresh(); }); }
-      else if(ON_SERVER){ fetch('/api/whoop/logout').catch(()=>{}).then(()=>{ liveConnected=false; liveData=null; clearWhoopData(); refresh(); }); }
-      else if(confirm('Disconnect Whoop? (Hides the sample preview in this standalone.)')){ setConnected(false); }
-      return;
-    }
-    if(action==='sync'){
-      if(activeKind==='fitbit-live'){ syncFitbitLive(); }
-      else if(ON_SERVER){ syncWhoopLive(); }
-      else { syncing=true; refresh(); setTimeout(()=>{ syncing=false; refresh(); },900); }
-      return;
-    }
+    if(activeTab!=='band')return; const btn=e.target.closest('[data-action]'); if(!btn)return;
+    if(btn.getAttribute('data-action')==='trend-range'){ trendRange=parseInt(btn.dataset.range,10)||14; renderPanel(); }
   });
-  document.addEventListener('keydown',e=>{ if(activeTab!=='band')return; if(e.key!=='Enter')return; const id=e.target&&e.target.id; if(id&&id.indexOf('a-')===0){ e.preventDefault(); saveAppleEntry(); } });
 
-  function boot(){
-    loadApple();
-    if(!ON_SERVER)return;
-    try{ const q=new URLSearchParams(location.search); const w=q.get('whoop'),f=q.get('fitbit'); if(w||f){ history.replaceState(null,'',location.pathname); if(w==='error'||w==='denied')alert('Whoop connection didn’t complete — check the host’s WHOOP keys & redirect URL (WHOOP_SETUP.md).'); if(f==='error'||f==='denied')alert('Fitbit connection didn’t complete — check the host’s FITBIT keys & redirect URL (FITBIT_SETUP.md).'); if(f==='connected')connectSource='fitbit'; } }catch(e){}
-    syncWhoopLive(); syncFitbitLive();
-  }
+  function boot(){ VITALS.snapshotToday(); }
   return { html, after, boot };
-})();
-
-/* =====================================================================
- * MODULE: RECOVERY — reads the suite vitals (patron_health_v1), keeps a
- * daily history (recovery_standalone_v1) for trends, shows rings + tips.
- * Ported from the standalone recovery.html, restyled to the Rowan4 kit.
- * ===================================================================== */
-const RECOVERY=(function(){
-  const LS='recovery_standalone_v1';
-  function health(){ try{ const d=readLS(HEALTH_KEY); return (d&&d.connected)?d:null; }catch(e){ return null; } }
-  function clamp01(x){ return Math.max(0,Math.min(1,x)); }
-  function estRecovery(h){
-    if(!h)return null; if(h.recovery!=null)return h.recovery; const parts=[],w=[];
-    if(typeof h.hrv==='number'){ parts.push(clamp01((h.hrv-20)/(90-20))*100); w.push(0.5); }
-    if(typeof h.rhr==='number'){ parts.push(clamp01((80-h.rhr)/(80-42))*100); w.push(0.25); }
-    if(typeof h.sleepPerf==='number'){ parts.push(Math.min(100,h.sleepPerf)); w.push(0.25); }
-    else if(typeof h.sleepHours==='number'){ parts.push(clamp01(h.sleepHours/(h.sleepTargetHours||8))*100); w.push(0.25); }
-    if(!parts.length)return null; const sw=w.reduce((a,b)=>a+b,0); let s=0; for(let i=0;i<parts.length;i++)s+=parts[i]*w[i]; return Math.max(1,Math.min(99,Math.round(s/sw)));
-  }
-  function isEst(h){ return !!(h&&h.recovery==null&&estRecovery(h)!=null); }
-  function tone(r){ if(r==null)return 'muted'; if(r>=67)return 'good'; if(r>=34)return 'watch'; return 'low'; }
-  function sleepTone(p){ if(p==null)return 'muted'; if(p>=85)return 'good'; if(p>=60)return 'watch'; return 'low'; }
-  function fmtHM(h){ if(h==null)return '—'; const hh=Math.floor(h),mm=Math.round((h-hh)*60); return hh+'h '+String(mm).padStart(2,'0')+'m'; }
-  function srcLabel(s){ return s==='apple'?'Apple Watch':s==='fitbit'?'Fitbit':s==='manual'?'Manual':s==='whoop'?'Whoop':'—'; }
-
-  function ringWrap(value,toneStr,cap,sub){
-    const circ=2*Math.PI*64;
-    const ring='<div class="rc-ring" data-tone="'+toneStr+'"><svg viewBox="0 0 150 150" aria-hidden><circle cx="75" cy="75" r="64" class="rc-track"/>'
-      +(value!=null?'<circle cx="75" cy="75" r="64" class="rc-fill" style="stroke-dasharray:'+circ+';stroke-dashoffset:'+(circ*(1-value/100))+'"/>':'')
-      +'</svg><div class="rc-inner"><div class="rc-num">'+(value!=null?Math.round(value):'—')+(value!=null?'<small>%</small>':'')+'</div><div class="rc-cap">'+cap+'</div></div></div>';
-    return '<div class="rc-ringWrap">'+ring+(sub?'<div class="rc-sub">'+sub+'</div>':'')+'</div>';
-  }
-
-  let state={ history:[] };
-  function load(){ const r=readLS(LS); return { history:(r&&Array.isArray(r.history))?r.history:[] }; }
-  function save(){ try{localStorage.setItem(LS,JSON.stringify(state));}catch(e){} if(window.PatronDB&&PatronDB.isCloud())PatronDB.set('recovery',state); }
-  function todayKey(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
-  function snapshotToday(){
-    const h=health(); if(!h)return; const rec=estRecovery(h);
-    const snap={ dateKey:todayKey(), recovery:rec, sleepHours:(typeof h.sleepHours==='number'?h.sleepHours:null), sleepPerf:(typeof h.sleepPerf==='number'?h.sleepPerf:null), hrv:(typeof h.hrv==='number'?h.hrv:null), rhr:(typeof h.rhr==='number'?h.rhr:null) };
-    if(rec==null&&snap.sleepHours==null&&snap.hrv==null)return;
-    state.history=state.history.filter(x=>x.dateKey!==snap.dateKey).concat([snap]).sort((a,b)=>a.dateKey.localeCompare(b.dateKey));
-    if(state.history.length>180)state.history.shift(); save();
-  }
-
-  let range=14;
-  function chartSvg(){
-    const hist=state.history.slice(-range);
-    if(hist.length<2)return '<p class="rc-note">Trends appear once you have 2+ days of data — open this page daily (or let your band sync) and the chart fills in.</p>';
-    const W=320,H=120,padY=10; const recs=hist.map(d=>typeof d.recovery==='number'?d.recovery:null); const sleeps=hist.map(d=>typeof d.sleepHours==='number'?d.sleepHours:null);
-    const maxSleep=Math.max(9,...sleeps.filter(v=>v!=null)); const xOf=i=>hist.length===1?W/2:(i/(hist.length-1))*W; const yRec=v=>H-padY-(v/100)*(H-padY*2); const ySleep=v=>H-padY-(v/maxSleep)*(H-padY*2);
-    let bars=''; const bw=Math.max(4,(W/hist.length)*0.5);
-    hist.forEach((d,i)=>{ if(typeof d.sleepHours==='number'){ const x=xOf(i)-bw/2,y=ySleep(d.sleepHours); bars+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+(H-padY-y).toFixed(1)+'" rx="2" fill="#6EE7B7" opacity=".18"/>'; } });
-    const pts=[]; recs.forEach((v,i)=>{ if(v!=null)pts.push([xOf(i),yRec(v)]); });
-    const line=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
-    const dots=pts.map(p=>'<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="2.6" fill="#6EE7B7"/>').join('');
-    return '<svg class="rc-chart" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" aria-hidden="true">'+bars
-      +(pts.length>1?'<path d="'+line+'" fill="none" stroke="#6EE7B7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 5px rgba(110,231,183,.7))"/>':'')+dots+'</svg>'
-      +'<div class="rc-legend"><span class="rc-legItem"><span class="rc-legDot" style="background:#6EE7B7"></span>Recovery %</span><span class="rc-legItem"><span class="rc-legDot" style="background:#6EE7B7;opacity:.4"></span>Sleep hours</span></div>';
-  }
-
-  function tips(rec,h){
-    const out=[];
-    if(rec!=null){ if(rec>=67)out.push(['⚡','<b>Green light.</b> You\'re primed — good day for a hard session or a PR attempt.']); else if(rec>=34)out.push(['🟡','<b>Moderate.</b> Train, but keep it smart — quality over max intensity today.']); else out.push(['🛑','<b>Low recovery.</b> Go easy — light movement, hydration, and protect tonight\'s sleep.']); }
-    if(h&&typeof h.sleepHours==='number'&&h.sleepHours<7)out.push(['😴','<b>Short sleep ('+fmtHM(h.sleepHours)+').</b> Aim for 7–9h tonight — it\'s the biggest lever on tomorrow\'s recovery.']);
-    if(h&&typeof h.hrv==='number'&&h.hrv<35)out.push(['📉','<b>HRV is low ('+Math.round(h.hrv)+'ms).</b> A sign of stress or fatigue — prioritise rest and easy days.']);
-    if(h&&typeof h.rhr==='number'&&h.rhr>65)out.push(['❤️','<b>Resting HR is elevated ('+Math.round(h.rhr)+'bpm).</b> Could be stress, poor sleep, or coming down with something.']);
-    if(!out.length)out.push(['✅','Looking balanced. Keep logging and your trends will sharpen the advice.']);
-    return out;
-  }
-
-  function html(){
-    snapshotToday();
-    const h=health(); const rec=estRecovery(h); const t=tone(rec);
-    let body;
-    if(!h){
-      body='<section class="en-card"><p class="en-eyebrow">Recovery</p><div class="rc-empty"><div class="rc-emptyTitle">No vitals yet</div><p class="rc-emptyBody">Add today\'s sleep + HRV (or connect a band) over on the <strong>Band</strong> tab, and your recovery score, trends and tips show up here.</p></div></section>';
-    } else {
-      const statusWord=t==='good'?'Primed':t==='watch'?'Moderate':t==='low'?'Run down':'—';
-      const statusLine=rec==null?'Add HRV or sleep to estimate your readiness.':t==='good'?'You\'re well recovered and ready to push.':t==='watch'?'Partially recovered — train smart today.':'Your body needs rest — keep it light.';
-      const recRing=ringWrap(rec,t,isEst(h)?'Rec · est':'Recovery','');
-      const sTone=sleepTone(h.sleepPerf);
-      const sleepRing=(typeof h.sleepPerf==='number'||typeof h.sleepHours==='number')?ringWrap(typeof h.sleepPerf==='number'?h.sleepPerf:null,sTone,'Sleep',typeof h.sleepHours==='number'?fmtHM(h.sleepHours):''):'';
-      body='<section class="en-card"><span class="rc-srcBadge">'+srcLabel(h.source)+'</span><p class="en-eyebrow">Today</p>'
-        +'<div class="rc-hero">'+recRing+sleepRing+'</div>'
-        +'<div class="rc-status"><div class="rc-word" data-tone="'+t+'">'+statusWord+'</div><p class="rc-line">'+statusLine+'</p></div>'
-        +'<div class="rc-statRow"><div class="rc-stat"><div class="rc-statLabel">HRV</div><div class="rc-statVal">'+(typeof h.hrv==='number'?Math.round(h.hrv)+'<small> ms</small>':'—')+'</div></div><div class="rc-stat"><div class="rc-statLabel">Resting HR</div><div class="rc-statVal">'+(typeof h.rhr==='number'?Math.round(h.rhr)+'<small> bpm</small>':'—')+'</div></div></div></section>'
-        +'<section class="en-card"><div class="rc-chartHead"><p class="en-eyebrow" style="margin:0">Trends</p><div class="rc-seg">'+[7,14,30].map(n=>'<button class="rc-segBtn '+(range===n?'on':'')+'" data-range="'+n+'">'+n+'d</button>').join('')+'</div></div>'+chartSvg()+'</section>'
-        +'<section class="en-card"><p class="en-eyebrow">Today\'s guidance</p>'+tips(rec,h).map(t=>'<div class="rc-tip"><span class="rc-tipIcon">'+t[0]+'</span><span class="rc-tipText">'+t[1]+'</span></div>').join('')+'</section>';
-    }
-    return '<div class="fb-rec">'+body+'</div>';
-  }
-  function after(){}
-
-  document.addEventListener('click',e=>{ if(activeTab!=='recovery')return; const b=e.target.closest('[data-range]'); if(b){ range=parseInt(b.dataset.range,10)||14; renderPanel(); } });
-
-  function hydrate(){ state=load(); if(!window.PatronDB||!PatronDB.isCloud())return; PatronDB.get('recovery').then(cs=>{ if(cs&&Array.isArray(cs.history)){ state={history:cs.history}; try{localStorage.setItem(LS,JSON.stringify(state));}catch(e){} snapshotToday(); if(activeTab==='recovery')renderPanel(); } else { snapshotToday(); PatronDB.set('recovery',state); } }).catch(()=>{}); }
-  return { html, after, hydrate };
 })();
 
 /* =====================================================================
  * SHELL WIRING
  * ===================================================================== */
-const MODULES={ band:BAND, recovery:RECOVERY };
-function setTab(tab){ if(!MODULES[tab])return; activeTab=tab; document.querySelectorAll('.en-tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab)); renderPanel(); }
-document.getElementById('fbTabs').addEventListener('click',e=>{ const b=e.target.closest('[data-tab]'); if(b)setTab(b.dataset.tab); });
+const MODULES={ band:BAND };
 
 /* drifting mint particles (Rowan4 backdrop) */
 (function(){ const root=document.getElementById('fbParticles'); if(!root)return; const N=window.innerWidth<640?14:24; for(let i=0;i<N;i++){ const s=document.createElement('span'); s.style.left=Math.random()*100+'%'; s.style.top=(60+Math.random()*40)+'%'; const size=1.2+Math.random()*1.2; s.style.width=s.style.height=size+'px'; const dur=22+Math.random()*28; s.style.animationDuration=dur+'s'; s.style.animationDelay=(-Math.random()*dur)+'s'; s.style.setProperty('--dx',(Math.random()*30-15)+'px'); s.style.setProperty('--dy',-(60+Math.random()*50)+'vh'); root.appendChild(s); } })();
 
+VITALS.hydrate();
 BAND.boot();
-RECOVERY.hydrate();
-setTab('band');
+renderPanel();
+
+/* vitals edited in another tab → repaint with the new numbers */
+window.addEventListener('storage',e=>{ if(!e||!e.key||e.key===HEALTH_KEY){ VITALS.snapshotToday(); renderPanel(); } });
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

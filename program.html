@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Patron" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="icon" type="image/svg+xml" href="icon.svg" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<style id="pwa-mobile">
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+@media (max-width:480px){input,select,textarea{font-size:16px !important}}
+</style>
+<meta name="theme-color" content="#0C0C12">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script>try{document.documentElement.setAttribute("data-theme",localStorage.getItem("patron_theme")||"nocturne");}catch(e){document.documentElement.setAttribute("data-theme","nocturne");}</script>
+<title>Program · Liam</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #0C0C12;
+  --text-primary: #F3F2F8;
+  --text-secondary: rgba(243,242,248,0.74);
+  --text-tertiary: rgba(243,242,248,0.46);
+  --success: #46E0A8; --success-rgb: 70,224,168;
+  --warning: #FBBF24; --warning-rgb: 251,191,36;
+  --danger: #FB7185;
+  --brand: #8B7CFF; --brand-2: #C7BBFF; --brand-ink: #130E2E;
+  --brand-soft: color-mix(in srgb, #8B7CFF 14%, transparent);
+  --brand-line: color-mix(in srgb, #8B7CFF 30%, transparent);
+  --brand-glow: color-mix(in srgb, #8B7CFF 45%, transparent);
+  --surface: color-mix(in srgb, #ffffff 4%, transparent);
+  --surface-1: color-mix(in srgb, #ffffff 3%, transparent);
+  --border: color-mix(in srgb, #ffffff 8%, transparent);
+  --border-strong: color-mix(in srgb, #ffffff 13%, transparent);
+  --line-2: color-mix(in srgb, #ffffff 18%, transparent);
+  --input-bg: color-mix(in srgb, #000000 28%, transparent);
+  --card-shadow-c: rgba(0,0,0,0.45);
+  --body-glow: color-mix(in srgb, #8B7CFF 16%, transparent);
+  --font: 'Hanken Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: 'Space Grotesk', -apple-system, sans-serif;
+  --series-1: #3987e5; --series-2: #d95926;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+[data-theme="aurora"] {
+  --bg: #080913;
+  --text-primary: #EEF0FF; --text-secondary: rgba(220,225,255,0.76); --text-tertiary: rgba(220,225,255,0.48);
+  --success: #4FE3D0; --success-rgb: 79,227,208;
+  --warning: #FFC65C; --warning-rgb: 255,198,92;
+  --danger: #FF6FA5;
+  --brand: #8B7BFF; --brand-2: #B9ABFF; --brand-ink: #0A0922;
+  --brand-soft: color-mix(in srgb, #8B7BFF 16%, transparent);
+  --brand-line: color-mix(in srgb, #8B7BFF 34%, transparent);
+  --brand-glow: color-mix(in srgb, #7C6BFF 60%, transparent);
+  --surface: color-mix(in srgb, #96A0FF 5%, transparent);
+  --surface-1: color-mix(in srgb, #96A0FF 4%, transparent);
+  --border: color-mix(in srgb, #96A0FF 12%, transparent);
+  --border-strong: color-mix(in srgb, #96A0FF 20%, transparent);
+  --line-2: color-mix(in srgb, #96A0FF 26%, transparent);
+  --input-bg: color-mix(in srgb, #000010 30%, transparent);
+  --card-shadow-c: rgba(8,8,30,0.5);
+  --body-glow: color-mix(in srgb, #7C6BFF 22%, transparent);
+  --series-1: #3987e5; --series-2: #d95926;
+}
+[data-theme="daylight"] {
+  color-scheme: light;
+  --bg: #F3F2FA;
+  --text-primary: #171622; --text-secondary: rgba(23,22,34,0.72); --text-tertiary: rgba(23,22,34,0.50);
+  --success: #0E9E64; --success-rgb: 14,158,100;
+  --warning: #B4690E; --warning-rgb: 180,105,14;
+  --danger: #E11D63;
+  --brand: #6A45FF; --brand-2: #8E6BFF; --brand-ink: #FFFFFF;
+  --brand-soft: color-mix(in srgb, #6A45FF 8%, transparent);
+  --brand-line: color-mix(in srgb, #6A45FF 24%, transparent);
+  --brand-glow: color-mix(in srgb, #6A45FF 28%, transparent);
+  --surface: #FFFFFF;
+  --surface-1: color-mix(in srgb, #17163C 3%, transparent);
+  --border: color-mix(in srgb, #17163C 9%, transparent);
+  --border-strong: color-mix(in srgb, #17163C 16%, transparent);
+  --line-2: color-mix(in srgb, #17163C 20%, transparent);
+  --input-bg: color-mix(in srgb, #17163C 4%, transparent);
+  --card-shadow-c: rgba(23,22,60,0.12);
+  --body-glow: color-mix(in srgb, #6A45FF 7%, transparent);
+  --series-1: #2a78d6; --series-2: #d95926;
+}
+* { box-sizing: border-box; }
+html, body { margin:0; padding:0; background:var(--bg); color:var(--text-secondary); font-family:var(--font); -webkit-font-smoothing:antialiased; }
+body { min-height:100vh; position:relative; overflow-x:hidden; padding:max(28px, env(safe-area-inset-top)) 20px 60px; }
+body::before {
+  content:''; position:fixed; inset:0; z-index:-2; pointer-events:none; filter:blur(40px);
+  background: radial-gradient(circle at 82% 14%, var(--body-glow), transparent 45%),
+              radial-gradient(circle at 18% 90%, color-mix(in srgb, var(--success) 7%, transparent), transparent 50%);
+}
+.page { max-width: 1100px; margin: 0 auto; }
+.back { display:inline-flex; align-items:center; gap:6px; padding:6px 13px 6px 9px; background:var(--brand-soft); border:1px solid var(--brand-line); border-radius:999px; color:var(--brand); font-size:12px; font-weight:600; text-decoration:none; margin-bottom:14px; }
+.back:hover { border-color:var(--brand); }
+.dash-head { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+.dash-title { margin:0; font-family:var(--font-display); font-size:28px; font-weight:700; letter-spacing:-0.025em;
+  background:linear-gradient(120deg, var(--text-primary), var(--brand)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent; }
+@media (max-width:480px){ .dash-title{ font-size:22px; } }
+.themeSeg { display:inline-flex; align-items:center; background:var(--surface); border:1px solid var(--border); border-radius:999px; padding:3px; gap:2px; }
+.themeBtn { appearance:none; background:transparent; border:0; color:var(--text-tertiary); font-family:var(--font); font-size:11px; font-weight:700; padding:5px 10px 5px 7px; border-radius:999px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+.themeSwatch { width:11px; height:11px; border-radius:50%; box-shadow:0 0 0 1px var(--border-strong) inset; }
+.themeBtnActive { background:var(--brand-soft); color:var(--text-primary); }
+@media (max-width:480px){ .themeBtn .themeBtnLabel{ display:none; } .themeBtn{ padding:6px; } }
+
+.card { position:relative; background:var(--surface); border-radius:16px; padding:20px; margin-bottom:14px;
+  backdrop-filter:blur(24px) saturate(1.2); -webkit-backdrop-filter:blur(24px) saturate(1.2); box-shadow:0 12px 40px var(--card-shadow-c); }
+.eyebrow { font-size:10.5px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:var(--text-tertiary); margin-bottom:10px; }
+
+/* toolbar: tabs + refresh */
+.bar { display:flex; align-items:center; justify-content:flex-end; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+.weekBar { margin:0 0 14px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+.weekBar .tabs { flex-wrap:nowrap; }
+.tabs { display:inline-flex; flex-wrap:wrap; gap:6px; }
+.tab { appearance:none; cursor:pointer; padding:7px 14px; border-radius:999px; border:1px solid var(--border);
+  background:var(--surface-1); color:var(--text-secondary); font-family:inherit; font-size:12.5px; font-weight:600; }
+.tab:hover { border-color:var(--border-strong); color:var(--text-primary); }
+.tab.on { background:var(--brand-soft); border-color:var(--brand-line); color:var(--text-primary); }
+.barRight { display:inline-flex; align-items:center; gap:10px; }
+.sync { font-family:var(--font-mono); font-size:10.5px; letter-spacing:0.06em; color:var(--text-tertiary); }
+.btn { appearance:none; cursor:pointer; border-radius:10px; font-family:inherit; font-size:12.5px; font-weight:700; padding:8px 14px; border:1px solid transparent; }
+.btnPrimary { background:var(--brand); color:var(--brand-ink); }
+.btnGhost { background:transparent; border-color:var(--border); color:var(--text-secondary); }
+.btnGhost:hover { border-color:var(--border-strong); color:var(--text-primary); }
+.btn:disabled { opacity:.5; cursor:not-allowed; }
+
+/* sheet table */
+.tableWrap { overflow-x:auto; border-radius:12px; border:1px solid var(--border); }
+table { border-collapse:collapse; width:100%; font-size:13px; }
+thead th { position:sticky; top:0; z-index:2; background:color-mix(in srgb, var(--bg) 92%, var(--brand));
+  font-family:var(--font-mono); font-size:10px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase;
+  color:var(--text-tertiary); text-align:left; padding:11px 12px; white-space:nowrap; border-bottom:1px solid var(--border-strong); }
+tbody td { padding:10px 12px; border-bottom:1px solid var(--border); color:var(--text-primary); white-space:nowrap; }
+tbody tr:last-child td { border-bottom:0; }
+tbody tr:nth-child(even) td { background:var(--surface-1); }
+tbody tr:hover td { background:var(--brand-soft); }
+td.num { text-align:right; font-family:var(--font-mono); font-variant-numeric:tabular-nums; }
+td.blank { color:var(--text-tertiary); }
+tbody tr.isToday td { background:rgba(var(--success-rgb),0.10); box-shadow:inset 3px 0 0 0 var(--success); }
+.rowCount { margin-top:10px; font-family:var(--font-mono); font-size:10.5px; color:var(--text-tertiary); }
+
+/* program view */
+.progTitle { font-family:var(--font-display); font-size:19px; font-weight:700; letter-spacing:-0.02em; color:var(--text-primary); margin-bottom:12px; }
+.maxRow { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+.maxChip { display:inline-flex; align-items:baseline; gap:7px; padding:6px 12px; border-radius:999px; background:var(--brand-soft); border:1px solid var(--brand-line); }
+.maxLift { font-family:var(--font-mono); font-size:9.5px; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-tertiary); }
+.maxVal { font-family:var(--font-mono); font-size:13px; font-weight:700; font-variant-numeric:tabular-nums; color:var(--brand-2); }
+.dayTabs { margin-bottom:14px; }
+.tab .tabPct { margin-left:7px; font-family:var(--font-mono); font-size:10px; color:var(--text-tertiary); }
+.tab.on .tabPct { color:var(--brand-2); }
+.tab.done { border-color:rgba(var(--success-rgb),0.35); }
+.tab.done .tabPct { color:var(--success); }
+.dayBar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:18px; }
+.dayTrack { flex:1; min-width:120px; height:6px; border-radius:999px; background:var(--border); overflow:hidden; }
+.dayFill { height:100%; border-radius:999px; background:linear-gradient(90deg,var(--brand),var(--brand-2)); box-shadow:0 0 10px var(--brand-glow); transition:width .6s cubic-bezier(.22,1,.36,1); }
+.dayPct { font-family:var(--font-mono); font-size:10.5px; color:var(--text-tertiary); }
+.rpeChip { font-family:var(--font-mono); font-size:10.5px; padding:3px 9px; border-radius:999px; background:var(--surface-1); border:1px solid var(--border); color:var(--text-secondary); }
+.ex { margin-bottom:16px; }
+.exHead { display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:7px; }
+.exName { font-size:14px; font-weight:700; color:var(--text-primary); }
+.exSwap { margin-left:7px; padding:2px 7px; border-radius:999px; background:var(--brand-soft); border:1px solid var(--brand-line);
+  font-family:var(--font-mono); font-size:8.5px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--brand-2); vertical-align:middle; }
+.exSets { font-family:var(--font-mono); font-size:10px; letter-spacing:0.06em; color:var(--text-tertiary); white-space:nowrap; }
+.setRow { display:flex; flex-wrap:wrap; gap:8px; padding:9px 11px; margin-bottom:5px; border-radius:10px; background:var(--surface-1); border:1px solid var(--border); }
+.setRow.isLogged { background:rgba(var(--success-rgb),0.06); border-color:rgba(var(--success-rgb),0.22); }
+.setSide { display:flex; align-items:center; flex-wrap:wrap; gap:10px; flex:1; min-width:190px; }
+.setSide.done { opacity:.85; border-left:1px solid var(--border); padding-left:10px; }
+.sideTag { font-family:var(--font-mono); font-size:8.5px; letter-spacing:0.14em; text-transform:uppercase; color:var(--text-tertiary); min-width:62px; }
+.setRow.isLogged .setSide.done .sideTag { color:var(--success); }
+.cell { display:inline-flex; flex-direction:column; gap:1px; min-width:38px; }
+.cellLab { font-family:var(--font-mono); font-size:8px; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-tertiary); }
+.cellVal { font-family:var(--font-mono); font-size:12.5px; font-weight:600; font-variant-numeric:tabular-nums; color:var(--text-primary); white-space:nowrap; }
+.cellVal.dim { color:var(--text-tertiary); font-weight:400; }
+.setE1rm { margin-left:auto; align-self:center; display:inline-flex; align-items:baseline; gap:5px; flex-shrink:0;
+  padding:4px 10px; border-radius:999px; background:var(--surface-1); border:1px solid var(--border);
+  font-family:var(--font-mono); font-size:12px; font-weight:700; font-variant-numeric:tabular-nums; color:var(--text-primary); }
+.setE1rm .e1rmTag { font-size:8px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-tertiary); }
+.setE1rm.isTop { background:var(--brand-soft); border-color:var(--brand-line); color:var(--brand-2); }
+.setE1rm.isTop .e1rmTag { color:var(--brand-2); opacity:.75; }
+.setE1rm.dim { color:var(--text-tertiary); font-weight:400; background:transparent; border-color:transparent; }
+.setNote { flex-basis:100%; font-size:11.5px; font-style:italic; color:var(--text-tertiary); }
+@media (max-width:560px){ .setSide.done { border-left:0; padding-left:0; border-top:1px solid var(--border); padding-top:8px; } }
+
+/* E1RM trend */
+/* The SVG's viewBox height (130) matches this CSS height 1:1, so the y labels
+   can be placed at the same pixel offsets the chart computes. Keep them equal. */
+.e1rmChart { width:100%; height:130px; display:block; overflow:visible; }
+.e1rmPlot { position:relative; padding-left:38px; margin-top:6px; }
+.e1rmCanvas { position:relative; height:130px; }
+.e1rmDot { position:absolute; width:7px; height:7px; border-radius:50%; transform:translate(-50%,-50%); pointer-events:auto; }
+.e1rmDot.isLast { width:10px; height:10px; box-shadow:0 0 0 3px var(--surface); }
+.e1rmY { position:absolute; left:0; top:0; width:32px; height:130px; }
+.e1rmY span { position:absolute; right:0; transform:translateY(-50%); font-family:var(--font-mono); font-size:9.5px; font-variant-numeric:tabular-nums; color:var(--text-tertiary); white-space:nowrap; }
+.e1rmLegend { display:flex; flex-wrap:wrap; gap:16px; margin-bottom:6px; }
+.legItem { display:inline-flex; align-items:center; gap:7px; font-size:12px; color:var(--text-secondary); }
+.legItem b { font-family:var(--font-mono); font-size:13px; color:var(--text-primary); font-variant-numeric:tabular-nums; }
+.legDot { width:9px; height:9px; border-radius:50%; }
+.legDelta { font-family:var(--font-mono); font-size:10.5px; font-weight:700; padding:2px 6px; border-radius:999px; }
+.legDelta.up { color:var(--success); background:rgba(var(--success-rgb),0.12); }
+.legDelta.down { color:var(--danger); background:rgba(251,113,133,0.12); }
+.e1rmAxis { display:flex; justify-content:space-between; margin-top:6px; padding-left:38px; font-family:var(--font-mono); font-size:9.5px; color:var(--text-tertiary); }
+.e1rmAxis span { flex:1; text-align:center; }
+.e1rmAxis b { color:var(--brand-2); font-weight:700; margin-right:2px; }
+.e1rmNote { margin-top:8px; font-family:var(--font-mono); font-size:9.5px; color:var(--text-tertiary); }
+
+/* setup / errors */
+.note { font-size:13px; line-height:1.6; color:var(--text-secondary); }
+.note a { color:var(--brand-2); }
+.steps { margin:12px 0 0; padding-left:20px; font-size:13px; line-height:1.75; color:var(--text-secondary); }
+.steps code { font-family:var(--font-mono); font-size:11.5px; background:var(--input-bg); padding:2px 6px; border-radius:5px; color:var(--brand-2); }
+.field { display:flex; flex-direction:column; gap:6px; margin-top:14px; }
+.field label { font-family:var(--font-mono); font-size:9.5px; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-tertiary); }
+.field input { width:100%; padding:11px 13px; border-radius:11px; border:1px solid var(--border-strong); background:var(--input-bg); color:var(--text-primary); font-family:var(--font-mono); font-size:12.5px; }
+.field input:focus { outline:none; border-color:var(--brand-line); }
+.rowActions { display:flex; gap:8px; justify-content:flex-end; margin-top:14px; flex-wrap:wrap; }
+.msg { margin-top:12px; padding:10px 12px; border-radius:10px; font-size:12px; line-height:1.5;
+  background:rgba(var(--warning-rgb),0.10); border:1px solid rgba(var(--warning-rgb),0.28); color:var(--warning); }
+.msg.ok { background:rgba(var(--success-rgb),0.10); border-color:rgba(var(--success-rgb),0.28); color:var(--success); }
+.srcRow { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; background:var(--surface-1); border:1px solid var(--border); margin-bottom:8px; }
+.srcName { font-weight:700; color:var(--text-primary); font-size:13px; }
+.srcUrl { flex:1; min-width:0; font-family:var(--font-mono); font-size:10.5px; color:var(--text-tertiary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.linkBtn { appearance:none; background:transparent; border:0; color:var(--text-tertiary); font-size:12px; cursor:pointer; padding:2px 6px; }
+.linkBtn:hover { color:var(--danger); }
+</style>
+<link rel="stylesheet" href="skin.css?v=1">
+</head>
+<body>
+<div class="page">
+  <a class="back" href="index.html"><span>←</span> Liam</a>
+  <div class="dash-head">
+    <h1 class="dash-title" id="dashTitle">Program</h1>
+    <div class="themeSeg" role="radiogroup" aria-label="Theme">
+      <button type="button" class="themeBtn" data-theme="nocturne"><span class="themeSwatch" style="background:#8B7CFF"></span><span class="themeBtnLabel">Nocturne</span></button>
+      <button type="button" class="themeBtn" data-theme="aurora"><span class="themeSwatch" style="background:linear-gradient(135deg,#8B7BFF,#4FE3D0)"></span><span class="themeBtnLabel">Aurora</span></button>
+      <button type="button" class="themeBtn" data-theme="daylight"><span class="themeSwatch" style="background:#6A45FF"></span><span class="themeBtnLabel">Daylight</span></button>
+    </div>
+  </div>
+  <div id="app"></div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ===================================================================
+   * Program — a read-only view of your Google Sheet.
+   *
+   * The sheet stays the single source of truth: you edit it as usual and
+   * this page just renders it. Each tab you publish becomes a tab here.
+   * Rows are shown exactly as they are in the sheet — no column mapping,
+   * so any layout works.
+   * =================================================================== */
+
+  const KEY = 'patron_program_v1';
+  const ON_SERVER = location.protocol === 'http:' || location.protocol === 'https:';
+
+  function load() {
+    try {
+      const d = JSON.parse(localStorage.getItem(KEY) || 'null');
+      if (d && typeof d === 'object') {
+        return { sources: Array.isArray(d.sources) ? d.sources : [], cache: (d.cache && typeof d.cache === 'object') ? d.cache : {}, active: d.active || '' };
+      }
+    } catch (e) {}
+    return { sources: [], cache: {}, active: '' };
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  let state = load();
+  let busy = false, message = null;
+
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function genId() { return 's_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7); }
+
+  /* ---- URL handling -------------------------------------------------
+   * Two shapes are accepted:
+   *   1. A "Publish to web" CSV link  (…/d/e/2PACX-…/pub?output=csv)
+   *   2. A normal share/edit link     (…/d/<id>/edit#gid=123)
+   * The second is converted to Google's gviz CSV export, which works when
+   * the sheet is shared as "anyone with the link".
+   * ------------------------------------------------------------------ */
+  /* An .xlsx uploaded to Drive keeps its Office format and is only *opened*
+   * in Sheets — Google's CSV endpoints refuse to export those (403). The
+   * giveaway is rtpof=true ("retain the original format") in the share link. */
+  function isOfficeFormat(url) { return /[?&]rtpof=true/i.test(String(url || '')); }
+  const CONVERT_STEPS = 'That link is an Excel file stored in Drive (rtpof=true), not a Google Sheet — Google won’t export those as CSV. Open it and choose File ▸ Save as Google Sheets, then publish that new copy and paste its link here.';
+
+  function toCsvUrl(raw) {
+    const url = String(raw || '').trim();
+    if (!url) return null;
+    if (/\/pub\?|\/pub$|output=csv/i.test(url)) {
+      return url.indexOf('output=csv') === -1 ? url + (url.indexOf('?') === -1 ? '?' : '&') + 'output=csv' : url;
+    }
+    const m = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+    if (m) {
+      const gid = (url.match(/[#&?]gid=(\d+)/) || [])[1] || '0';
+      return 'https://docs.google.com/spreadsheets/d/' + m[1] + '/gviz/tq?tqx=out:csv&gid=' + gid;
+    }
+    return null;
+  }
+
+  /* ---- discovering every tab in a published document -----------------
+   * "Publish to web ▸ Entire document" exposes a /pubhtml page whose script
+   * block lists every sheet as {name: "…", …, gid: "…"}. Reading that gives
+   * us all the weeks at once, instead of pasting one link per tab.
+   * ------------------------------------------------------------------ */
+  function pubBase(url) {
+    const m = String(url || '').match(/^(https:\/\/docs\.google\.com\/spreadsheets\/d\/e\/[^/]+)/);
+    return m ? m[1] : null;
+  }
+  function csvForGid(base, gid) { return base + '/pub?gid=' + encodeURIComponent(gid) + '&single=true&output=csv'; }
+
+  function parseTabs(html) {
+    const out = [], seen = {};
+    const re = /name:\s*"((?:[^"\\]|\\.)*)"[\s\S]{0,400}?gid:\s*"(\d+)"/g;
+    let m;
+    while ((m = re.exec(html))) {
+      const gid = m[2];
+      if (seen[gid]) continue;
+      seen[gid] = 1;
+      // names arrive JS-escaped (\x3d, \/, \")
+      let name = m[1].replace(/\\x([0-9a-f]{2})/gi, (s, h) => String.fromCharCode(parseInt(h, 16)))
+                     .replace(/\\u([0-9a-f]{4})/gi, (s, h) => String.fromCharCode(parseInt(h, 16)))
+                     .replace(/\\(.)/g, '$1');
+      out.push({ name: name.trim() || ('Ark ' + gid), gid: gid });
+    }
+    return out;
+  }
+
+  async function fetchText(url) {
+    try {
+      const r = await fetch(url + (url.indexOf('?') === -1 ? '?' : '&') + '_=' + Date.now(), { cache: 'no-store' });
+      if (r.ok) return await r.text();
+      throw new Error(statusHint(r.status));
+    } catch (err) {
+      if (!ON_SERVER) throw err;
+      const r2 = await fetch('/api/sheet?url=' + encodeURIComponent(url), { cache: 'no-store' });
+      const t2 = await r2.text();
+      if (!r2.ok) { let msg = t2; try { msg = (JSON.parse(t2) || {}).error || t2; } catch (e) {} throw new Error(msg); }
+      return t2;
+    }
+  }
+
+  /* Add every tab of the published document the given link belongs to. */
+  async function addAllTabs(rawUrl) {
+    const base = pubBase(rawUrl);
+    if (!base) {
+      message = { bad: true, text: 'Loading every tab needs a “Publish to web” link (the one containing /d/e/…). Publish the entire document, then paste that link.' };
+      render(); return;
+    }
+    busy = true; message = null; render();
+    let tabs = [];
+    try {
+      tabs = parseTabs(await fetchText(base + '/pubhtml'));
+    } catch (e) {
+      busy = false;
+      message = { bad: true, text: 'Could not read the tab list — ' + e.message };
+      render(); return;
+    }
+    if (!tabs.length) {
+      busy = false;
+      message = { bad: true, text: 'No tabs found. In Publish to web, choose “Entire document” rather than a single sheet.' };
+      render(); return;
+    }
+    const known = {};
+    state.sources.forEach(s => { const g = (s.url.match(/[?&]gid=(\d+)/) || [])[1]; if (g) known[g] = 1; });
+    let added = 0;
+    tabs.forEach(t => {
+      if (known[t.gid]) return;
+      state.sources.push({ id: genId(), label: t.name, url: csvForGid(base, t.gid) });
+      added++;
+    });
+    if (!state.active && state.sources.length) state.active = state.sources[0].id;
+    save();
+    busy = false;
+    manageOpen = false;
+    await refresh();
+    message = { bad: false, text: added ? 'Added ' + added + ' tab' + (added === 1 ? '' : 's') + ' · ' + tabs.map(t => t.name).join(', ') : 'All tabs were already added.' };
+    render();
+  }
+
+  /* ---- CSV parsing (quotes, embedded commas and newlines) ---- */
+  function parseCsv(text) {
+    const rows = [];
+    let row = [], field = '', quoted = false;
+    const s = String(text || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    for (let i = 0; i < s.length; i++) {
+      const c = s[i];
+      if (quoted) {
+        if (c === '"') {
+          if (s[i + 1] === '"') { field += '"'; i++; }
+          else quoted = false;
+        } else field += c;
+      } else if (c === '"') quoted = true;
+      else if (c === ',') { row.push(field); field = ''; }
+      else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+      else field += c;
+    }
+    if (field !== '' || row.length) { row.push(field); rows.push(row); }
+    return rows.map(r => r.map(c => c.trim()));
+  }
+
+  /* Drop fully empty rows, and trailing columns that are empty everywhere —
+   * Google pads exports out to the sheet's full used range. */
+  function tidy(rows) {
+    let out = rows.filter(r => r.some(c => c !== ''));
+    if (!out.length) return out;
+    const width = Math.max.apply(null, out.map(r => r.length));
+    out = out.map(r => { const c = r.slice(); while (c.length < width) c.push(''); return c; });
+    let last = width - 1;
+    while (last > 0 && out.every(r => r[last] === '')) last--;
+    return out.map(r => r.slice(0, last + 1));
+  }
+
+  function isNumeric(v) { return v !== '' && /^-?[\d.,\s]+(kg|lb|%)?$/i.test(v) && /\d/.test(v); }
+
+  /* ===================================================================
+   * Structured read of a DSF-style træningsprogram:
+   *   · a "Dag N" row opens a block
+   *   · the next row carries the column labels — SÆT / REPS / % 1RM / KG /
+   *     RIR for PLANLAGT, then the same again for GENNEMFØRT
+   *   · exercise rows follow; a blank name means "another set of the one above"
+   *   · a Session-RPE row closes the day
+   * Columns are located from the label row rather than hardcoded, so the
+   * sheet can gain or lose leading columns without breaking this.
+   * Returns null when the sheet doesn't look like this — the caller then
+   * falls back to rendering the raw table.
+   * =================================================================== */
+  // Deadlift isn't part of the training — drop it from the exercise list, the
+  // set counts and the E1RM chips so the day progress reflects real work.
+  const HIDDEN = /dødløft|deadlift/i;
+
+  /* A RIR cell holds a number or range ("3", "4-6", "2-4 RIR"). Anything that
+   * starts with a letter is an exercise name written in by hand. */
+  function isSwapText(v) {
+    const t = String(v == null ? '' : v).trim();
+    if (!t || /^[\d.,]/.test(t)) return false;
+    return /[a-zæøåA-ZÆØÅ]/.test(t);
+  }
+
+  function parseProgram(rows) {
+    const dayRe = /^dag\s*\d+/i;
+    const isDayRow = r => r.some(c => dayRe.test(c));
+    if (!rows.some(isDayRow)) return null;
+
+    // Header block: title + the E1RM reference lifts.
+    let title = '';
+    const maxes = [];
+    for (let i = 0; i < rows.length && !isDayRow(rows[i]); i++) {
+      rows[i].forEach((c, j) => {
+        if (!title && /stævneprogram|program/i.test(c) && c.length > 6) title = c;
+        const m = c.match(/^E1RM\s+(.+)$/i);
+        if (m) {
+          for (let k = j + 1; k < rows[i].length; k++) {
+            if (isNumeric(rows[i][k])) { maxes.push({ lift: m[1].trim(), value: rows[i][k] }); break; }
+          }
+        }
+      });
+    }
+
+    function labelCols(r) {
+      const idx = [];
+      r.forEach((c, j) => { if (/^sæt$/i.test(c)) idx.push(j); });
+      if (idx.length < 1) return null;
+      const first = idx[0];
+      const second = idx.length > 1 ? idx[1] : null;
+      const planned = [], done = [];
+      for (let j = first; j < (second == null ? r.length : second); j++) if (r[j] !== '') planned.push({ i: j, label: r[j] });
+      if (second != null) for (let j = second; j < r.length; j++) if (r[j] !== '' && !/^noter$/i.test(r[j])) done.push({ i: j, label: r[j] });
+      const noteIdx = r.findIndex(c => /^noter$/i.test(c));
+      return { nameCol: Math.max(0, first - 1), planned: planned, done: done, noteIdx: noteIdx };
+    }
+
+    const days = [];
+    for (let i = 0; i < rows.length; i++) {
+      if (!isDayRow(rows[i])) continue;
+      const dayName = (rows[i].find(c => dayRe.test(c)) || 'Dag').trim();
+      const cols = labelCols(rows[i + 1] || []);
+      if (!cols) continue;
+      const day = { name: dayName, exercises: [], rpe: '' };
+      for (let j = i + 2; j < rows.length; j++) {
+        const r = rows[j];
+        if (isDayRow(r)) break;
+        const rpeCell = r.find(c => /session-?rpe/i.test(c));
+        if (rpeCell) {
+          // The score, if filled in, sits in a cell after the label.
+          const at = r.indexOf(rpeCell);
+          for (let k = at + 1; k < r.length; k++) if (r[k] !== '') { day.rpe = r[k]; break; }
+          break;
+        }
+        const name = (r[cols.nameCol] || '').trim();
+        const planned = cols.planned.map(c => (r[c.i] || '').trim());
+        const done = cols.done.map(c => (r[c.i] || '').trim());
+        if (!name && planned.every(v => v === '') && done.every(v => v === '')) continue;
+
+        // Writing an exercise into the planned RIR cell ("fly", "iso row", "dip")
+        // is how a valgfri øvelse gets picked — it names what was actually done,
+        // so it replaces the exercise rather than showing up as a RIR value.
+        let swap = '';
+        for (let k = 0; k < cols.planned.length; k++) {
+          if (!/rir/i.test(cols.planned[k].label)) continue;
+          if (isSwapText(planned[k])) { swap = planned[k]; planned[k] = ''; }
+        }
+
+        if (name) day.exercises.push({ name: name, original: '', sets: [], hidden: HIDDEN.test(name) });
+        if (!day.exercises.length) continue;
+        const ex = day.exercises[day.exercises.length - 1];
+        if (swap && !ex.original) { ex.original = ex.name; ex.name = swap; ex.hidden = HIDDEN.test(swap); }
+        ex.sets.push({
+          planned: planned, done: done,
+          note: cols.noteIdx >= 0 ? (r[cols.noteIdx] || '').trim() : '',
+          logged: done.some(v => v !== '')
+        });
+      }
+      day.exercises = day.exercises.filter(ex => !ex.hidden);
+      if (day.exercises.length) { day.cols = cols; days.push(day); }
+    }
+    if (!days.length) return null;
+    return { title: title, maxes: maxes.filter(m => !HIDDEN.test(m.lift)), days: days };
+  }
+
+  /* Danish decimals: "1.234,5" → 1234.5, "77,5" → 77.5 */
+  function dkNum(v) {
+    if (v == null || v === '') return null;
+    const n = Number(String(v).replace(/[^\d.,-]/g, '').replace(/\.(?=\d{3}\b)/g, '').replace(',', '.'));
+    return isFinite(n) ? n : null;
+  }
+
+  function dayStats(day) {
+    let total = 0, logged = 0;
+    day.exercises.forEach(ex => ex.sets.forEach(s => { total++; if (s.logged) logged++; }));
+    return { total: total, logged: logged, pct: total ? Math.round((logged / total) * 100) : 0 };
+  }
+
+  /* Today's date in the formats a sheet is likely to hold. */
+  function todayVariants() {
+    const d = new Date();
+    const y = d.getFullYear(), m = d.getMonth() + 1, day = d.getDate();
+    const p = n => String(n).padStart(2, '0');
+    return [
+      y + '-' + p(m) + '-' + p(day),
+      p(day) + '/' + p(m) + '/' + y,
+      p(day) + '-' + p(m) + '-' + y,
+      p(day) + '.' + p(m) + '.' + y,
+      p(m) + '/' + p(day) + '/' + y
+    ];
+  }
+  function isTodayRow(cells) {
+    const v = todayVariants();
+    return cells.some(c => v.indexOf(c) !== -1);
+  }
+
+  /* ---- fetching ---- */
+  function statusHint(status) {
+    if (status === 403) return '403 — Google refused. Either the sheet isn’t shared as “anyone with the link”, or it’s an uploaded Excel file, which can’t be exported until you do File ▸ Save as Google Sheets.';
+    if (status === 404) return '404 — that sheet or tab doesn’t exist any more. Check the gid, or re-publish the tab.';
+    if (status === 401) return '401 — the sheet is private. Share it as “anyone with the link”, or publish the tab to the web.';
+    return 'Sheet responded ' + status + '.';
+  }
+  async function fetchCsv(url) {
+    // Try the browser first; fall back to our own read-only proxy when the
+    // publish URL doesn't send CORS headers (only possible on the deployed app).
+    try {
+      const r = await fetch(url + (url.indexOf('?') === -1 ? '?' : '&') + '_=' + Date.now(), { cache: 'no-store' });
+      if (r.ok) {
+        const t = await r.text();
+        if (!/^\s*<(!doctype|html)/i.test(t)) return t;
+        throw new Error('Got a web page instead of CSV — is the sheet published (or link-shared)?');
+      }
+      throw new Error(statusHint(r.status));
+    } catch (err) {
+      if (!ON_SERVER) throw err;
+      const r2 = await fetch('/api/sheet?url=' + encodeURIComponent(url), { cache: 'no-store' });
+      const t2 = await r2.text();
+      if (!r2.ok) {
+        let m = t2; try { m = (JSON.parse(t2) || {}).error || t2; } catch (e) {}
+        throw new Error(m);
+      }
+      return t2;
+    }
+  }
+
+  async function refresh(only) {
+    if (busy || !state.sources.length) return;
+    busy = true; message = null; render();
+    const targets = only ? state.sources.filter(s => s.id === only) : state.sources;
+    const failed = [];
+    for (const src of targets) {
+      try {
+        const csv = await fetchCsv(src.url);
+        state.cache[src.id] = { csv: csv, ts: Date.now() };
+      } catch (e) {
+        failed.push(src.label + ' — ' + e.message);
+      }
+    }
+    busy = false;
+    save();
+    message = failed.length ? { bad: true, text: failed.join(' · ') } : null;
+    render();
+  }
+
+  function ago(ts) {
+    if (!ts) return 'never';
+    const m = Math.max(0, Math.round((Date.now() - ts) / 60000));
+    if (m < 1) return 'just now';
+    if (m < 60) return m + 'm ago';
+    const h = Math.round(m / 60);
+    if (h < 24) return h + 'h ago';
+    return Math.round(h / 24) + 'd ago';
+  }
+
+  /* ---- views ---- */
+  function setupHtml() {
+    return '<div class="card">'
+      + '<div class="eyebrow">Connect your sheet</div>'
+      + '<p class="note">This page shows your Google Sheet as-is — the sheet stays the source of truth, this is a read-only window onto it. Any layout works; rows render exactly as they sit in the sheet.</p>'
+      + '<ol class="steps">'
+      +   '<li>In your sheet: <strong>File ▸ Share ▸ Publish to web</strong>.</li>'
+      +   '<li>Pick the tab you want, choose <strong>Comma-separated values (.csv)</strong>, hit <strong>Publish</strong>.</li>'
+      +   '<li>Paste the link below. Add one entry per tab — each becomes a tab here.</li>'
+      + '</ol>'
+      + '<p class="note" style="margin-top:12px;font-size:12px;color:var(--text-tertiary)">A normal <code>/edit</code> share link also works if the sheet is set to “anyone with the link”. Published links are readable by anyone who has the URL, so don’t put anything private in that tab.</p>'
+      + '<div class="field"><label for="srcLabel">Tab name</label><input id="srcLabel" type="text" placeholder="Program" autocomplete="off"></div>'
+      + '<div class="field"><label for="srcUrl">Published CSV link</label><input id="srcUrl" type="url" placeholder="https://docs.google.com/spreadsheets/d/e/2PACX-…/pub?gid=0&amp;single=true&amp;output=csv" autocomplete="off"></div>'
+      + '<div class="rowActions"><button type="button" class="btn btnGhost" id="addAll"' + (busy ? ' disabled' : '') + '>' + (busy ? 'loading…' : 'Add every tab') + '</button>'
+      +   '<button type="button" class="btn btnPrimary" id="addSrc">Add this tab</button></div>'
+      + '<p class="note" style="margin-top:10px;font-size:11.5px;color:var(--text-tertiary)">“Add every tab” reads the whole published document at once — all your weeks in one go.</p>'
+      + (message ? '<div class="msg' + (message.bad ? '' : ' ok') + '">' + esc(message.text) + '</div>' : '')
+      + '</div>';
+  }
+
+  function manageHtml() {
+    return '<div class="card">'
+      + '<div class="eyebrow">Sheet tabs</div>'
+      + state.sources.map(s =>
+          '<div class="srcRow"><span class="srcName">' + esc(s.label) + '</span>'
+          + '<span class="srcUrl">' + esc(s.url) + '</span>'
+          + '<button type="button" class="linkBtn" data-del="' + s.id + '" title="Remove">×</button></div>').join('')
+      + '<div class="field"><label for="srcLabel">Add another tab</label><input id="srcLabel" type="text" placeholder="Tab name" autocomplete="off"></div>'
+      + '<div class="field"><input id="srcUrl" type="url" placeholder="Published CSV link" autocomplete="off"></div>'
+      + '<div class="rowActions"><button type="button" class="btn btnGhost" id="closeManage">Done</button>'
+      +   '<button type="button" class="btn btnGhost" id="addAll"' + (busy ? ' disabled' : '') + '>' + (busy ? 'loading…' : 'Add every tab') + '</button>'
+      +   '<button type="button" class="btn btnPrimary" id="addSrc">Add tab</button></div>'
+      + (message ? '<div class="msg' + (message.bad ? '' : ' ok') + '">' + esc(message.text) + '</div>' : '')
+      + '</div>';
+  }
+
+  function tableHtml(rows) {
+    const data = tidy(rows);
+    if (!data.length) return '<div class="card"><p class="note">That tab came back empty.</p></div>';
+    const head = data[0], body = data.slice(1);
+    return '<div class="tableWrap"><table>'
+      + '<thead><tr>' + head.map(h => '<th>' + esc(h) + '</th>').join('') + '</tr></thead>'
+      + '<tbody>' + body.map(r => {
+          const today = isTodayRow(r);
+          return '<tr' + (today ? ' class="isToday"' : '') + '>'
+            + r.map(c => '<td class="' + (isNumeric(c) ? 'num' : (c === '' ? 'blank' : '')) + '">' + (c === '' ? '·' : esc(c)) + '</td>').join('')
+            + '</tr>';
+        }).join('') + '</tbody>'
+      + '</table></div>'
+      + '<div class="rowCount">' + body.length + ' row' + (body.length === 1 ? '' : 's') + ' · ' + head.length + ' columns</div>';
+  }
+
+  /* ---- E1RM trend across every week tab -----------------------------
+   * Each week's sheet carries its own E1RM block. Read them in tab order
+   * to get squat and bench progression over the block.
+   * ------------------------------------------------------------------ */
+  // Categorical slots 1 & 2 (blue / orange) — validated for colourblind
+  // separation and contrast against both the dark and light surfaces.
+  const SERIES = [
+    { key: 'squat', match: /squat/i,           label: 'Squat',    color: 'var(--series-1)' },
+    { key: 'bench', match: /bænk|bank|bench/i, label: 'Bænkpres', color: 'var(--series-2)' }
+  ];
+
+  /* "4-6" → 5 · "77,5" → 77.5 · "" → null */
+  function midNum(v) {
+    const t = String(v == null ? '' : v).trim();
+    if (!t) return null;
+    const r = t.match(/^(\d+(?:[.,]\d+)?)\s*-\s*(\d+(?:[.,]\d+)?)$/);
+    if (r) { const a = dkNum(r[1]), b = dkNum(r[2]); return (a == null || b == null) ? null : (a + b) / 2; }
+    return dkNum(t);
+  }
+  /* Plain Epley on what was actually lifted — reps in reserve are ignored, so
+   * every point comes from logged weight and reps only, with nothing inferred
+   * from how hard the set was meant to feel. */
+  function epley(kg, reps) { return kg * (1 + reps / 30); }
+
+  function cellVal(cols, vals, re) {
+    for (let i = 0; i < cols.length; i++) if (re.test(cols[i].label)) return vals[i];
+    return '';
+  }
+  /* Prefer what was actually logged; fall back to the plan. A blank
+   * "gennemført KG" means the planned weight was lifted as written. */
+  function pick(day, set, re) {
+    const done = midNum(cellVal(day.cols.done, set.done, re));
+    if (done != null) return done;
+    return midNum(cellVal(day.cols.planned, set.planned, re));
+  }
+
+  /* Estimated 1RM for a single set, or null when it has no usable kg × reps. */
+  function setE1rm(day, set) {
+    const reps = pick(day, set, /reps/i);
+    const kg = pick(day, set, /^kg$/i);
+    if (!kg || !reps) return null;
+    const e = epley(kg, reps);
+    return isFinite(e) ? Math.round(e * 10) / 10 : null;
+  }
+
+  /* Best estimated 1RM per lift for one training day, from its logged sets. */
+  function dayE1rm(day) {
+    const best = {};
+    day.exercises.forEach(ex => {
+      const s = SERIES.find(x => x.match.test(ex.name));
+      if (!s) return;
+      ex.sets.forEach(set => {
+        if (!set.logged) return;
+        const e = setE1rm(day, set);
+        if (e == null) return;
+        if (best[s.key] == null || e > best[s.key]) best[s.key] = e;
+      });
+    });
+    return best;
+  }
+
+  /* One slot per training day of every week — including days not yet trained,
+   * which carry null. The x-axis then spans the whole block from the start,
+   * so you can see how far through it you are. */
+  function e1rmSeries() {
+    const points = [];
+    state.sources.forEach(src => {
+      const c = state.cache[src.id];
+      if (!c || !c.csv) return;
+      const prog = parseProgram(tidy(parseCsv(c.csv)));
+      if (!prog) return;
+      prog.days.forEach((day, i) => {
+        const best = dayE1rm(day);
+        const p = { week: src.label, day: day.name, dayNo: i + 1, label: src.label + ' · ' + day.name };
+        SERIES.forEach(s => { p[s.key] = best[s.key] != null ? best[s.key] : null; });
+        points.push(p);
+      });
+    });
+    return points;
+  }
+
+  /* Round tick values (1 / 2 / 5 × 10ⁿ) inside the plotted range. */
+  function niceTicks(min, max, target) {
+    const span = max - min;
+    if (!(span > 0)) return [min];
+    const raw = span / Math.max(1, target);
+    const mag = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10));
+    const norm = raw / mag;
+    const step = (norm >= 5 ? 10 : norm >= 2 ? 5 : norm >= 1 ? 2 : 1) * mag;
+    const out = [];
+    for (let v = Math.ceil(min / step) * step; v <= max + 1e-9; v += step) out.push(Math.round(v * 1000) / 1000);
+    return out;
+  }
+
+  function e1rmChartHtml() {
+    const pts = e1rmSeries();
+    if (pts.length < 2) return '';
+    const W = 320, H = 130, padL = 4, padR = 4, padY = 14;
+    const all = [];
+    pts.forEach(p => SERIES.forEach(s => { if (p[s.key] != null) all.push(p[s.key]); }));
+    let min = Math.min.apply(null, all), max = Math.max.apply(null, all);
+    if (max - min < 1e-9) { min -= 5; max += 5; }
+    const pad = (max - min) * 0.18; min -= pad; max += pad;
+    const xOf = i => padL + (i / (pts.length - 1)) * (W - padL - padR);
+    const yOf = v => H - padY - ((v - min) / (max - min)) * (H - padY * 2);
+
+    let svg = '';
+    // The viewBox is stretched to the card width, so anything with two
+    // dimensions (a circle) would render as an ellipse. Paths are fine with a
+    // non-scaling stroke; the markers are HTML dots overlaid on the plot,
+    // positioned by percentage across and by the same pixel y the chart uses.
+    let dots = '';
+    const legend = [];
+    SERIES.forEach(s => {
+      // Untrained days leave holes; draw a segment per run of consecutive data
+      // rather than bridging a gap, which would imply sessions that never happened.
+      const runs = [];
+      let run = [];
+      pts.forEach((p, i) => {
+        if (p[s.key] == null) { if (run.length) runs.push(run); run = []; return; }
+        run.push([xOf(i), yOf(p[s.key]), p[s.key]]);
+      });
+      if (run.length) runs.push(run);
+      const all = runs.reduce((a, r) => a.concat(r), []);
+      if (!all.length) return;
+      runs.forEach(r => {
+        if (r.length < 2) return;
+        svg += '<path d="' + r.map((q, i) => (i ? 'L' : 'M') + q[0].toFixed(1) + ' ' + q[1].toFixed(1)).join(' ')
+          + '" fill="none" stroke="' + s.color + '" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>';
+      });
+      dots += all.map((q, i) =>
+        '<span class="e1rmDot' + (i === all.length - 1 ? ' isLast' : '') + '" style="left:'
+        + ((q[0] / W) * 100).toFixed(2) + '%;top:' + q[1].toFixed(1) + 'px;background:' + s.color + '"'
+        + ' title="' + esc(s.label) + ' ' + String(q[2]).replace('.', ',') + ' kg"></span>').join('');
+      const first = all[0][2], last = all[all.length - 1][2];
+      const d = Math.round((last - first) * 10) / 10;
+      legend.push('<span class="legItem"><span class="legDot" style="background:' + s.color + '"></span>'
+        + esc(s.label) + ' <b>' + String(last).replace('.', ',') + '</b>'
+        + '<span class="legDelta ' + (d >= 0 ? 'up' : 'down') + '">' + (d >= 0 ? '+' : '') + String(d).replace('.', ',') + '</span></span>');
+    });
+    if (!svg) return '';
+
+    // Gridlines on round kg values. The SVG's viewBox height matches its CSS
+    // height 1:1, so the HTML labels can sit at the same y in pixels.
+    const ticks = niceTicks(min, max, 4);
+    let grid = '';
+    ticks.forEach(t => {
+      grid += '<line x1="0" y1="' + yOf(t).toFixed(1) + '" x2="' + W + '" y2="' + yOf(t).toFixed(1)
+        + '" stroke="var(--border)" stroke-width="1" vector-effect="non-scaling-stroke"/>';
+    });
+    const yLabels = ticks.map(t =>
+      '<span style="top:' + yOf(t).toFixed(1) + 'px">' + String(Math.round(t * 10) / 10).replace('.', ',') + '</span>').join('');
+    svg = grid + svg;
+
+    // Faint divider at each week boundary so the block structure is readable.
+    let sep = '', prevWeek = null;
+    pts.forEach((p, i) => {
+      if (i && p.week !== prevWeek) {
+        const x = ((xOf(i) + xOf(i - 1)) / 2).toFixed(1);
+        sep += '<line x1="' + x + '" y1="2" x2="' + x + '" y2="' + (H - 2) + '" stroke="var(--border)" stroke-width="1" vector-effect="non-scaling-stroke"/>';
+      }
+      prevWeek = p.week;
+    });
+    svg = sep + svg;
+
+    // With every week on the axis there's no room per day — label the week once,
+    // spanning its own days.
+    const groups = [];
+    pts.forEach(p => {
+      const wk = String(p.week).replace(/^Uge\s*/i, '').replace(/\s*-.*$/, '').trim();
+      const last = groups[groups.length - 1];
+      if (last && last.wk === wk) last.n++;
+      else groups.push({ wk: wk, n: 1 });
+    });
+    const axis = groups.map(g =>
+      '<span style="flex:' + g.n + '" title="Uge ' + esc(g.wk) + '">' + esc(g.wk) + '</span>').join('');
+
+    return '<div class="card">'
+      + '<div class="eyebrow">E1RM fra loggede sæt</div>'
+      + '<div class="e1rmLegend">' + legend.join('') + '</div>'
+      + '<div class="e1rmPlot"><div class="e1rmY">' + yLabels + '</div>'
+      +   '<div class="e1rmCanvas">'
+      +     '<svg class="e1rmChart" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden="true">' + svg + '</svg>'
+      +     dots
+      +   '</div>'
+      + '</div>'
+      + '<div class="e1rmAxis">' + axis + '</div>'
+      + '<div class="e1rmNote">Højeste estimerede 1RM pr. træningsdag · Epley: kg × (1 + reps/30)</div>'
+      + '</div>';
+  }
+
+  /* ---- program view ---- */
+  function setCellsHtml(labels, values) {
+    return labels.map((c, i) => {
+      const v = values[i] || '';
+      return '<span class="cell"><span class="cellLab">' + esc(c.label) + '</span>'
+        + '<span class="cellVal' + (v === '' ? ' dim' : '') + '">' + (v === '' ? '·' : esc(v)) + '</span></span>';
+    }).join('');
+  }
+
+  function programHtml(prog) {
+    if (!dayId || !prog.days.some(d => d.name === dayId)) {
+      // Default to the first day that isn't fully logged — your next session.
+      const next = prog.days.find(d => dayStats(d).logged < dayStats(d).total);
+      dayId = (next || prog.days[0]).name;
+    }
+    const day = prog.days.find(d => d.name === dayId) || prog.days[0];
+    const st = dayStats(day);
+
+    const maxes = prog.maxes.length
+      ? '<div class="maxRow">' + prog.maxes.map(m =>
+          '<span class="maxChip"><span class="maxLift">' + esc(m.lift) + '</span><span class="maxVal">' + esc(m.value) + '</span></span>').join('') + '</div>'
+      : '';
+
+    const dayTabs = '<div class="tabs dayTabs">' + prog.days.map(d => {
+      const s = dayStats(d);
+      const full = s.total && s.logged === s.total;
+      return '<button type="button" class="tab' + (d.name === day.name ? ' on' : '') + (full ? ' done' : '') + '" data-day="' + esc(d.name) + '">'
+        + esc(d.name) + '<span class="tabPct">' + s.logged + '/' + s.total + '</span></button>';
+    }).join('') + '</div>';
+
+    const exercises = day.exercises.map(ex =>
+      '<div class="ex">'
+      + '<div class="exHead"><span class="exName"' + (ex.original ? ' title="Erstatter: ' + esc(ex.original) + '"' : '') + '>'
+      +   esc(ex.name) + (ex.original ? '<span class="exSwap">valgfri</span>' : '') + '</span>'
+      +   '<span class="exSets">' + ex.sets.filter(s => s.logged).length + '/' + ex.sets.length + ' logged</span></div>'
+      + (function () {
+          // Flag each exercise's best set so the number the chart uses is visible.
+          const vals = ex.sets.map(s => setE1rm(day, s));
+          const top = vals.reduce((a, v) => (v != null && (a == null || v > a)) ? v : a, null);
+          return ex.sets.map((s, i) =>
+            '<div class="setRow' + (s.logged ? ' isLogged' : '') + '">'
+            + '<div class="setSide">' + setCellsHtml(day.cols.planned, s.planned) + '</div>'
+            + (day.cols.done.length
+                ? '<div class="setSide done"><span class="sideTag">' + (s.logged ? 'gennemført' : 'ikke logget') + '</span>' + setCellsHtml(day.cols.done, s.done) + '</div>'
+                : '')
+            + (vals[i] != null
+                ? '<span class="setE1rm' + (vals[i] === top ? ' isTop' : '') + '" title="Epley: kg × (1 + reps/30)">'
+                  + '<span class="e1rmTag">e1RM</span>' + String(vals[i]).replace('.', ',') + '</span>'
+                : '<span class="setE1rm dim" title="Intet kg × reps at regne på">·</span>')
+            + (s.note ? '<div class="setNote">' + esc(s.note) + '</div>' : '')
+            + '</div>').join('');
+        })()
+      + '</div>').join('');
+
+    return '<div class="card">'
+      + (prog.title ? '<div class="progTitle">' + esc(prog.title) + '</div>' : '')
+      + maxes
+      + dayTabs
+      + '<div class="dayBar"><div class="dayTrack"><div class="dayFill" style="width:' + st.pct + '%"></div></div>'
+      +   '<span class="dayPct">' + st.pct + '% logged</span>'
+      +   (day.rpe ? '<span class="rpeChip">Session-RPE ' + esc(day.rpe) + '</span>' : '')
+      + '</div>'
+      + exercises
+      + '</div>';
+  }
+
+  let manageOpen = false, dayId = '', rawView = false;
+
+  function render() {
+    const app = document.getElementById('app');
+    if (!state.sources.length) { app.innerHTML = setupHtml(); wire(); return; }
+    if (!state.active || !state.sources.some(s => s.id === state.active)) state.active = state.sources[0].id;
+
+    const src = state.sources.find(s => s.id === state.active);
+    const cached = state.cache[state.active];
+    // Week picker sits under the chart, not in the toolbar — the chart spans
+    // every week, so the buttons belong next to the day view they switch.
+    const weekTabs = '<div class="weekBar"><div class="tabs">'
+      + state.sources.map(s => '<button type="button" class="tab' + (s.id === state.active ? ' on' : '') + '" data-tab="' + s.id + '">' + esc(s.label) + '</button>').join('')
+      + '</div></div>';
+    const bar = '<div class="bar"><div class="tabs"></div>'
+      + '<div class="barRight">'
+      +   '<span class="sync">' + (busy ? 'refreshing…' : 'updated ' + ago(cached && cached.ts)) + '</span>'
+      +   '<button type="button" class="btn btnGhost" id="rawToggle">' + (rawView ? 'program' : 'table') + '</button>'
+      +   '<button type="button" class="btn btnGhost" id="manage">tabs</button>'
+      +   '<button type="button" class="btn btnPrimary" id="refresh"' + (busy ? ' disabled' : '') + '>↻ Refresh</button>'
+      + '</div></div>';
+
+    const msg = message ? '<div class="msg' + (message.bad ? '' : ' ok') + '">' + esc(message.text) + '</div>' : '';
+    let body;
+    if (manageOpen) {
+      body = manageHtml();
+    } else if (cached && cached.csv) {
+      const rows = tidy(parseCsv(cached.csv));
+      // Structured view when the sheet looks like a training program; the plain
+      // table is both the "table" toggle and the fallback for any other layout.
+      const prog = rawView ? null : parseProgram(rows);
+      body = prog
+        ? e1rmChartHtml() + weekTabs + programHtml(prog) + (msg ? '<div class="card">' + msg + '</div>' : '')
+        : weekTabs + '<div class="card">' + tableHtml(rows) + msg + '</div>';
+    } else {
+      body = weekTabs + '<div class="card"><p class="note">'
+        + (busy ? 'Loading ' + esc(src.label) + '…' : 'Nothing loaded yet — hit ↻ Refresh.')
+        + '</p>' + msg + '</div>';
+    }
+
+    app.innerHTML = bar + body;
+    wire();
+  }
+
+  function addSource() {
+    const labelEl = document.getElementById('srcLabel');
+    const urlEl = document.getElementById('srcUrl');
+    const label = (labelEl.value || '').trim() || 'Sheet ' + (state.sources.length + 1);
+    if (isOfficeFormat(urlEl.value)) { message = { bad: true, text: CONVERT_STEPS }; render(); return; }
+    const url = toCsvUrl(urlEl.value);
+    if (!url) { message = { bad: true, text: 'That doesn’t look like a Google Sheets link. Publish the tab as CSV and paste the link it gives you.' }; render(); return; }
+    const src = { id: genId(), label: label, url: url };
+    state.sources.push(src);
+    state.active = src.id;
+    manageOpen = false;
+    save();
+    refresh(src.id);
+  }
+
+  function wire() {
+    const add = document.getElementById('addSrc');
+    if (add) add.addEventListener('click', addSource);
+    const all = document.getElementById('addAll');
+    if (all) all.addEventListener('click', () => {
+      const el = document.getElementById('srcUrl');
+      // Use whatever is typed, else derive from a tab that's already set up.
+      const seed = (el && el.value.trim()) || (state.sources[0] && state.sources[0].url) || '';
+      addAllTabs(seed);
+    });
+    const ref = document.getElementById('refresh');
+    if (ref) ref.addEventListener('click', () => refresh());
+    const man = document.getElementById('manage');
+    if (man) man.addEventListener('click', () => { manageOpen = true; message = null; render(); });
+    const close = document.getElementById('closeManage');
+    if (close) close.addEventListener('click', () => { manageOpen = false; message = null; render(); });
+    const raw = document.getElementById('rawToggle');
+    if (raw) raw.addEventListener('click', () => { rawView = !rawView; render(); });
+    document.querySelectorAll('[data-day]').forEach(b => b.addEventListener('click', () => { dayId = b.dataset.day; render(); }));
+    document.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', () => {
+      state.active = b.dataset.tab; save(); render();
+      const c = state.cache[state.active];
+      if (!c || (Date.now() - c.ts) > 5 * 60 * 1000) refresh(state.active);
+    }));
+    document.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', () => {
+      const id = b.dataset.del;
+      const src = state.sources.find(s => s.id === id);
+      if (!confirm('Remove “' + (src ? src.label : 'this tab') + '”? The sheet itself is untouched.')) return;
+      state.sources = state.sources.filter(s => s.id !== id);
+      delete state.cache[id];
+      if (state.active === id) state.active = state.sources.length ? state.sources[0].id : '';
+      if (!state.sources.length) manageOpen = false;
+      save(); render();
+    }));
+    const url = document.getElementById('srcUrl');
+    if (url) url.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addSource(); } });
+  }
+
+  render();
+  // Sheet edits land within a minute or two — pull fresh data on open, and
+  // whenever you come back to the tab after a while.
+  if (state.sources.length) refresh();
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible' || !state.sources.length) return;
+    const c = state.cache[state.active];
+    if (!c || (Date.now() - c.ts) > 5 * 60 * 1000) refresh();
+  });
+})();
+</script>
+
+<script>(function(){function cur(){try{return localStorage.getItem("patron_theme")||"nocturne";}catch(e){return "nocturne";}}function paint(){var c=cur();document.querySelectorAll(".themeBtn").forEach(function(b){b.classList.toggle("themeBtnActive",b.dataset.theme===c);});}document.addEventListener("click",function(e){var b=e.target.closest(".themeBtn");if(!b)return;var n=b.dataset.theme;document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("patron_theme",n);}catch(e){}paint();});paint();})();</script>
+<script>(function(){try{var p=JSON.parse(localStorage.getItem('patron_profile_v1')||'null');var n=(p&&p.name)?String(p.name).trim():'';var el=document.getElementById('dashTitle');if(el&&n)el.textContent=n+'’s program';}catch(e){}})();</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="db.js?v=15"></script>
+<script src="brand.js?v=16"></script>
+</body>
+</html>

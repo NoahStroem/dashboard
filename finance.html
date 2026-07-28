@@ -338,6 +338,8 @@ body {
 .holdingSharesInput { width: 64px; text-align:right; }
 .holdingPrice { display:inline-flex; align-items:baseline; gap: 6px; font-family: var(--font-mono); font-size: 12px; font-variant-numeric: tabular-nums; color: var(--muted); }
 .holdingsFooter { display:flex; justify-content:space-between; align-items:center; gap: var(--space-3); padding: 6px 2px 0; }
+.priceMsg { margin-top: 8px; padding: 8px 10px; border-radius: var(--radius-sm, 8px); font-size: 11.5px; line-height: 1.5; background: var(--surface); border: 1px solid var(--border); color: var(--muted-strong); }
+.priceMsg.bad { background: var(--warn-soft); border-color: var(--warn-line); color: var(--warn); }
 .linkAction { background: transparent; border:0; padding: 4px 0; color: var(--muted-strong); font-family: var(--font-ui); font-size: 11px; letter-spacing: 0.01em; cursor: pointer; transition: color var(--duration) var(--ease-premium); }
 .linkAction:hover { color: var(--brand); }
 
@@ -520,10 +522,13 @@ body {
 const STORAGE_KEY = 'finance_standalone_v1';
 const ACTIVITY_MAX = 50;
 const NW_HISTORY_MAX = 500;
-const CURRENCIES = ['CHF', 'USD', 'EUR', 'GBP'];
+// Base currency is Danish kroner. The stored field names still say "CHF" (this
+// started life as a Swiss fork and renaming them would orphan saved data) — read
+// every `amountCHF` as "amount in base units", i.e. kroner.
+const CURRENCIES = ['DKK', 'USD', 'EUR', 'GBP'];
 const TAB_KEYS = ['net', 'subs', 'orders', 'wish'];
 const TAB_LABELS = { net: 'net worth', subs: 'subs', orders: 'orders', wish: 'wishlist' };
-const DEFAULT_RATES = { CHF: 1, USD: 1, EUR: 1, GBP: 1 };
+const DEFAULT_RATES = { DKK: 1, USD: 1, EUR: 1, GBP: 1 };
 
 function genId(prefix) { return (prefix || 'id') + '_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8); }
 
@@ -531,7 +536,10 @@ function fmtMoney(amountCHF, currency, rates) {
   const rate = rates[currency] || 1;
   const num = (Number(amountCHF) || 0) * rate;
   const hasFraction = Math.abs(num % 1) > 0.005;
-  return currency + ' ' + num.toLocaleString('en-US', { minimumFractionDigits: hasFraction ? 2 : 0, maximumFractionDigits: 2 });
+  const opts = { minimumFractionDigits: hasFraction ? 2 : 0, maximumFractionDigits: 2 };
+  // Kroner read the Danish way: 1.234,50 kr. — everything else keeps the code prefix.
+  if (currency === 'DKK') return num.toLocaleString('da-DK', opts) + ' kr.';
+  return currency + ' ' + num.toLocaleString('en-US', opts);
 }
 function displayToChf(amount, currency, rates) { return amount / (rates[currency] || 1); }
 function chfToDisplay(amountCHF, currency, rates) { return amountCHF * (rates[currency] || 1); }
@@ -587,10 +595,19 @@ function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replac
 /* ============================================================
  * State + persistence
  * ============================================================ */
-const DEFAULT_STATE = { version: 1, currency: 'CHF', activeTab: 'net', accounts: [], subscriptions: [], orders: [], wishlist: [], activity: [], netWorthHistory: [] };
+const DEFAULT_STATE = { version: 1, currency: 'DKK', activeTab: 'net', accounts: [], subscriptions: [], orders: [], wishlist: [], activity: [], netWorthHistory: [] };
 
 function load() {
-  try { const raw = localStorage.getItem(STORAGE_KEY); if (!raw) return Object.assign({}, DEFAULT_STATE); return Object.assign({}, DEFAULT_STATE, JSON.parse(raw)); }
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return Object.assign({}, DEFAULT_STATE);
+    const s = Object.assign({}, DEFAULT_STATE, JSON.parse(raw));
+    // The old base was labelled CHF at rate 1, so the stored numbers are exactly
+    // what was typed in. Relabel to DKK — do NOT convert, or every balance would
+    // jump by the CHF→DKK rate.
+    if (s.currency === 'CHF') s.currency = 'DKK';
+    return s;
+  }
   catch { return Object.assign({}, DEFAULT_STATE); }
 }
 function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {} }
@@ -617,7 +634,7 @@ const ui = {
   importOpen: null,  // 'statement' | 'subs' | 'receipt'
   settingsOpen: false,
   importBusy: false, importError: null, importResult: null,
-  pricesBusy: false,
+  pricesBusy: false, priceMsg: null,
   drafts: {
     bank: { name: '', amt: '' }, crypto: { name: '', amt: '' }, other: { name: '', amt: '' },
     stockHold: { ticker: '', shares: '' }, stockManual: { name: '', amt: '' },
@@ -1019,6 +1036,7 @@ function stocksCardHtml(netWorth) {
     + addHold
     + '<div class="holdingsFooter"><button type="button" class="linkAction" data-act="refreshPrices" title="Fetch live quotes from Finnhub (add your key in ⚙ settings)"' + (ui.pricesBusy ? ' disabled' : '') + '>' + (ui.pricesBusy ? '↻ refreshing…' : '↻ refresh prices') + '</button>'
     + (showManual ? '' : '<button type="button" class="linkAction" data-act="showAdd" data-show="stocksManual">+ add manual entry</button>') + '</div>'
+    + (ui.priceMsg ? '<div class="priceMsg' + (ui.priceMsg.bad ? ' bad' : '') + '">' + esc(ui.priceMsg.text) + '</div>' : '')
     + manualBlock + '</div>';
 }
 
@@ -1088,7 +1106,7 @@ function subsViewHtml() {
       if (ui.subEditId === sub.id) return subEditRowHtml(sub);
       const days = daysToNext(sub); const isUrgent = days != null && days <= 5; const monthly = monthlyEquivalent(sub);
       const fromName = sub.fromAccountId ? (state.accounts.find(a => a.id === sub.fromAccountId) || {}).name : null;
-      const billedOriginal = (sub.enteredCurrency && sub.enteredCurrency !== 'CHF' && sub.enteredAmount != null)
+      const billedOriginal = (sub.enteredCurrency && sub.enteredCurrency !== 'DKK' && sub.enteredAmount != null)
         ? 'billed ' + sub.enteredCurrency + ' ' + sub.enteredAmount.toLocaleString('en-US', { minimumFractionDigits: sub.enteredAmount % 1 === 0 ? 0 : 2, maximumFractionDigits: 2 }) + ' / ' + sub.period
         : (sub.period !== 'monthly' ? 'billed ' + fmt(sub.amountCHF) + ' / ' + sub.period : null);
       return '<div class="subRow ' + (isUrgent ? 'urgent' : '') + '"><div style="min-width:0"><div class="subRowName">' + esc(sub.name) + '</div><div class="subRowPeriod">' + esc(sub.period) + '</div>'
@@ -1254,7 +1272,7 @@ const EXTRACT_SYSTEM = [
   '- t: category — "bank","stocks","crypto","other" for statement/balance lines; "sub" for a recurring subscription; "order" for a receipt/purchase.',
   '- n: short name (account, holding, service, or merchant). No amounts inside the name.',
   '- a: numeric amount, no thousands separators or currency symbols (e.g. 1234.50).',
-  '- c: ISO currency inferred from symbols/text — "CHF","USD","EUR","GBP". Omit if unsure.',
+  '- c: ISO currency inferred from symbols/text — "DKK","USD","EUR","GBP". Danish amounts (kr, kr., DKK) are DKK. Omit if unsure.',
   '- p: billing period, subscriptions only — "monthly","yearly","weekly". Omit otherwise.',
   '',
   'Rules: one item per distinct line; skip totals that merely sum other lines; omit any field you are unsure of (never emit null or empty strings); if nothing is readable, return an empty items array.',
@@ -1262,8 +1280,8 @@ const EXTRACT_SYSTEM = [
   'Examples (shape only):',
   '"Checking $4,210.55" -> {"t":"bank","n":"Checking","a":4210.55,"c":"USD"}',
   '"VTI 12 sh — €3,100" -> {"t":"stocks","n":"VTI","a":3100,"c":"EUR"}',
-  '"Netflix CHF 19.90/mo" -> {"t":"sub","n":"Netflix","a":19.9,"c":"CHF","p":"monthly"}',
-  '"Migros total 54.30 CHF" -> {"t":"order","n":"Migros","a":54.3,"c":"CHF"}',
+  '"Netflix 119 kr./md" -> {"t":"sub","n":"Netflix","a":119,"c":"DKK","p":"monthly"}',
+  '"Netto i alt 254,30 kr." -> {"t":"order","n":"Netto","a":254.3,"c":"DKK"}',
 ].join('\n');
 // Compact tool schema → short keys keep the priciest part (output tokens) tiny.
 const EXTRACT_TOOL = {
@@ -1282,7 +1300,7 @@ const EXTRACT_TOOL = {
             t: { type: 'string', enum: ['bank', 'stocks', 'crypto', 'other', 'sub', 'order'] },
             n: { type: 'string' },
             a: { type: 'number' },
-            c: { type: 'string', enum: ['CHF', 'USD', 'EUR', 'GBP'] },
+            c: { type: 'string', enum: ['DKK', 'USD', 'EUR', 'GBP'] },
             p: { type: 'string', enum: ['monthly', 'yearly', 'weekly'] },
           },
           required: ['t', 'n', 'a'],
@@ -1351,31 +1369,62 @@ function importModalHtml() {
 /* ============================================================
  * Live stock prices (Finnhub) — called from the holdings card
  * ============================================================ */
+/* Every failure used to look the same — "could not price X" — which blamed the
+ * ticker even when the real cause was a missing key, a rejected key, or a rate
+ * limit. Now each cause is separated and shown inline under the holdings, so a
+ * silent boot refresh can't fail invisibly either. */
 async function refreshStockPrices(opts) {
   opts = opts || {};
   const holdings = state.accounts.filter(a => a.type === 'stocks' && a.ticker);
-  if (!settings.finnhubKey) { if (!opts.silent) openSettings(); return; }
-  if (!holdings.length) { if (!opts.silent) alert('Add a stock holding (with a ticker) first.'); return; }
-  ui.pricesBusy = true; if (!opts.silent) render();
-  let ok = 0; const failed = [];
+  if (!settings.finnhubKey) {
+    ui.priceMsg = { bad: true, text: 'No Finnhub key yet — add one in ⚙ settings to fetch live quotes.' };
+    if (!opts.silent) openSettings(); else render();
+    return;
+  }
+  if (!holdings.length) {
+    ui.priceMsg = { bad: true, text: 'Add a holding with a ticker first.' };
+    render();
+    return;
+  }
+  ui.pricesBusy = true; ui.priceMsg = null; render();
+  let ok = 0;
+  const noQuote = [];      // reached Finnhub, got no price for this symbol
+  let authErr = false;     // key missing/invalid/not entitled
+  let rateErr = false;     // free tier is 60 calls/min
+  let netErr = false;      // blocked, offline, CORS
+
   await Promise.all(holdings.map(async a => {
     try {
       const r = await fetch('https://finnhub.io/api/v1/quote?symbol=' + encodeURIComponent(a.ticker) + '&token=' + encodeURIComponent(settings.finnhubKey));
+      if (r.status === 401 || r.status === 403) { authErr = true; noQuote.push(a.ticker); return; }
+      if (r.status === 429) { rateErr = true; noQuote.push(a.ticker); return; }
+      if (!r.ok) { noQuote.push(a.ticker); return; }
       const j = await r.json();
       const price = Number(j && j.c);
-      // Finnhub quotes US-listed symbols in USD; convert USD → CHF (our base).
-      if (!price || !isFinite(price)) { failed.push(a.ticker); return; }
+      // Finnhub quotes US-listed symbols in USD; convert USD → DKK (our base).
+      if (!price || !isFinite(price)) { noQuote.push(a.ticker); return; }
       const priceChf = price / (rates.USD || 1);
       a.lastPriceChf = priceChf; a.lastPriceAt = Date.now();
       a.amountCHF = (Number(a.shares) || 0) * priceChf;
       ok++;
-    } catch (e) { failed.push(a.ticker); }
+    } catch (e) { netErr = true; noQuote.push(a.ticker); }
   }));
+
   ui.pricesBusy = false;
-  maybeSnapshotNw(); save(); render();
-  if (!opts.silent && failed.length) {
-    alert('Updated ' + ok + ' holding' + (ok === 1 ? '' : 's') + '. Could not price: ' + failed.join(', ') + '.\n\nFinnhub\'s free tier covers US-listed symbols. Check the ticker and that your key is valid.');
+  let msg = null;
+  if (authErr) {
+    msg = { bad: true, text: 'Finnhub rejected your key. Re-check it in ⚙ settings — and note a free key only covers US-listed symbols.' };
+  } else if (rateErr) {
+    msg = { bad: true, text: 'Finnhub rate limit reached (60 calls/min on the free tier). Wait a moment, then hit ↻ again.' };
+  } else if (netErr) {
+    msg = { bad: true, text: 'Could not reach Finnhub — check your connection, VPN or ad-blocker.' };
+  } else if (noQuote.length) {
+    msg = { bad: true, text: 'No quote for ' + noQuote.join(', ') + '. Finnhub\'s free tier prices US-listed symbols only — European tickers (VWCE, IWDA, NOVO-B.CO …) return nothing.' };
+  } else if (ok) {
+    msg = { bad: false, text: 'Updated ' + ok + ' holding' + (ok === 1 ? '' : 's') + ' · ' + new Date().toLocaleTimeString() };
   }
+  ui.priceMsg = msg;
+  maybeSnapshotNw(); save(); render();
 }
 
 /* ============================================================
@@ -1407,7 +1456,7 @@ async function downscaleImage(file) {
   return { mediaType: m[1], b64: m[2], w: tw, h: th };
 }
 
-function ccyOf(v) { const c = String(v || '').toUpperCase(); return CURRENCIES.indexOf(c) >= 0 ? c : 'CHF'; }
+function ccyOf(v) { const c = String(v || '').toUpperCase(); return CURRENCIES.indexOf(c) >= 0 ? c : 'DKK'; }
 function applyImport(kind, items) {
   if (!Array.isArray(items)) return 0;
   let n = 0;
@@ -1700,13 +1749,13 @@ document.addEventListener('click', e => {
  * ============================================================ */
 maybeSnapshotNw(); save();
 
-fetch('https://open.er-api.com/v6/latest/CHF')
+fetch('https://open.er-api.com/v6/latest/DKK')
   .then(r => r.json())
   .then(data => {
     if (data && data.rates) {
-      rates = { CHF: 1, USD: data.rates.USD || 1, EUR: data.rates.EUR || 1, GBP: data.rates.GBP || 1 };
+      rates = { DKK: 1, USD: data.rates.USD || 1, EUR: data.rates.EUR || 1, GBP: data.rates.GBP || 1 };
       render();
-      // Now that USD→CHF is known, refresh live holdings prices if a key is set.
+      // Now that USD→DKK is known, refresh live holdings prices if a key is set.
       if (settings.finnhubKey && state.accounts.some(a => a.type === 'stocks' && a.ticker)) refreshStockPrices({ silent: true });
     }
   })

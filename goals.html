@@ -727,6 +727,97 @@ body::after {
   .gm-progress-num { font-size: 36px; }
 }
 
+/* ===== Component 5: Life Goals (long-term, cross-tile) ===== */
+/* .gm-card clips its children; the settings popover has to escape the card */
+.lg-card { position: relative; overflow: visible; }
+.lg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+.lg-head-left { display: flex; flex-direction: column; }
+.lg-overall-row { display: flex; align-items: baseline; gap: 6px; }
+.lg-overall-num {
+  font-family: var(--font-display);
+  font-size: 42px; font-weight: 700;
+  font-variant-numeric: tabular-nums; letter-spacing: -0.045em;
+  color: var(--text-primary); line-height: 1;
+}
+.lg-overall-label { font-size: 11px; font-weight: 600; letter-spacing: 0.10em; text-transform: uppercase; color: var(--text-tertiary); margin-left: 4px; }
+.lg-gear {
+  width: 30px; height: 30px; display: grid; place-items: center; flex-shrink: 0;
+  border-radius: 50%; cursor: pointer;
+  background: var(--surface-1); border: 1px solid var(--border);
+  color: var(--text-secondary); font-size: 14px; line-height: 1;
+  transition: border-color .2s, color .2s, background .2s;
+}
+.lg-gear:hover { color: var(--text-primary); border-color: var(--border-strong); background: var(--surface); }
+
+.lg-goal { padding: 14px; border-radius: 12px; background: var(--surface-1); border: 1px solid var(--border); }
+.lg-goal + .lg-goal { margin-top: 10px; }
+.lg-goal-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.lg-goal-name { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+.lg-goal-sub { font-size: 11.5px; color: var(--text-tertiary); margin-top: 2px; }
+.lg-goal-sub a { color: var(--brand-2); }
+.lg-goal-pct {
+  font-family: var(--font-mono); font-size: 15px; font-weight: 700;
+  font-variant-numeric: tabular-nums; color: var(--brand-2); flex-shrink: 0;
+}
+.lg-goal.is-complete .lg-goal-pct { color: var(--success); }
+
+.lg-track { height: 8px; border-radius: 999px; background: var(--border); overflow: hidden; }
+.lg-fill {
+  height: 100%; border-radius: 999px;
+  background: linear-gradient(90deg, var(--brand), var(--brand-2));
+  box-shadow: 0 0 10px var(--brand-glow);
+  width: 0;
+  transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.lg-goal.is-complete .lg-fill { background: var(--success); box-shadow: 0 0 10px rgba(var(--success-rgb),0.5); }
+
+.lg-spark { margin-top: 12px; }
+.lg-spark svg { width: 100%; height: 62px; display: block; overflow: visible; }
+.lg-spark-caption {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  margin-top: 5px;
+  font-family: var(--font-mono); font-size: 10px; color: var(--text-tertiary);
+}
+.lg-spark-delta { color: var(--success); font-weight: 700; }
+.lg-spark-delta.is-down { color: var(--danger); }
+
+.lg-metrics { display: grid; gap: 10px; margin-top: 14px; }
+.lg-metric { display: flex; flex-direction: column; gap: 6px; }
+.lg-metric-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.lg-metric-label { font-size: 12px; color: var(--text-secondary); }
+.lg-metric-val { font-family: var(--font-mono); font-size: 11.5px; font-variant-numeric: tabular-nums; color: var(--text-primary); flex-shrink: 0; }
+.lg-mini-track { height: 5px; border-radius: 999px; background: var(--border); overflow: hidden; }
+.lg-mini-fill { height: 100%; border-radius: 999px; background: var(--brand); width: 0; transition: width 0.7s cubic-bezier(0.22, 1, 0.36, 1); }
+.lg-mini-fill.is-full { background: var(--success); }
+.lg-metric-note { font-family: var(--font-mono); font-size: 10px; color: var(--text-tertiary); }
+
+.lg-empty { font-size: 12px; color: var(--text-tertiary); line-height: 1.6; }
+.lg-empty a { color: var(--brand-2); }
+
+.lg-pop {
+  position: absolute; top: 56px; right: 16px; z-index: 30;
+  width: min(320px, calc(100% - 32px));
+  padding: 16px; border-radius: 14px;
+  background: var(--bg); border: 1px solid var(--border-strong);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+.lg-pop[hidden] { display: none; }
+.lg-pop-title { font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 3px; }
+.lg-pop-note { font-family: var(--font-mono); font-size: 10.5px; line-height: 1.5; color: var(--text-tertiary); margin-bottom: 12px; }
+.lg-pop-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 11px; }
+.lg-pop-field label { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-tertiary); }
+.lg-pop-field select, .lg-pop-field input {
+  width: 100%; padding: 8px 9px; box-sizing: border-box;
+  border-radius: 8px; border: 1px solid var(--border); background: var(--surface-1);
+  color: var(--text-primary); font-family: var(--font-mono); font-size: 13px;
+}
+.lg-pop-field select:focus, .lg-pop-field input:focus { outline: none; border-color: var(--brand-line); }
+.lg-pop-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+.lg-pop-actions button { padding: 8px 14px; cursor: pointer; border-radius: 9px; font-family: inherit; font-size: 12px; font-weight: 700; border: 1px solid transparent; }
+.lg-pop-save { background: var(--brand); color: var(--brand-ink); }
+.lg-pop-cancel { background: transparent; border-color: var(--border); color: var(--text-secondary); }
+@media (max-width: 480px) { .lg-overall-num { font-size: 36px; } }
+
 /* --- Patron display type --- */
 .dash-title, .day-ring-percent, .gm-progress-num { font-family: var(--font-display); }
 /* --- header + theme switcher --- */
@@ -807,6 +898,46 @@ body::after {
       <div class="day-ring-hours"     id="dayRingHours">8:00 AM – 12:00 AM</div>
       <div class="day-ring-est"       id="dayRingEst" hidden></div>
       <div class="day-ring-est-sub"   id="dayRingEstSub"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Life Goals</div>
+
+    <div class="gm-card lg-card" id="lgCard">
+      <button type="button" class="lg-gear" id="lgGear" title="Goal settings" aria-label="Life goal settings" style="position:absolute;top:16px;right:16px;">⚙</button>
+      <div class="lg-pop" id="lgPop" hidden>
+        <div class="lg-pop-title">Become rich — tracking</div>
+        <div class="lg-pop-note">Pulls live values from your Finance tile. By default everything in Stocks · investments and Crypto counts as your aktiesparekonto — pick a single account only if you want to narrow it.</div>
+        <div class="lg-pop-field">
+          <label for="lgPopAccount">Counts as aktiesparekonto</label>
+          <select id="lgPopAccount"></select>
+        </div>
+        <div class="lg-pop-field">
+          <label for="lgPopTarget">Contribution ceiling (kr.)</label>
+          <input type="number" id="lgPopTarget" min="0" step="any" placeholder="Blank = this year's official loft">
+        </div>
+        <div class="lg-pop-field">
+          <label for="lgPopNetTarget">Invested total target, kr. (optional)</label>
+          <input type="number" id="lgPopNetTarget" min="0" step="any" placeholder="Leave blank to skip">
+        </div>
+        <div class="lg-pop-actions">
+          <button type="button" class="lg-pop-cancel" id="lgPopCancel">Cancel</button>
+          <button type="button" class="lg-pop-save" id="lgPopSave">Save</button>
+        </div>
+      </div>
+
+      <div class="lg-head">
+        <div class="lg-head-left">
+          <div class="gm-eyebrow">Long game</div>
+          <div class="lg-overall-row">
+            <span class="lg-overall-num" id="lgOverallNum">—</span>
+            <span class="lg-overall-label" id="lgOverallLabel">toward your goals</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="lgGoals"></div>
     </div>
   </div>
 
@@ -1605,6 +1736,254 @@ body::after {
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !pop.hidden) close(); });
   }
 
+  // ---------- Life goals ----------
+  // Long-term goals live outside the daily list: they never roll over, never
+  // reset at 6 AM, and their progress is *derived* from the other tiles rather
+  // than checked off by hand. "Become rich" reads the Finance tile directly.
+  const LIFE_KEY    = 'patron_life_goals_v1';
+  const FINANCE_KEY = 'finance_standalone_v1';
+
+  function readFinance() {
+    try { const d = JSON.parse(localStorage.getItem(FINANCE_KEY)); return (d && typeof d === 'object') ? d : null; }
+    catch (e) { return null; }
+  }
+  function lifeCfg() {
+    const d = storeGet(LIFE_KEY);
+    return Object.assign({ accountId: '', target: 0, netTarget: 0 }, (d && typeof d === 'object') ? d : {});
+  }
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function clampPct(p) { return Math.max(0, Math.min(100, isFinite(p) ? p : 0)); }
+
+  // Finance stores every amount in one base unit and labels it with the tile's
+  // display currency, so we format the same way it does — same numbers, no
+  // conversion of our own that could drift from what that tile shows.
+  function finCcy(f) { const c = (f && f.currency) || 'DKK'; return c === 'CHF' ? 'DKK' : c; }
+  function fmtAmt(v, ccy) {
+    const n = Math.round(Number(v) || 0);
+    if (ccy === 'DKK') return n.toLocaleString('da-DK') + ' kr.';
+    return ccy + ' ' + n.toLocaleString('en-US');
+  }
+
+  // Aktiesparekonto contribution ceilings, per skat.dk. The ceiling is indexed
+  // yearly, so this needs a new entry each January — the newest known year is
+  // used as the fallback rather than silently reverting to zero.
+  // (A rise to 500.000 kr. is proposed but not law as of July 2026.)
+  const ASK_CEILINGS = { 2025: 166200, 2026: 174200 };
+  function askCeiling() {
+    const y = new Date().getFullYear();
+    if (ASK_CEILINGS[y]) return ASK_CEILINGS[y];
+    const years = Object.keys(ASK_CEILINGS).map(Number).sort();
+    return ASK_CEILINGS[years[years.length - 1]];
+  }
+
+  // The money that counts toward "become rich" is the invested money: the
+  // Stocks · investments and Crypto accounts. Bank balances and "other" are
+  // savings, not progress toward filling the aktiesparekonto, so they're out.
+  const INVESTED_TYPES = ['stocks', 'crypto'];
+  function investedTotal(f) {
+    return (f && Array.isArray(f.accounts) ? f.accounts : [])
+      .filter(a => INVESTED_TYPES.indexOf(a.type) !== -1)
+      .reduce((s, a) => s + (Number(a.amountCHF) || 0), 0);
+  }
+
+  // Finance only snapshots total net worth, so it can't tell us how the invested
+  // slice moved over time. Keep our own series, deduped the same way.
+  function snapshotInvested(v) {
+    const cfg = lifeCfg();
+    const h = Array.isArray(cfg.investedHistory) ? cfg.investedHistory : [];
+    const last = h[h.length - 1];
+    if (last && Math.abs((last.v || 0) - v) < 0.005) return h;
+    h.push({ t: Date.now(), v: v });
+    if (h.length > 500) h.splice(0, h.length - 500);
+    cfg.investedHistory = h;
+    storeSet(LIFE_KEY, cfg);
+    return h;
+  }
+
+  // How many months this year got at least one positive contribution. Reads the
+  // Finance activity log, which the tile caps at 50 entries — older months can
+  // age out, so this reads as "recent consistency", not lifetime history.
+  function investConsistency(f, acct) {
+    const now = new Date();
+    const year = now.getFullYear();
+    const monthsElapsed = now.getMonth() + 1;
+    const months = new Set();
+    (Array.isArray(f.activity) ? f.activity : []).forEach(e => {
+      if (!e || !((Number(e.deltaCHF) || 0) > 0)) return;
+      if (acct) { if (e.name !== acct.name) return; }
+      else if (INVESTED_TYPES.indexOf(e.accountType) === -1) return;
+      const d = new Date(e.ts || 0);
+      if (!isFinite(d.getTime()) || d.getFullYear() !== year) return;
+      months.add(d.getMonth());
+    });
+    return { months: months.size, of: monthsElapsed, pct: clampPct(months.size / monthsElapsed * 100) };
+  }
+
+  // Progression line — net worth over time, straight from the Finance tile's
+  // own snapshot history so both tiles tell the same story.
+  function sparkHtml(history, ccy) {
+    const pts = (Array.isArray(history) ? history : []).slice(-60);
+    if (pts.length < 2) return '';
+    const W = 300, H = 52, P = 5;
+    const vs = pts.map(p => Number(p.v) || 0);
+    const min = Math.min.apply(null, vs);
+    let max = Math.max.apply(null, vs);
+    if (max - min < 1e-9) max = min + 1;
+    const x = i => P + (i * (W - 2 * P)) / (pts.length - 1);
+    const y = v => H - P - ((v - min) / (max - min)) * (H - 2 * P);
+    const line = pts.map((p, i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ',' + y(vs[i]).toFixed(1)).join(' ');
+    const area = line + ' L' + x(pts.length - 1).toFixed(1) + ',' + H + ' L' + x(0).toFixed(1) + ',' + H + ' Z';
+    const delta = vs[vs.length - 1] - vs[0];
+    const down = delta < 0;
+    const first = new Date(pts[0].t || Date.now());
+    const span = first.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return '<div class="lg-spark">'
+      + '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden="true">'
+      +   '<defs><linearGradient id="lgSparkGrad" x1="0" y1="0" x2="0" y2="1">'
+      +     '<stop offset="0%" stop-color="var(--brand)" stop-opacity="0.30"/>'
+      +     '<stop offset="100%" stop-color="var(--brand)" stop-opacity="0"/>'
+      +   '</linearGradient></defs>'
+      +   '<path d="' + area + '" fill="url(#lgSparkGrad)"/>'
+      +   '<path d="' + line + '" fill="none" stroke="var(--brand-2)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>'
+      // The viewBox is stretched to the card width, so a circle would render as an
+      // ellipse — mark "now" with a non-scaling vertical tick instead.
+      +   '<path d="M' + x(pts.length - 1).toFixed(1) + ',' + Math.max(0, y(vs[vs.length - 1]) - 5).toFixed(1)
+      +     ' L' + x(pts.length - 1).toFixed(1) + ',' + Math.min(H, y(vs[vs.length - 1]) + 5).toFixed(1) + '"'
+      +     ' stroke="var(--brand-2)" stroke-width="2.5" stroke-linecap="round" vector-effect="non-scaling-stroke"/>'
+      + '</svg>'
+      + '<div class="lg-spark-caption">'
+      +   '<span>invested · since ' + esc(span) + '</span>'
+      +   '<span class="lg-spark-delta' + (down ? ' is-down' : '') + '">' + (down ? '−' : '+') + esc(fmtAmt(Math.abs(delta), ccy)) + '</span>'
+      + '</div></div>';
+  }
+
+  function metricHtml(m) {
+    const pct = m.pct == null ? null : clampPct(m.pct);
+    return '<div class="lg-metric">'
+      + '<div class="lg-metric-top"><span class="lg-metric-label">' + esc(m.label) + '</span>'
+      + '<span class="lg-metric-val">' + esc(m.value) + '</span></div>'
+      + '<div class="lg-mini-track"><div class="lg-mini-fill' + (pct >= 100 ? ' is-full' : '') + '" style="width:' + (pct == null ? 0 : pct).toFixed(1) + '%"></div></div>'
+      + (m.note ? '<div class="lg-metric-note">' + esc(m.note) + '</div>' : '')
+      + '</div>';
+  }
+
+  function renderLifeGoals() {
+    const host = document.getElementById('lgGoals');
+    const numEl = document.getElementById('lgOverallNum');
+    const labelEl = document.getElementById('lgOverallLabel');
+    if (!host) return;
+
+    // An empty portfolio is still a real reading — 0% of this year's loft — so the
+    // goal renders either way instead of hiding behind a setup prompt.
+    const f = readFinance() || {};
+    const accounts = Array.isArray(f.accounts) ? f.accounts : [];
+    const cfg = lifeCfg();
+    const noHoldings = !accounts.some(a => INVESTED_TYPES.indexOf(a.type) !== -1);
+
+    const ccy = finCcy(f);
+    const invested = investedTotal(f);
+    const history = snapshotInvested(invested);
+    const acct = cfg.accountId ? accounts.find(a => a.id === cfg.accountId) : null;
+    // No custom ceiling set → use this year's official aktiesparekonto limit.
+    const target = Number(cfg.target) || askCeiling();
+    const netTarget = Number(cfg.netTarget) || 0;
+    // No account linked → the aktiesparekonto *is* everything invested.
+    const bal = acct ? (Number(acct.amountCHF) || 0) : invested;
+    const balNote = acct ? 'from ' + acct.name : 'stocks + crypto';
+    const metrics = [];
+
+    const left = Math.max(0, target - bal);
+    const ceilingSrc = Number(cfg.target) ? 'your ceiling' : new Date().getFullYear() + ' loft';
+    metrics.push({
+      label: 'Aktiesparekonto filled',
+      value: fmtAmt(bal, ccy) + ' / ' + fmtAmt(target, ccy),
+      pct: clampPct((bal / target) * 100),
+      note: (left > 0 ? fmtAmt(left, ccy) + ' left to the ' + ceilingSrc : 'ceiling reached') + ' · ' + balNote
+    });
+
+    const cons = investConsistency(f, acct);
+    metrics.push({
+      label: 'Consistent investing',
+      value: cons.months + '/' + cons.of + ' months',
+      pct: cons.pct,
+      note: 'months this year with a contribution · from your Finance activity log'
+    });
+
+    if (netTarget > 0) {
+      metrics.push({
+        label: 'Invested total',
+        value: fmtAmt(invested, ccy) + ' / ' + fmtAmt(netTarget, ccy),
+        pct: clampPct((invested / netTarget) * 100),
+        note: (invested >= netTarget ? 'target reached' : fmtAmt(netTarget - invested, ccy) + ' to go') + ' · stocks + crypto'
+      });
+    }
+
+    const scored = metrics.filter(m => m.pct != null);
+    const goalPct = scored.length ? scored.reduce((s, m) => s + m.pct, 0) / scored.length : 0;
+
+    host.innerHTML = '<div class="lg-goal' + (goalPct >= 100 ? ' is-complete' : '') + '">'
+      + '<div class="lg-goal-head">'
+      +   '<div><div class="lg-goal-name">Become rich</div>'
+      +   '<div class="lg-goal-sub">' + (acct ? 'Tracking ' + esc(acct.name)
+      :     noHoldings ? 'Tracking stocks + crypto — none in <a href="finance.html">Finance</a> yet'
+      :     'Tracking stocks + crypto') + '</div></div>'
+      +   '<div class="lg-goal-pct">' + Math.round(goalPct) + '%</div>'
+      + '</div>'
+      + '<div class="lg-track"><div class="lg-fill" style="width:' + goalPct.toFixed(1) + '%"></div></div>'
+      + sparkHtml(history, ccy)
+      + '<div class="lg-metrics">' + metrics.map(metricHtml).join('') + '</div>'
+      + '</div>';
+
+    numEl.textContent = Math.round(goalPct) + '%';
+    labelEl.textContent = noHoldings ? 'nothing invested yet' : 'toward your goals';
+  }
+
+  function setupLifePopover() {
+    const gear   = document.getElementById('lgGear');
+    const pop    = document.getElementById('lgPop');
+    const sel    = document.getElementById('lgPopAccount');
+    const tgt    = document.getElementById('lgPopTarget');
+    const netTgt = document.getElementById('lgPopNetTarget');
+    const save   = document.getElementById('lgPopSave');
+    const cancel = document.getElementById('lgPopCancel');
+    if (!gear || !pop) return;
+
+    function fill() {
+      const f = readFinance();
+      const cfg = lifeCfg();
+      sel.innerHTML = '';
+      const none = document.createElement('option');
+      none.value = ''; none.textContent = 'All stocks + crypto (default)';
+      sel.appendChild(none);
+      // Only invested accounts can stand in for the aktiesparekonto
+      (f && Array.isArray(f.accounts) ? f.accounts : []).filter(a => INVESTED_TYPES.indexOf(a.type) !== -1).forEach(a => {
+        const o = document.createElement('option');
+        o.value = a.id;
+        o.textContent = a.name + ' (' + a.type + ')';
+        sel.appendChild(o);
+      });
+      sel.value = cfg.accountId || '';
+      tgt.value    = cfg.target    ? String(cfg.target)    : '';
+      netTgt.value = cfg.netTarget ? String(cfg.netTarget) : '';
+    }
+    function open()  { fill(); pop.hidden = false; }
+    function close() { pop.hidden = true; }
+
+    gear.addEventListener('click', (e) => { e.stopPropagation(); pop.hidden ? open() : close(); });
+    cancel.addEventListener('click', close);
+    save.addEventListener('click', () => {
+      storeSet(LIFE_KEY, {
+        accountId: sel.value || '',
+        target:    Math.max(0, Number(tgt.value)    || 0),
+        netTarget: Math.max(0, Number(netTgt.value) || 0)
+      });
+      close();
+      renderLifeGoals();
+    });
+    document.addEventListener('click', (e) => { if (!pop.hidden && !pop.contains(e.target) && e.target !== gear) close(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !pop.hidden) close(); });
+  }
+
   // ---------- Boot ----------
   rollover();
   processStreak();
@@ -1612,6 +1991,8 @@ body::after {
   loadTomorrow();
   renderStreak();
   setupDayWindowPopover();
+  setupLifePopover();
+  renderLifeGoals();
   updateDayRing();
   setInterval(updateDayRing, 60 * 1000);
   startTicker();
@@ -1619,6 +2000,8 @@ body::after {
   // Re-render when storage changes from another tab (or our bridged parent).
   window.addEventListener('storage', (e) => {
     loadToday(); loadTomorrow(); renderStreak();
+    // Finance edited in another tab → recompute the long-term progress
+    if (!e || !e.key || e.key === FINANCE_KEY || e.key === LIFE_KEY) renderLifeGoals();
     // vitals updated elsewhere (dashboard / Whoop tab) → refresh the day window
     if (!e || !e.key || e.key === SUITE_HEALTH_KEY || e.key === LEGACY_WHOOP_KEY || e.key === DAY_WINDOW_KEY) updateDayRing();
   });

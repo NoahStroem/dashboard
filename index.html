@@ -200,6 +200,18 @@ body { background: var(--bg); color: var(--fg); font-family: var(--font-ui), -ap
 .vitalsEmptyTitle { font-family: var(--font-display); font-weight: 600; font-size: var(--text-xl); letter-spacing: -0.02em; }
 .vitalsEmptyBody { font-size: 13px; color: var(--muted-strong); line-height: 1.55; max-width: 42ch; }
 
+/* Life goals tile — same anatomy as the vitals tile (ring left, stacked rows right) */
+.goalsTile .vitalsEyebrow { color: var(--brand-2); }
+.gRow { align-items: center; }
+.gRowMain { display:flex; flex-direction:column; gap: 3px; min-width: 0; }
+.gRowNote { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.06em; color: var(--muted); }
+.gRowRight { display:flex; align-items:baseline; gap: var(--space-3); flex-shrink:0; }
+.gPct { font-family: var(--font-mono); font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; padding: 3px 8px; border-radius: var(--radius-pill); background: var(--surface); border: 1px solid var(--border); color: var(--brand-2); }
+.gPct[data-tone="good"] { color: var(--pos); border-color: var(--pos-line, var(--border)); }
+.gPct[data-tone="idle"] { color: var(--muted); }
+.goalsTile .vVal { white-space: nowrap; }
+.goalsTile a.btn { text-decoration: none; }
+
 /* Buttons */
 .btn { display:inline-flex; align-items:center; justify-content:center; gap: var(--space-2); padding: 0.6rem var(--space-4); border-radius: var(--radius-md); font-size: var(--text-sm); font-family: var(--font-ui); font-weight: 600; cursor: pointer; border: 1px solid transparent; background: transparent; color: var(--fg); white-space: nowrap; transition: background var(--duration) var(--ease), border-color var(--duration) var(--ease), color var(--duration) var(--ease), filter var(--duration) var(--ease), box-shadow var(--duration) var(--ease); }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; }
@@ -330,16 +342,13 @@ body{ background:#000 !important; font-family:'Inter',-apple-system,sans-serif; 
  * Apps in the suite — one bento card each.
  * ============================================================ */
 const APPS = [
-  { file: 'peak.html',        name: 'PEAK TRACKER', tag: 'Daily readiness · energy curve',        icon: '🔆', wide: true },
-  { file: 'peak-standalone.html', name: 'PEAK · STANDALONE', tag: 'Self-contained · share / download', icon: '📦', wide: true },
   { file: 'finance.html',     name: 'Finance',     tag: 'Net worth · subs · orders · wishlist', icon: '💰', wide: true },
-  { file: 'gym.html',         name: 'Gym',         tag: 'Progressive overload coach',           icon: '🏋️', wide: true },
+  { file: 'program.html',     name: 'Program',     tag: 'Your Google Sheet, live',               icon: '📋', wide: true },
   { file: 'enhancers.html',   name: 'Enhancers',   tag: 'Supplements · stimulants · meds',       icon: '💊', wide: true },
   { file: 'food.html',        name: 'Food & Water', tag: 'Hydration target · daily macros',       icon: '🥤', wide: true },
-  { file: 'fitband.html',     name: 'Fitness Band', tag: 'Recovery · sleep · strain · trends',     icon: '🔋', wide: true },
+  { file: 'fitband.html',     name: 'Vitals',      tag: 'HRV · resting HR · sleep · trends',      icon: '🔋', wide: true },
   { file: 'mentor.html',      name: 'Mentor',      tag: 'Nova · live chat + cozy thinking',       icon: '🌟', wide: true },
   { file: 'ai-avatar-2.html', name: 'AI Mentor',   tag: 'Nova · 3D avatar + animation kit',      icon: '🪐', wide: true },
-  { file: 'creator.html',     name: 'Creator',     tag: 'Schedule · accounts · analytics',       icon: '🎬' },
   { file: 'goals.html',       name: 'Goals',       tag: 'Goals & streaks',                       icon: '🎯' },
   { file: 'progress.html',    name: 'Progress',    tag: 'Photos & measurements',                 icon: '📈' },
 ];
@@ -466,24 +475,6 @@ function estRecovery(h){
   let s = 0; for (let i = 0; i < parts.length; i++) s += parts[i] * w[i];
   return Math.max(1, Math.min(99, Math.round(s / sw)));
 }
-/* Subjective readiness (1–99) from morning self-ratings (1–5 each) — no band needed.
- * Modelled on athlete self-report tools (Hooper Index): sleep quality, energy,
- * soreness, stress, mood. Soreness & stress are "higher = worse" so they invert. */
-function subjReadiness(s){
-  if (!s) return null;
-  const up = (v) => (v - 1) / 4 * 100;    // higher = better
-  const down = (v) => (5 - v) / 4 * 100;  // higher = worse
-  const parts = [], w = [];
-  if (s.sleepQ)  { parts.push(up(s.sleepQ));    w.push(0.30); }
-  if (s.energy)  { parts.push(up(s.energy));    w.push(0.25); }
-  if (s.soreness){ parts.push(down(s.soreness));w.push(0.20); }
-  if (s.stress)  { parts.push(down(s.stress));  w.push(0.15); }
-  if (s.mood)    { parts.push(up(s.mood));       w.push(0.10); }
-  if (!parts.length) return null;
-  const sw = w.reduce((a, b) => a + b, 0);
-  let x = 0; for (let i = 0; i < parts.length; i++) x += parts[i] * w[i];
-  return Math.max(1, Math.min(99, Math.round(x / sw)));
-}
 // "est" badge shows for device estimates AND subjective (typed-in) readiness.
 function isEstRecovery(h){ return !!(h && (h.subjective || (h.recovery == null && estRecovery(h) != null))); }
 function formatHM(h){ if (h == null) return '—'; const hh = Math.floor(h); const mm = Math.round((h - hh) * 60); return hh + 'h ' + String(mm).padStart(2,'0') + 'm'; }
@@ -533,7 +524,7 @@ function vitalsTileHtml(){
     return '<section class="vitals">'
       + '<div class="vitalsHead"><span class="vitalsEyebrow">Today’s vitals</span></div>'
       + '<div class="vitalsEmpty"><div class="vitalsEmptyTitle">No vitals yet</div>'
-      + '<p class="vitalsEmptyBody">Connect Whoop, link your Apple Watch, or enter recovery &amp; sleep by hand. Your numbers then power the rest of the suite — the supplement recommender reads recovery &amp; sleep automatically.</p>'
+      + '<p class="vitalsEmptyBody">Type in this morning’s HRV, resting heart rate and hours slept. Your numbers power the rest of the suite — the supplement recommender reads recovery &amp; sleep automatically.</p>'
       + '<div class="vitalsFoot"><button type="button" class="btn btn-primary" data-action="open-vitals">Add vitals</button></div></div></section>';
   }
   const rec = estRecovery(h);
@@ -544,12 +535,11 @@ function vitalsTileHtml(){
     + (rec != null ? '<circle cx="66" cy="66" r="56" class="recFill" style="stroke-dasharray:' + circ + ';stroke-dashoffset:' + (circ * (1 - rec / 100)) + ';"/>' : '')
     + '</svg><div style="text-align:center"><div class="recNum">' + (rec != null ? Math.round(rec) : '—') + (rec != null ? '<span class="recUnit">%</span>' : '') + '</div><div class="recCap">' + (est ? 'Recovery · est' : 'Recovery') + '</div></div></div>';
   function row(label, val){ return '<div class="vRow"><span class="vLabel">' + label + '</span><span class="vVal">' + val + '</span></div>'; }
-  const sleepVal = h.sleepHours != null ? formatHM(h.sleepHours) + (h.sleepPerf != null ? '<em>' + Math.round(h.sleepPerf) + '%</em>' : '') : '—';
+  // Three tracked metrics, typed in by hand: HRV, resting HR, hours slept.
   const metrics = '<div class="vMetrics">'
-    + row('Sleep', sleepVal)
-    + (h.bedtime && h.wakeTime ? row('In bed', formatClock(h.bedtime) + ' <em>→</em> ' + formatClock(h.wakeTime)) : '')
     + row('HRV', h.hrv != null ? Math.round(h.hrv) + '<em>ms</em>' : '—')
     + row('Resting HR', h.rhr != null ? Math.round(h.rhr) + '<em>bpm</em>' : '—')
+    + row('Slept', h.sleepHours != null ? formatHM(h.sleepHours) : '—')
     + '</div>';
   return '<section class="vitals">'
     + '<div class="vitalsHead"><span class="vitalsEyebrow">Today’s vitals</span>'
@@ -559,6 +549,102 @@ function vitalsTileHtml(){
     + '<button type="button" class="btn btn-ghost" data-action="open-vitals">Update vitals</button></div></section>';
 }
 
+/* ============================================================
+ * Life goals tile — long-term goals, same anatomy as the vitals
+ * tile: one progression ring on the left, goals stacked on the
+ * right with their own percentage and totals. Progress is derived
+ * from the Finance tile, not hand-entered; goals.html owns the
+ * config (which account, which ceiling).
+ * ============================================================ */
+const LIFE_GOALS_KEY = 'patron_life_goals_v1';
+const INVESTED_TYPES = ['stocks', 'crypto'];
+
+function goalPctTone(p){ return p >= 100 ? 'good' : p == null ? 'idle' : ''; }
+function fmtGoalAmt(v, ccy){
+  const n = Math.round(Number(v) || 0);
+  if (ccy === 'DKK') return n.toLocaleString('da-DK') + ' kr.';
+  return ccy + ' ' + n.toLocaleString('en-US');
+}
+/* Aktiesparekonto ceiling per skat.dk — indexed yearly, add each new year here.
+   Mirrors the table in goals.html, which owns the config. */
+const ASK_CEILINGS = { 2025: 166200, 2026: 174200 };
+function askCeiling(){
+  const y = new Date().getFullYear();
+  if (ASK_CEILINGS[y]) return ASK_CEILINGS[y];
+  const years = Object.keys(ASK_CEILINGS).map(Number).sort();
+  return ASK_CEILINGS[years[years.length - 1]];
+}
+
+/* Always returns { pct, rows[] }. An empty portfolio is a real answer — 0% against
+ * this year's loft — so the tile shows the goal rather than a setup prompt. */
+function lifeGoalsData(){
+  const f = lsGet('finance_standalone_v1') || {};
+  const accounts = Array.isArray(f.accounts) ? f.accounts : [];
+  const cfg = Object.assign({ accountId: '', target: 0, netTarget: 0 }, lsGet(LIFE_GOALS_KEY) || {});
+  const ccy = (f.currency === 'CHF' || !f.currency) ? 'DKK' : f.currency;
+  // Only invested money counts toward "become rich" — stocks + crypto, not bank.
+  const holdings = accounts.filter(a => INVESTED_TYPES.indexOf(a.type) !== -1);
+  const invested = holdings.reduce((s, a) => s + (Number(a.amountCHF) || 0), 0);
+  const acct = cfg.accountId ? accounts.find(a => a.id === cfg.accountId) : null;
+  const target = Number(cfg.target) || askCeiling();
+  const netTarget = Number(cfg.netTarget) || 0;
+  const clamp = p => Math.max(0, Math.min(100, isFinite(p) ? p : 0));
+  const bal = acct ? (Number(acct.amountCHF) || 0) : invested;
+  const rows = [];
+
+  rows.push({ label: 'Aktiesparekonto', pct: clamp(bal / target * 100),
+    value: fmtGoalAmt(bal, ccy),
+    note: 'of ' + fmtGoalAmt(target, ccy) + (Number(cfg.target) ? ' ceiling' : ' loft ' + new Date().getFullYear()) });
+
+  // Months this year with a positive contribution. Finance keeps only its last
+  // 50 activity entries, so this is recent consistency rather than all-time.
+  const now = new Date();
+  const monthsElapsed = now.getMonth() + 1;
+  const months = new Set();
+  (Array.isArray(f.activity) ? f.activity : []).forEach(e => {
+    if (!e || !((Number(e.deltaCHF) || 0) > 0)) return;
+    if (acct ? e.name !== acct.name : INVESTED_TYPES.indexOf(e.accountType) === -1) return;
+    const d = new Date(e.ts || 0);
+    if (isFinite(d.getTime()) && d.getFullYear() === now.getFullYear()) months.add(d.getMonth());
+  });
+  rows.push({ label: 'Invest monthly', pct: clamp(months.size / monthsElapsed * 100),
+    value: months.size + '<em>/' + monthsElapsed + ' mo</em>', note: 'months funded this year' });
+
+  if (netTarget > 0) {
+    rows.push({ label: 'Invested total', pct: clamp(invested / netTarget * 100),
+      value: fmtGoalAmt(invested, ccy), note: 'of ' + fmtGoalAmt(netTarget, ccy) + ' target' });
+  }
+
+  const scored = rows.filter(r => r.pct != null);
+  return {
+    pct: scored.length ? scored.reduce((s, r) => s + r.pct, 0) / scored.length : 0,
+    rows: rows, ccy: ccy, empty: !holdings.length
+  };
+}
+
+function goalsTileHtml(){
+  const d = lifeGoalsData();
+  const pct = d.pct;
+  const tone = pct == null ? 'muted' : pct >= 100 ? 'good' : pct >= 50 ? 'watch' : '';
+  const circ = 2 * Math.PI * 56;
+  const ring = '<div class="recRing" data-tone="' + tone + '"><svg viewBox="0 0 132 132" aria-hidden><circle cx="66" cy="66" r="56" class="recTrack"/>'
+    + (pct != null ? '<circle cx="66" cy="66" r="56" class="recFill" style="stroke-dasharray:' + circ + ';stroke-dashoffset:' + (circ * (1 - pct / 100)) + ';"/>' : '')
+    + '</svg><div style="text-align:center"><div class="recNum">' + (pct != null ? Math.round(pct) : '—') + (pct != null ? '<span class="recUnit">%</span>' : '') + '</div><div class="recCap">Become rich</div></div></div>';
+  const rows = '<div class="vMetrics">' + d.rows.map(r =>
+      '<div class="vRow gRow">'
+    + '<span class="gRowMain"><span class="vLabel">' + esc(r.label) + '</span>'
+    + '<span class="gRowNote">' + esc(r.note) + '</span></span>'
+    + '<span class="gRowRight"><span class="vVal">' + r.value + '</span>'
+    + '<span class="gPct" data-tone="' + goalPctTone(r.pct) + '">' + (r.pct == null ? '—' : Math.round(r.pct) + '%') + '</span></span>'
+    + '</div>').join('') + '</div>';
+  return '<section class="vitals goalsTile">'
+    + '<div class="vitalsHead"><span class="vitalsEyebrow">Life goals</span>'
+    + '<span class="srcBadge"><span class="srcDot"></span>Finance</span></div>'
+    + '<div class="vitalsBody">' + ring + rows + '</div>'
+    + '<div class="vitalsFoot"><span class="vitalsSync">' + (d.empty ? 'no holdings yet — add them in Finance' : 'live from your balances') + '</span>'
+    + '<a class="btn btn-ghost" href="' + (d.empty ? 'finance.html' : 'goals.html') + '">' + (d.empty ? 'Add holdings' : 'Open goals') + '</a></div></section>';
+}
+
 /* ---- Live stats read from each app's own localStorage (defensive; tagline if unavailable) ---- */
 function lsGet(key){ try { const r = localStorage.getItem(key); return r ? JSON.parse(r) : null; } catch(e){ return null; } }
 function fmtNum(n){ return Math.round(n).toLocaleString('en-US'); }
@@ -566,31 +652,28 @@ function localDateKey(d){ d = d || new Date(); return d.getFullYear() + '-' + St
 function activeDateKey(){ const d = new Date(); if (d.getHours() < 6) d.setDate(d.getDate() - 1); return localDateKey(d); }
 function statFor(file){
   try {
-    if (file === 'finance.html') { const s = lsGet('finance_standalone_v1'); if (s && Array.isArray(s.accounts) && s.accounts.length) { const nw = s.accounts.reduce((a,x)=>a+(Number(x.amountCHF)||0),0); return { value: 'CHF ' + fmtNum(nw), label: 'net worth' }; } }
+    if (file === 'finance.html') { const s = lsGet('finance_standalone_v1'); if (s && Array.isArray(s.accounts) && s.accounts.length) { const nw = s.accounts.reduce((a,x)=>a+(Number(x.amountCHF)||0),0); return { value: fmtGoalAmt(nw, (s.currency === 'CHF' || !s.currency) ? 'DKK' : s.currency), label: 'net worth' }; } }
     else if (file === 'supplements.html') { const s = lsGet('supplements_standalone_v1'); if (s && Array.isArray(s.items) && s.items.length) { const tk = (s.taken && s.taken[activeDateKey()]) || {}; const n = s.items.filter(i => tk[i.id]).length; return { value: n + '/' + s.items.length, label: 'taken today' }; } }
     else if (file === 'enhancers.html') { const s = lsGet('supplements_standalone_v1'); if (s && Array.isArray(s.items) && s.items.length) { const tk = (s.taken && s.taken[activeDateKey()]) || {}; const n = s.items.filter(i => tk[i.id]).length; return { value: n + '/' + s.items.length, label: 'supplements today' }; } const c = lsGet('stimulant_standalone_v1'); if (c && Array.isArray(c.logs)) { const k = localDateKey(); const mg = c.logs.filter(l => l && localDateKey(new Date(l.t)) === k).reduce((a,l)=>a+(Number(l.mg)||0),0); if (mg>0) return { value: mg + ' mg', label: 'caffeine today' }; } }
+    else if (file === 'program.html') { const p = lsGet('patron_program_v1'); if (p && Array.isArray(p.sources) && p.sources.length) { const c = p.cache && p.cache[p.active || p.sources[0].id]; if (c && c.csv) { const rows = c.csv.split('\n').filter(l => l.trim() !== '').length - 1; return { value: String(Math.max(0, rows)), label: 'rows in sheet' }; } return { value: String(p.sources.length), label: 'sheet tabs' }; } }
     else if (file === 'water.html') { const s = lsGet('water_standalone_v1'); if (s && s.logs) { const n = s.logs[localDateKey()] || 0; return { value: String(n), label: (n === 1 ? 'drink' : 'drinks') + ' today' }; } }
     else if (file === 'food.html') { const m = lsGet('macros_standalone_v1'); const log = m && m[localDateKey()]; if (Array.isArray(log) && log.length) { const cal = log.reduce((a,e)=>a+(Number(e.cal)||0),0); return { value: fmtNum(cal), label: 'kcal today' }; } const w = lsGet('water_standalone_v1'); if (w && w.logs) { const n = w.logs[localDateKey()] || 0; if (n>0) return { value: String(n), label: (n === 1 ? 'drink' : 'drinks') + ' today' }; } }
     else if (file === 'stimulant.html') { const s = lsGet('stimulant_standalone_v1'); if (s && Array.isArray(s.logs)) { const k = localDateKey(); const mg = s.logs.filter(l => l && localDateKey(new Date(l.t)) === k).reduce((a,l)=>a+(Number(l.mg)||0),0); if (mg>0) return { value: mg + ' mg', label: 'caffeine today' }; } }
     else if (file === 'fitband.html') { const rec = estRecovery(health); if (rec != null) return { value: Math.round(rec) + '%', label: isEstRecovery(health) ? 'recovery · est' : 'recovery' }; }
-    else if (file === 'peak.html') { const rec = estRecovery(health); if (rec != null) return { value: Math.round(rec) + '%', label: 'readiness' }; }
   } catch (e) {}
   return null;
 }
 const ART = {
+  'program.html':'linear-gradient(135deg,#34D399,#8B5CF6)',
   'finance.html':'linear-gradient(135deg,#7C3AED,#22D3EE)',
-  'gym.html':'linear-gradient(135deg,#F472B6,#8B5CF6)',
   'supplements.html':'linear-gradient(135deg,#22D3EE,#7C3AED)',
   'stimulant.html':'linear-gradient(135deg,#7C3AED,#F59E0B)',
   'fitband.html':'linear-gradient(135deg,#6EE7B7,#22D3EE)',
   'water.html':'linear-gradient(135deg,#06B6D4,#3B82F6)',
-  'creator.html':'linear-gradient(135deg,#FBBF24,#F472B6)',
   'goals.html':'linear-gradient(135deg,#A78BFA,#22D3EE)',
   'progress.html':'linear-gradient(135deg,#34D399,#8B5CF6)',
   'recovery.html':'linear-gradient(135deg,#22D3EE,#34D399)',
   'macros.html':'linear-gradient(135deg,#F59E0B,#EF4444)',
-  'peak.html':'linear-gradient(135deg,#34D399,#22D3EE)',
-  'peak-standalone.html':'linear-gradient(135deg,#6EE7B7,#34D399)',
   'meds.html':'linear-gradient(135deg,#34D399,#22D3EE)',
   'enhancers.html':'linear-gradient(135deg,#6EE7B7,#22D3EE)',
   'food.html':'linear-gradient(135deg,#22D3EE,#6EE7B7)',
@@ -676,13 +759,11 @@ function tickerHtml(){
     + seq + seq + '</div></div></div>';
 }
 
-/* ---- Daily "did you log it?" reminders (weight + gym), read from each app's storage ---- */
+/* ---- Daily "did you log it?" reminders, read from each app's storage ---- */
 function loggedWeightToday(){ try { const s = lsGet('progress_standalone_v1'); return !!(s && Array.isArray(s.entries) && s.entries.some(e => e && e.dateKey === localDateKey())); } catch(e){ return false; } }
-function loggedGymToday(){ try { const d = lsGet('po_coach_workout_done'); return !!(d && d[localDateKey()]); } catch(e){ return false; } }
 function remindersHtml(){
   const items = [];
   if (!loggedWeightToday()) items.push({ file: 'progress.html', icon: '⚖️', text: 'Log today’s weight' });
-  if (!loggedGymToday()) items.push({ file: 'gym.html', icon: '🏋️', text: 'Log today’s gym' });
   if (!items.length) return '';
   return '<div class="reminders" role="status"><span class="remindersLabel">Today</span>'
     + items.map(r => '<a class="reminderChip" href="' + r.file + '"><span class="reminderDot"></span><span aria-hidden>' + r.icon + '</span> ' + r.text + ' <span class="reminderGo" aria-hidden>→</span></a>').join('')
@@ -691,39 +772,19 @@ function remindersHtml(){
 function render(){
   try { const bn = brandName(); document.title = (bn === 'Dashboard' ? 'Dashboard' : bn + ' · dashboard'); } catch(e){}
   document.getElementById('app').innerHTML =
-    headerHtml() + tickerHtml() + remindersHtml() + '<div class="bento">' + vitalsTileHtml() + APPS.map(cardHtml).join('') + '</div>';
+    headerHtml() + tickerHtml() + remindersHtml() + '<div class="bento">' + vitalsTileHtml() + goalsTileHtml() + APPS.map(cardHtml).join('') + '</div>';
   renderModal();
 }
 
-/* ---- Manual (no-band) self-report form: 1–5 ratings → readiness score ---- */
-function manualSel(id, label, opts, cur){
-  return '<div class="field"><label class="fieldLabel" for="' + id + '">' + label + '</label>'
-    + '<select id="' + id + '" class="fieldInput">'
-    + '<option value="">—</option>'
-    + opts.map((t, i) => { const val = i + 1; return '<option value="' + val + '"' + (String(cur) === String(val) ? ' selected' : '') + '>' + val + ' · ' + t + '</option>'; }).join('')
-    + '</select></div>';
-}
+/* ---- Manual entry: the three numbers you read off your watch each morning ---- */
 function manualFormHtml(h){
   const g = (k) => (h && h[k] != null ? h[k] : '');
-  const subj = '<div class="fieldGrid">'
-    + manualSel('f-sq', 'Sleep quality', ['Terrible','Poor','OK','Good','Great'], g('sleepQ'))
-    + manualSel('f-en', 'Energy',        ['Drained','Low','OK','Good','Buzzing'], g('energy'))
-    + manualSel('f-mo', 'Mood',          ['Low','Meh','OK','Good','Great'], g('mood'))
-    + manualSel('f-so', 'Muscle soreness',['None','Mild','Some','Sore','Wrecked'], g('soreness'))
-    + manualSel('f-st', 'Stress',        ['Calm','Low','OK','High','Frazzled'], g('stress'))
-    + '</div>';
-  const measured = '<div class="fieldGrid">'
-    + '<div class="field"><label class="fieldLabel" for="f-sleep">Sleep (hours)</label><input id="f-sleep" class="fieldInput" type="number" min="0" max="24" step="0.1" inputmode="decimal" placeholder="7.5" value="' + esc(g('sleepHours')) + '" /></div>'
-    + '<div class="field"><label class="fieldLabel" for="f-rhr">Resting pulse (bpm)</label><input id="f-rhr" class="fieldInput" type="number" min="20" max="150" inputmode="numeric" placeholder="optional" value="' + esc(g('rhr')) + '" /></div>'
-    + '<div class="field"><label class="fieldLabel" for="f-bed">Bedtime</label><input id="f-bed" class="fieldInput" type="time" value="' + esc(g('bedtime')) + '" /></div>'
-    + '<div class="field"><label class="fieldLabel" for="f-wake">Wake time</label><input id="f-wake" class="fieldInput" type="time" value="' + esc(g('wakeTime')) + '" /></div>'
-    + '<div class="field fieldFull"><label class="fieldLabel" for="f-target">Sleep target (hours)</label><input id="f-target" class="fieldInput" type="number" min="4" max="12" step="0.5" inputmode="decimal" placeholder="8" value="' + esc(h && h.sleepTargetHours != null ? h.sleepTargetHours : 8) + '" /></div>'
-    + '</div>';
-  return '<div class="howto"><div class="howtoTitle">✍️ How you feel this morning</div>'
-    + '<p class="howtoFoot">No band needed. Rate these and we turn them into a daily <strong>readiness score (1–99)</strong> — based on athlete self-report research, where sleep, soreness, stress &amp; energy track recovery well.</p></div>'
-    + subj
-    + '<p class="howtoFoot" style="margin:var(--space-3) 0 var(--space-2)">Optional — sleep, and a pulse you count for 30s × 2 on waking, sharpen the score:</p>'
-    + measured;
+  return '<div class="fieldGrid">'
+    + '<div class="field"><label class="fieldLabel" for="f-hrv">HRV (ms)</label><input id="f-hrv" class="fieldInput" type="number" min="0" max="300" inputmode="numeric" placeholder="42" value="' + esc(g('hrv')) + '" /></div>'
+    + '<div class="field"><label class="fieldLabel" for="f-rhr">Resting HR (bpm)</label><input id="f-rhr" class="fieldInput" type="number" min="20" max="150" inputmode="numeric" placeholder="56" value="' + esc(g('rhr')) + '" /></div>'
+    + '<div class="field fieldFull"><label class="fieldLabel" for="f-sleep">Hours slept</label><input id="f-sleep" class="fieldInput" type="number" min="0" max="24" step="0.1" inputmode="decimal" placeholder="7.5" value="' + esc(g('sleepHours')) + '" /></div>'
+    + '</div>'
+    + '<p class="howtoFoot" style="margin-top:var(--space-3)">Read them off your watch and type them in. The readiness ring is estimated from these three — HRV weighted heaviest, then resting HR, then sleep.</p>';
 }
 
 /* ============================================================
@@ -739,6 +800,10 @@ function renderModal(){
   const pill = (key, emoji, label) => '<button type="button" class="srcPill ' + (src === key ? 'srcPillActive' : '') + '" data-action="src" data-src="' + key + '"><span class="srcEmoji">' + emoji + '</span>' + label + '</button>';
 
   let bodyHtml;
+  // Vitals are manual-only for now. The Whoop / Fitbit / Apple branches below are
+  // kept intact but unreachable — the source pills are hidden and nothing calls
+  // syncWhoop/syncFitbit/syncApple at boot. To bring Fitbit back: restore the
+  // pills in the panel markup below and the sync calls in bootVitals().
   if (src === 'whoop') {
     if (!ON_SERVER) {
       bodyHtml = '<p class="panelNote">Live Whoop sync runs on the deployed app (Vercel) with your Whoop API keys. Opened locally, use <strong>Apple Watch</strong> or <strong>Manual</strong> above. Once deployed &amp; configured, a one-tap <em>Connect Whoop</em> appears here. See <strong>WHOOP_SETUP.md</strong>.</p>';
@@ -783,8 +848,7 @@ function renderModal(){
   }
   const canClear = !!health;
   root.innerHTML = '<div class="overlay" data-action="close-vitals"><div class="panel" data-stop="1">'
-    + '<div class="panelHead"><div><div class="panelEyebrow">Health source</div><h2 class="panelTitle">Today’s vitals</h2></div><button type="button" class="panelClose" data-action="close-vitals">×</button></div>'
-    + '<div class="srcPills">' + pill('whoop','🔋','Whoop') + pill('fitbit','💠','Fitbit') + pill('apple','⌚','Apple Watch') + pill('manual','✍️','Manual') + '</div>'
+    + '<div class="panelHead"><div><div class="panelEyebrow">Manual entry</div><h2 class="panelTitle">Today’s vitals</h2></div><button type="button" class="panelClose" data-action="close-vitals">×</button></div>'
     + bodyHtml
     + '<div class="panelActions">' + (canClear ? '<button type="button" class="btn btn-link spacer" data-action="clear-vitals">clear vitals</button>' : '')
     + '<button type="button" class="btn btn-ghost" data-action="close-vitals">Cancel</button>'
@@ -794,35 +858,25 @@ function renderModal(){
 
 function openVitals(){
   ui.modalOpen = true;
-  ui.draftSource = (health && health.source) ? health.source : 'manual';
-  if (ui.draftSource === 'whoop') ui.draftSource = 'whoop';
+  ui.draftSource = 'manual'; // manual-only for now
   renderModal();
 }
 function saveVitals(){
   const num = (id) => { const el = document.getElementById(id); if (!el || el.value === '') return null; const n = Number(el.value); return isFinite(n) ? n : null; };
   const str = (id) => { const el = document.getElementById(id); return el && el.value ? el.value : null; };
 
-  // ---- Manual self-report (no band): ratings → readiness score ----
+  // ---- Manual entry: HRV, resting HR, hours slept ----
+  // recovery stays null on purpose — the ring shows estRecovery() derived from
+  // these three, badged "est", rather than a number pretending to be measured.
   if (ui.draftSource === 'manual') {
-    const rate = (id) => { const n = num(id); return (n != null && n >= 1 && n <= 5) ? n : null; };
-    const sleepQ = rate('f-sq'), energy = rate('f-en'), mood = rate('f-mo'), soreness = rate('f-so'), stress = rate('f-st');
-    const bedtime = str('f-bed'), wakeTime = str('f-wake');
-    let sleepHours = num('f-sleep');
-    if (sleepHours == null && bedtime && wakeTime) {
-      const [bh, bm] = bedtime.split(':').map(Number);
-      const [wh, wm] = wakeTime.split(':').map(Number);
-      let mins = (wh * 60 + wm) - (bh * 60 + bm);
-      if (mins <= 0) mins += 24 * 60;
-      sleepHours = Math.round((mins / 60) * 10) / 10;
-    }
+    const hrv = num('f-hrv');
     const rhr = num('f-rhr');
-    const target = num('f-target') || 8;
-    const readiness = subjReadiness({ sleepQ, energy, mood, soreness, stress });
-    if (readiness == null && sleepHours == null && rhr == null) { alert('Rate at least how you feel — or enter sleep / bed + wake times.'); return; }
+    const sleepHours = num('f-sleep');
+    if (hrv == null && rhr == null && sleepHours == null) { alert('Enter at least one of HRV, resting HR or hours slept.'); return; }
+    const target = (health && health.sleepTargetHours) || 8;
     const sleepPerf = sleepHours != null ? Math.round(Math.min(100, (sleepHours / target) * 100)) : null;
-    health = { source: 'manual', connected: true, ts: Date.now(), recovery: readiness, subjective: readiness != null,
-      sleepQ, energy, mood, soreness, stress,
-      sleepHours, sleepPerf, sleepTargetHours: target, bedtime, wakeTime, hrv: null, rhr, strain: null };
+    health = { source: 'manual', connected: true, ts: Date.now(), recovery: null,
+      hrv, rhr, sleepHours, sleepPerf, sleepTargetHours: target, strain: null };
     saveHealth(health);
     ui.modalOpen = false;
     render();
@@ -1001,9 +1055,11 @@ applyTheme(currentTheme);
       if (f === 'error' || f === 'denied') alert('Fitbit connection didn’t complete. Check your FITBIT_CLIENT_ID / SECRET and the registered redirect URL (see FITBIT_SETUP.md), then try again.');
     }
   } catch (e) {}
-  syncWhoop();
-  syncFitbit();
-  syncApple();
+  // Vitals are manual-only for now — no device sync on boot. Re-enable by
+  // uncommenting these (and restoring the source pills in renderModal).
+  // syncWhoop();
+  // syncFitbit();
+  // syncApple();
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
