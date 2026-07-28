@@ -11,7 +11,7 @@
        for now; the live sync arrives in a later episode
 - [x] 5. Vercel. import the repo, hit deploy                          RECOMMENDED
        your dashboard live at your own URL. every push updates it
-- [ ] 6. Phone. open the live URL, Share, Add to Home Screen          OPTIONAL
+- [x] 6. Phone. open the live URL, Share, Add to Home Screen          OPTIONAL
        the dashboard as an app in your pocket
 
 Done is 1 to 5. Six is a bonus. Tiles come after, one at a time, from a video.
