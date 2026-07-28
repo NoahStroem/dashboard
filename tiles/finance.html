@@ -1,0 +1,1920 @@
+<!DOCTYPE html>
+<html lang="en" style="background: #050807; color-scheme: dark;">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#04060a" />
+<title>Finance — Stocks</title>
+
+<!-- app/layout.tsx loads Instrument Serif (400, normal+italic), Inter and
+     JetBrains Mono (400/500) via next/font/google, assigning --font-serif /
+     --font-inter / --font-mono on <html>. Same faces, same var names. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+/* ===========================================================================
+   app/globals.css — :root tokens, reset, body (verbatim)
+   =========================================================================== */
+
+:root {
+  /* Colors */
+  --bg: #000000;
+  --bg-elevated: #0a0a0a;
+  --fg: #ffffff;
+  --mint: #6EE7B7;
+  --mint-hover: #5dd6a6;
+  --mint-deep: #1f4d3d;       /* dark teal partner to mint */
+  --mint-glow: rgba(110, 231, 183, 0.4);
+  --mint-ink: #042a1c;        /* dark foreground for text/icons on a mint fill */
+  --amber: #F59E0B;
+  --amber-warm: #d97706;      /* deeper amber for duotone gradients */
+  --wine: #7c2d12;            /* deep red-brown, partners with amber */
+  --red: #EF4444;
+  --muted: rgba(255, 255, 255, 0.5);
+  --muted-strong: rgba(255, 255, 255, 0.7);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --card: rgba(255, 255, 255, 0.02);
+  --card-elevated: rgba(255, 255, 255, 0.04);
+
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Type */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --text-3xl: 2.5rem;
+
+  /* Motion */
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);   /* the signature easing — used on every meaningful state change */
+  --ease-out-soft: cubic-bezier(0.32, 0.72, 0, 1); /* smooth lift / float */
+  --duration-fast: 120ms;
+  --duration: 180ms;
+  --duration-lift: 480ms;
+
+  /* Font families — next/font assigns these on <html> in layout.tsx. */
+  --font-inter: 'Inter';
+  --font-serif: 'Instrument Serif';
+  --font-mono: 'JetBrains Mono';
+}
+
+/* ----- Reset ----- */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  /* Kill the grey/blue tap flash Safari paints over buttons & links on touch. */
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  height: 100%;
+  /* Rubber-band / overscroll past the top of any page must show the app's
+     near-black, never a pure-black band. Tint the root the editorial
+     atmosphere's darkest stop (#04060a) so the reveal is seamless, and damp the
+     bounce so it barely shows at all. body keeps var(--bg) below. */
+  background: #04060a;
+  overscroll-behavior-y: none;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: var(--text-base);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  /* Retint every native control accent (form widgets, iOS cursor/selection
+     grab-handles) to the brand mint so nothing renders the OS default blue. */
+  accent-color: var(--mint);
+}
+
+/* The text caret ("classic line") is brand mint, never the iOS blue.
+   On iOS the selection grab-handles follow this tint too. */
+input,
+textarea,
+select,
+[contenteditable] {
+  caret-color: var(--mint);
+}
+
+/* Text selection — never the OS blue (reads as unprofessional). A subtle
+   on-brand mint wash, applied site-wide. Inputs are never auto-select()ed
+   either, so editing shows the caret line, not a highlighted block. */
+::selection {
+  background: rgba(110, 231, 183, 0.25);
+}
+::-moz-selection {
+  background: rgba(110, 231, 183, 0.25);
+}
+
+/* Keyboard focus — never the OS-blue UA ring, and never invisible (many
+   modules set outline: none). Mint ring, keyboard-only: :focus-visible does
+   not fire on touch/mouse taps. */
+:focus-visible {
+  outline: 2px solid rgba(110, 231, 183, 0.65);
+  outline-offset: 2px;
+}
+
+/* App-like selection: UI text can't be accidentally highlighted by a drag or
+   double-click. Inputs stay selectable so typing/editing works; add the
+   .selectable class to any content genuinely meant to be copied. */
+body {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+}
+
+input,
+textarea,
+select,
+[contenteditable],
+.selectable,
+.selectable * {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  user-select: text;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: color var(--duration) var(--ease);
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+}
+
+input, textarea, select {
+  font-family: inherit;
+  color: inherit;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+/* ----- Texture overlays ----- */
+
+/* Film grain — extremely subtle SVG noise, fixed-position so it doesn't scroll.
+   FinanceModule renders <main className={`${styles.page} grain-overlay`}>. */
+.grain-overlay {
+  position: relative;
+}
+
+.grain-overlay::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.035;
+  /* no mix-blend-mode: a blended fixed layer forces the compositor to
+     re-blend the whole page every scroll frame on mobile; at 3.5% opacity
+     the plain texture reads the same */
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: 200px 200px;
+}
+
+/* ===========================================================================
+   components/WelcomeBackdrop.module.css — the atmospheric world layer
+   FinanceModule renders behind the shell. DEFAULT_CHROME.background =
+   { mode:'world', accent:'#6EE7B7', particles:24, mountains:true, speed:1 }
+   =========================================================================== */
+
+.atmosphere {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  /* The aurora wash tints to --wall-accent (the chosen World accent), so changing
+     the wallpaper color re-themes the whole glow. Falls back to mint. */
+  background-image:
+    radial-gradient(60% 50% at 50% 30%,
+      color-mix(in srgb, var(--wall-accent, #6EE7B7) 16%, transparent) 0%,
+      color-mix(in srgb, var(--wall-accent, #6EE7B7) 6%, transparent) 32%,
+      transparent 65%),
+    radial-gradient(28% 22% at 50% 38%, rgba(255, 226, 181, 0.07) 0%, rgba(255, 226, 181, 0) 70%),
+    radial-gradient(120% 80% at 50% 100%, rgba(14, 38, 30, 0.5) 0%, rgba(4, 6, 10, 0.95) 75%);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+
+.mountainsLayer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  height: 30vh;
+  min-height: 180px;
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.mountainsLayer svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.particles {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.particles span {
+  position: absolute;
+  width: 1.5px;
+  height: 1.5px;
+  background: rgba(233, 239, 233, 0.7);
+  border-radius: 50%;
+  animation: welcome-backdrop-drift linear infinite;
+  /* particle glow tints to the chosen accent too */
+  box-shadow: 0 0 6px color-mix(in srgb, var(--wall-accent, #a7f3d0) 55%, transparent);
+}
+
+@keyframes welcome-backdrop-drift {
+  0%   { transform: translate3d(0, 0, 0); opacity: 0; }
+  10%  { opacity: 0.7; }
+  90%  { opacity: 0.55; }
+  100% { transform: translate3d(var(--dx, 12px), var(--dy, -100vh), 0); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .particles span { animation: none; }
+}
+
+/* ===========================================================================
+   app/app/finance/finance.module.css — every rule these components use.
+   =========================================================================== */
+
+/* --- Page shell -------------------------------------------------- */
+
+.page {
+  position: relative;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--fg);
+  padding: calc(var(--space-6) + env(safe-area-inset-top)) var(--space-5) var(--space-16);
+  isolation: isolate;
+}
+
+.page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(60% 40% at 80% 10%, rgba(124, 45, 18, 0.08), transparent 70%),
+    radial-gradient(50% 35% at 15% 90%, rgba(110, 231, 183, 0.05), transparent 70%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.shell {
+  max-width: 980px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 5;
+}
+
+/* --- Header (back nav + serif title + currency selector) ------- */
+
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.headerLeft {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  align-self: flex-start;
+  padding: 6px 12px 6px 8px;
+  background: rgba(110, 231, 183, 0.08);
+  border: 1px solid rgba(110, 231, 183, 0.20);
+  border-radius: var(--radius-pill);
+  color: var(--mint);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  transition: background var(--duration) var(--ease-premium), border-color var(--duration) var(--ease-premium);
+}
+
+.back:hover {
+  background: rgba(110, 231, 183, 0.14);
+  border-color: rgba(110, 231, 183, 0.32);
+}
+
+.backArrow {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: var(--text-3xl);
+  font-weight: 400;
+  line-height: 1.05;
+  color: var(--fg);
+  margin: 0;
+}
+
+.subtitle {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* --- Currency segmented pill ---------------------------------- */
+
+.currencySeg {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 3px;
+  gap: 2px;
+}
+
+.currencyBtn {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  padding: 5px 11px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: background var(--duration) var(--ease-premium), color var(--duration) var(--ease-premium);
+}
+
+.currencyBtn:hover {
+  color: var(--muted-strong);
+}
+
+.currencyBtnActive {
+  background: var(--mint);
+  color: var(--mint-ink);
+}
+
+.currencyBtnActive:hover {
+  color: var(--mint-ink);
+}
+
+/* --- Section composition --------------------------------------- */
+
+.section {
+  margin-bottom: var(--space-10);
+}
+
+.sectionEyebrow {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: var(--text-lg);
+  color: var(--muted-strong);
+  margin-bottom: var(--space-3);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.sectionEyebrow .sectionCount {
+  font-family: var(--font-inter), system-ui;
+  font-style: normal;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+/* --- Quick add row -------------------------------------------- */
+
+.quickAdd {
+  display: grid;
+  grid-template-columns: 1fr 110px auto;
+  gap: 6px;
+  align-items: stretch;
+}
+
+.quickAddInput {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 8px 10px;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+  transition: border-color var(--duration) var(--ease-premium);
+}
+
+.quickAddInput::placeholder {
+  color: var(--muted);
+}
+
+.quickAddInput:focus {
+  border-color: rgba(110, 231, 183, 0.4);
+}
+
+/* Visible keyboard focus ring on inputs (the bare border shift wasn't enough). */
+.quickAddInput:focus-visible,
+.inlineEditInput:focus-visible {
+  border-color: var(--mint);
+  box-shadow: 0 0 0 2px rgba(110, 231, 183, 0.35);
+}
+
+.quickAddBtn {
+  background: var(--mint);
+  border: 0;
+  color: var(--mint-ink);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  padding: 0 14px;
+  cursor: pointer;
+  transition: background var(--duration) var(--ease-premium);
+}
+
+.quickAddBtn:hover {
+  background: var(--mint-hover);
+}
+
+/* --- Holdings footer / link action ---------------------------- */
+
+.holdingsFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 4px 2px 0;
+}
+
+.linkAction {
+  background: transparent;
+  border: 0;
+  padding: 4px 0;
+  color: var(--muted-strong);
+  font-family: inherit;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: color var(--duration) var(--ease-premium);
+}
+
+.linkAction:hover {
+  color: var(--mint);
+}
+
+/* --- Add eyebrow ---------------------------------------------- */
+
+.addEyebrow {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* --- Empty states ---------------------------------------------- */
+
+.emptyState {
+  padding: var(--space-8) var(--space-5);
+  text-align: center;
+  background: var(--card);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-4);
+}
+
+.emptyTitle {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: var(--text-lg);
+  color: var(--muted-strong);
+  margin-bottom: var(--space-2);
+}
+
+.emptyBody {
+  font-size: 12px;
+  color: var(--muted);
+  max-width: 36ch;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+/* --- Bottom tab bar ------------------------------------------ */
+
+.tabBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  display: flex;
+  justify-content: center;
+  padding: var(--space-3) var(--space-4) calc(var(--space-3) + env(safe-area-inset-bottom));
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 60%, transparent);
+  pointer-events: none;
+}
+
+.tabBarInner {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: rgba(20, 20, 22, 0.9);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  pointer-events: auto;
+}
+
+.tab {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: background var(--duration) var(--ease-premium), color var(--duration) var(--ease-premium);
+}
+
+.tab:hover {
+  color: var(--muted-strong);
+}
+
+.tab.active {
+  background: var(--mint);
+  color: var(--mint-ink);
+}
+
+.tab.active:hover {
+  color: var(--mint-ink);
+}
+
+/* Add bottom space so the fixed tab bar doesn't cover content */
+.shell {
+  padding-bottom: 90px;
+}
+
+/* --- Tab view ------------------------------------------------- */
+
+.tabView {
+  animation: tabFade 280ms var(--ease-premium) both;
+}
+@keyframes tabFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tabView { animation: none; }
+}
+
+/* =====================================================================
+   Stocks tab — "Apple Health for stocks". Four blocks, top to bottom:
+   your stocks (personal index) · today's pick · news on holdings ·
+   holdings as health cards. Colour law is hard here: mint = good,
+   amber = caution, NEVER red for state (a down day / weak holding is
+   warm amber). All classes are stk-prefixed, no collisions. Reuses
+   .section, .sectionEyebrow, .sectionCount, .emptyState, .addEyebrow,
+   .quickAdd, .holdingsFooter, .linkAction from above.
+   ===================================================================== */
+
+/* Shared move colours — mint up, warm amber down (never red). */
+.stkUp   { color: var(--mint); }
+.stkDown { color: var(--amber-warm); }
+
+/* --- 1. Your stocks: the personal index ---------------------- */
+
+.stkIndexCard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: var(--space-5) var(--space-5);
+  background: linear-gradient(165deg, rgba(16, 26, 22, 0.55) 0%, rgba(7, 12, 10, 0.42) 100%);
+  border: 1px solid rgba(110, 231, 183, 0.14);
+  border-radius: 18px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 22px 50px -30px rgba(0, 0, 0, 0.75);
+  margin-bottom: var(--space-8);
+}
+
+.stkIndexLabel {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+
+.stkIndexValueRow {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.stkIndexValue {
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg);
+}
+
+.stkIndexChange {
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.stkIndexChangeUnit {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+.stkIndexWaiting {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.stkIndexSub {
+  font-size: 12px;
+  color: var(--muted-strong);
+}
+
+/* --- 2. Today's pick ----------------------------------------- */
+
+.stkPickCard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: var(--space-4) var(--space-5);
+  background: var(--card-elevated);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--mint);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-8);
+}
+
+.stkPickHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stkPickKind {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  background: rgba(110, 231, 183, 0.12);
+  border: 1px solid rgba(110, 231, 183, 0.28);
+  color: var(--mint);
+}
+
+/* Illustrative marker so no one mistakes the seed for a live call. */
+.stkPickExample {
+  margin-left: auto;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  background: rgba(245, 158, 11, 0.10);
+  border: 1px dashed rgba(245, 158, 11, 0.35);
+  color: var(--amber);
+}
+
+.stkPickTicker {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--fg);
+  margin-top: 2px;
+}
+
+.stkPickName {
+  font-size: 12px;
+  color: var(--muted-strong);
+}
+
+.stkPickReason {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--fg);
+  margin-top: 2px;
+}
+
+.stkPickNote {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* --- 3. News on your holdings -------------------------------- */
+
+.stkNewsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-8);
+}
+
+.stkNewsItem {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: var(--space-3) var(--space-4);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.stkNewsHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stkSignal {
+  flex-shrink: 0;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+}
+
+.stkSigGood {
+  background: rgba(110, 231, 183, 0.12);
+  border-color: rgba(110, 231, 183, 0.28);
+  color: var(--mint);
+}
+.stkSigWatch {
+  background: rgba(245, 158, 11, 0.10);
+  border-color: rgba(245, 158, 11, 0.26);
+  color: var(--amber);
+}
+.stkSigNeg {
+  background: rgba(217, 119, 6, 0.12);
+  border-color: rgba(217, 119, 6, 0.30);
+  color: var(--amber-warm);
+}
+
+.stkNewsTicker {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--fg);
+}
+
+.stkNewsHeadline {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--fg);
+}
+
+.stkNewsWhy {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+/* --- 4. Holdings health cards -------------------------------- */
+
+.stkHealthList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.stkHealthCard {
+  padding: var(--space-3) var(--space-4);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  transition: border-color var(--duration) var(--ease-premium);
+}
+
+.stkHealthCard:hover {
+  border-color: var(--border-strong);
+}
+
+/* Attention state: amber pulse + halo (never red). */
+.stkHealthFlagged {
+  border-color: rgba(245, 158, 11, 0.40);
+  animation: stkPulse 2.4s var(--ease-premium) infinite;
+}
+
+@keyframes stkPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.0); border-color: rgba(245, 158, 11, 0.24); }
+  50%      { box-shadow: 0 0 22px -6px rgba(245, 158, 11, 0.45); border-color: rgba(245, 158, 11, 0.55); }
+}
+
+.stkHealthTop {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  background: transparent;
+  border: 0;
+  padding: 2px 0;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+}
+
+.stkHealthIdent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.stkHealthTicker {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--fg);
+}
+
+.stkStandpoint {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+}
+
+.stkStandStrong  { color: var(--mint);       background: rgba(110, 231, 183, 0.12); border-color: rgba(110, 231, 183, 0.26); }
+.stkStandHealthy { color: var(--mint);        background: rgba(110, 231, 183, 0.07); border-color: rgba(110, 231, 183, 0.16); }
+.stkStandWatch   { color: var(--amber);       background: rgba(245, 158, 11, 0.10);  border-color: rgba(245, 158, 11, 0.24); }
+.stkStandWeak    { color: var(--amber-warm);  background: rgba(217, 119, 6, 0.12);   border-color: rgba(217, 119, 6, 0.30); }
+
+.stkHealthNums {
+  margin-left: auto;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.stkHealthValue {
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg);
+}
+
+.stkHealthChange {
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.stkHealthChangeNone {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.stkChevron {
+  flex-shrink: 0;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--muted);
+  transition: transform var(--duration) var(--ease-premium);
+}
+
+.stkChevronOpen {
+  transform: rotate(180deg);
+}
+
+/* health dots */
+.stkDots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-4);
+  margin-top: var(--space-3);
+}
+
+.stkDotItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stkDotCircle {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.stkGood    { background: var(--mint); box-shadow: 0 0 6px -1px var(--mint-glow); }
+.stkCaution { background: var(--amber); box-shadow: 0 0 6px -1px rgba(245, 158, 11, 0.5); }
+
+.stkDotLabel {
+  font-size: 11px;
+  color: var(--muted-strong);
+}
+
+/* flagged nudge line */
+.stkFlagNudge {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: var(--space-3);
+  padding: 8px 10px;
+  background: rgba(245, 158, 11, 0.07);
+  border: 1px solid rgba(245, 158, 11, 0.22);
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--muted-strong);
+}
+
+.stkFlagTag {
+  flex-shrink: 0;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+
+/* expanded panel */
+.stkExpand {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+}
+
+.stkExpandBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stkExpandLabel {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.stkExpandText {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--fg);
+}
+
+.stkLongGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-2) var(--space-4);
+}
+
+.stkLongItem {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.stkLongLabel {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.stkLongValue {
+  font-size: 13px;
+  color: var(--fg);
+}
+
+.stkRemove {
+  align-self: flex-start;
+  background: transparent;
+  border: 0;
+  padding: 4px 0;
+  color: var(--muted);
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  transition: color var(--duration) var(--ease-premium);
+}
+
+.stkRemove:hover {
+  color: var(--amber);
+}
+
+@media (max-width: 520px) {
+  .stkIndexValue { font-size: 28px; }
+  .stkLongGrid { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stkHealthFlagged { animation: none !important; }
+  .stkChevron, .stkHealthCard, .stkRemove { transition: none !important; }
+}
+
+/* ===== The poster face =====
+   The grid layer. Ported from Vitality's core Finance tile: veeTiles.css
+   (.tile glass, .index, .glyph, .label, .arrow, the legibility scrim, the fin
+   amber art classes) + the art SVG from lib/tiles/coreTiles.tsx (finance) +
+   the vEndptA gradient from DashboardGrid.tsx. Values verbatim, renamed vp*
+   so nothing collides with the page styles. The host's card provides the
+   border and radius; this paints the inside. */
+#vposter{display:none}
+.posterMode main.page{display:none}
+html.posterMode{background:transparent !important}
+.posterMode body{background:transparent !important}
+.posterMode #vposter{display:block;position:fixed;inset:0;overflow:hidden}
+#vposter::before{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(ellipse 85% 75% at 58% 38%, rgba(110,231,183,.06), transparent 64%)}
+#vposter::after{content:'';position:absolute;inset:0;z-index:4;pointer-events:none;
+  background:linear-gradient(to top, rgba(4,7,6,.6) 0%, rgba(4,7,6,.16) 22%, transparent 44%)}
+.vpArt{position:absolute;inset:0;width:100%;height:100%;z-index:2}
+.vpIndex{position:absolute;top:15px;left:20px;z-index:6;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;letter-spacing:.12em;color:rgba(255,255,255,.38)}
+.vpGlyph{position:absolute;top:13px;right:16px;z-index:6;width:20px;height:20px;color:#6EE7B7;opacity:.4}
+.vpGlyph svg{width:100%;height:100%;display:block}
+.vpLabel{position:absolute;left:20px;bottom:16px;z-index:6;font-family:var(--font-serif),'Times New Roman',Georgia,serif;font-style:italic;font-size:22px;color:#fff}
+.vpArrow{position:absolute;right:18px;bottom:17px;z-index:6;color:#fff;opacity:.4;font-size:14px}
+.vpMot{fill:none;stroke:rgba(232,150,74,.92);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;
+  filter:drop-shadow(0 0 3px rgba(232,150,74,.5)) drop-shadow(0 0 9px rgba(232,150,74,.3))}
+.vpCandle{fill:rgba(232,150,74,.16);stroke:rgba(232,150,74,.85);stroke-width:1.35;filter:drop-shadow(0 0 4px rgba(232,150,74,.28))}
+.vpNode{fill:#ffeede;filter:drop-shadow(0 0 3px rgba(232,150,74,.95)) drop-shadow(0 0 7px rgba(232,150,74,.5))}
+.vpGlow{fill:url(#vEndptA);opacity:.9;animation:vpBreathe 5s cubic-bezier(.16,1,.3,1) infinite;transform-origin:center;transform-box:fill-box}
+@keyframes vpBreathe{0%,100%{opacity:.45;transform:scale(.92)}50%{opacity:.95;transform:scale(1.08)}}
+@media (prefers-reduced-motion: reduce){.vpGlow{animation:none}}
+</style>
+<script>if(!/page/.test(location.hash)&&window.self!==window.top)document.documentElement.className+=' posterMode'</script>
+</head>
+<body>
+
+<!-- The poster face: what the grid shows. lib/tiles/coreTiles.tsx (finance),
+     art SVG verbatim; the trend glyph verbatim; index 07; label Finance. -->
+<div id="vposter" aria-hidden="true">
+  <span class="vpIndex">07</span>
+  <span class="vpGlyph"><svg viewBox="-12 -12 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"><path d="M-9 6 L-3 0 L2 5 L9 -4" /><path d="M4 -4 L9 -4 L9 1" /></svg></span>
+  <svg class="vpArt" viewBox="0 0 434 118">
+    <defs>
+      <radialGradient id="vEndptA">
+        <stop offset="0%" stop-color="#ffe9cf" stop-opacity=".95" />
+        <stop offset="40%" stop-color="#e8964a" stop-opacity=".4" />
+        <stop offset="100%" stop-color="#e8964a" stop-opacity="0" />
+      </radialGradient>
+    </defs>
+    <g style="opacity:.8">
+      <line class="vpMot" x1="190" y1="50" x2="190" y2="88" /><rect class="vpCandle" x="184" y="58" width="12" height="20" rx="2" />
+      <line class="vpMot" x1="252" y1="44" x2="252" y2="84" /><rect class="vpCandle" x="246" y="51" width="12" height="23" rx="2" />
+      <line class="vpMot" x1="314" y1="36" x2="314" y2="78" /><rect class="vpCandle" x="308" y="43" width="12" height="25" rx="2" />
+      <line class="vpMot" x1="376" y1="26" x2="376" y2="70" /><rect class="vpCandle" x="370" y="33" width="12" height="27" rx="2" />
+    </g>
+    <g transform="translate(252 44)"><circle class="vpGlow" r="9" /><circle class="vpNode" r="3.4" /></g>
+  </svg>
+  <span class="vpLabel">Finance</span>
+  <span class="vpArrow">→</span>
+</div>
+
+<main class="page grain-overlay">
+  <!-- <WelcomeBackdrop /> — DEFAULT_CHROME.background, world mode. -->
+  <div style="--wall-accent: #6EE7B7">
+    <div class="atmosphere" aria-hidden="true"></div>
+    <div class="mountainsLayer" aria-hidden="true">
+      <svg viewBox="0 0 1600 420" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="welcome-backdrop-mt-far" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#0d1a17" stop-opacity="0" />
+            <stop offset="55%" stop-color="#0d1a17" stop-opacity=".55" />
+            <stop offset="100%" stop-color="#0d1a17" stop-opacity=".95" />
+          </linearGradient>
+          <linearGradient id="welcome-backdrop-mt-near" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#050a09" stop-opacity=".4" />
+            <stop offset="60%" stop-color="#050a09" stop-opacity=".95" />
+            <stop offset="100%" stop-color="#050a09" stop-opacity="1" />
+          </linearGradient>
+        </defs>
+        <path d="M0,300 L120,230 L210,260 L320,180 L430,220 L560,150 L680,210 L820,170 L960,220 L1100,180 L1240,240 L1380,200 L1500,250 L1600,220 L1600,420 L0,420 Z" fill="url(#welcome-backdrop-mt-far)" />
+        <path d="M0,360 L100,320 L220,340 L340,290 L460,330 L590,300 L720,340 L860,310 L1000,350 L1140,310 L1280,355 L1420,320 L1540,360 L1600,340 L1600,420 L0,420 Z" fill="url(#welcome-backdrop-mt-near)" />
+      </svg>
+    </div>
+    <div class="particles" id="particles" aria-hidden="true"></div>
+  </div>
+
+  <div class="shell">
+    <!-- <FinanceHeader /> -->
+    <header class="header">
+      <div class="headerLeft">
+        <!-- the back-to-dashboard pill stays in the app; sealed, the host's close button is the way out -->
+        <h1 class="title">Finance</h1>
+        <p class="subtitle">Net worth · subs · orders · wishlist</p>
+      </div>
+
+      <div class="currencySeg" role="group" aria-label="Display currency" id="currencySeg"></div>
+    </header>
+
+    <!-- <Ticker /> — buildEntries() over zero subscriptions returns [], and the
+         component returns null when entries.length === 0. Nothing renders. -->
+
+    <div class="tabView" id="tabView"></div>
+
+    <!-- The tab bar returns when this tile has a second working tab. Each
+         episode ships the tile as of that episode: install = replace this one
+         file; data survives because the vault slot is keyed by the tile id,
+         never the file. A tab that renders but does nothing is a broken
+         promise, so the stocks-only version shows no bar at all. -->
+
+  </div>
+</main>
+
+<script>
+/* ===========================================================================
+ * Stocks tab — "Apple Health for stocks".
+ *
+ * Built for a long-term investor, not a trader. It answers three questions in
+ * five seconds: is this still good, did anything change, should I look today.
+ * Top to bottom:
+ *   1. Your stocks   — every holding treated as one personal index.
+ *   2. Today's pick  — one plain-English idea a day, given what you own.
+ *   3. News          — only about the tickers you actually hold.
+ *   4. Holdings      — each a plain-English health card, tap to expand.
+ *
+ * All jargon is funnelled to plain words ("Expensive", not "P/E 32x").
+ *
+ * Colour law (hard): mint = good, amber = caution. Never red for state — a down
+ * day or a struggling holding is warm amber, never a red alarm.
+ *
+ * THE SLOT (Vitality.save/load - this tile's own state):
+ *   { holdings: [{ id, type:'stocks', name, ticker, shares, amountCHF }],
+ *     currency: 'CHF'|'USD'|'EUR'|'GBP' }
+ * THE FEED (the host's 'feed' message; tiles/data/finance.json, written by
+ * automation/refresh-finance.mjs + the mentor):
+ *   { holdings?: [{ ticker, shares, name? }]          the mentor-managed list
+ *     quotes?:   { TICKER: { priceUSD, changePct } }
+ *     news?:     [{ ticker, signal:'good'|'watch'|'negative', headline, why }]
+ *     pick?:     { ticker, name, kind:'etf'|'stock', reason }
+ *     health?:   { TICKER: { standpoint:'Strong'|'Healthy'|'Watch'|'Weak',
+ *                            marks:{business,value,growth,financials,news},
+ *                            flagged, nudge } }
+ *     updated?:  ISO timestamp }
+ * =========================================================================== */
+
+// --- the Vitality bridge -----------------------------------------------------
+// The shipped contract, verbatim: the tile defines the bridge, speaks postMessage
+// to the sealed frame's parent, and never touches storage itself (the sandbox
+// has none - a localStorage fallback here would silently lose every save).
+var Vitality={_w:{},_sv:false,save:function(d){Vitality._sv=true;parent.postMessage({source:'vitality-tile',type:'save',data:d},'*')},load:function(){return new Promise(function(res){var id=Math.random().toString(36).slice(2);var ask=function(){parent.postMessage({source:'vitality-tile',type:'load',id:id},'*')};var n=0;var t=setInterval(function(){n++;if(n===1){ask();return}clearInterval(t);if(Vitality._w[id]){Vitality._w[id]=function(d){if(d!=null&&!Vitality._sv)location.reload()};res(null)}},3000);Vitality._w[id]=function(d){clearInterval(t);res(d)};ask()})},report:function(s){parent.postMessage({source:'vitality-tile',type:'report',stream:s},'*')}};
+function vNote(t){var n=document.getElementById('v-note');if(!n){n=document.createElement('div');n.id='v-note';n.style.cssText='margin-top:10px;font-size:12px;color:#F59E0B;text-align:center';document.body.appendChild(n)}n.textContent=t}
+function todayKey(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+
+// THE FEED. The host fetches tiles/data/finance.json (written by the routine,
+// pushed through git) and hands it over as {type:'feed'}. Everything automated
+// arrives here: quotes, news, the pick, health, mentor-managed holdings.
+var FEED = {}
+window.addEventListener('message', function (e) {
+  var m = e.data
+  if (!m || m.source !== 'vitality-host') return
+  if (m.type === 'load:result' && Vitality._w[m.id]) { Vitality._w[m.id](m.data); delete Vitality._w[m.id]; return }
+  if (m.type === 'feed') { FEED = (m.data && typeof m.data === 'object') ? m.data : {}; onFeed(); return }
+  if (m.type === 'save:error') { vNote('That save did not stick. Try again in a moment.') }
+  else if (m.type === 'report:error') { vNote('That log did not land, so it does not count yet. Try again in a moment.') }
+})
+
+// Quotes come from the feed, so priceHolding below stays exactly as ported.
+Vitality.stock = function (t) {
+  var q = FEED.quotes && FEED.quotes[t]
+  return q != null ? Promise.resolve(q) : Promise.reject(new Error('no_key'))
+}
+
+// Standalone (opened directly, no host): fall back to localStorage so the file
+// still runs anywhere. Sealed frames never take this branch - the host's bridge
+// above is already defined, and their sandbox has no storage anyway.
+if (window.self === window.top) {
+  window.Vitality = {
+    save: d => { try{localStorage.setItem('v:finance',JSON.stringify(d))}catch(e){} return Promise.resolve(true) },
+    load: () => { try{ return Promise.resolve(JSON.parse(localStorage.getItem('v:finance')||'null')) }catch(e){ return Promise.resolve(null) } },
+    report: () => {},
+    stock: t => { var q = FEED.quotes && FEED.quotes[t]; return q != null ? Promise.resolve(q) : Promise.reject(new Error('no_key')) },
+  }
+}
+
+// -----------------------------------------------------------------------------
+// types.ts — currencies · state.ts — DEFAULT_RATES + fmtMoney
+// -----------------------------------------------------------------------------
+
+const CURRENCIES = ['CHF', 'USD', 'EUR', 'GBP']
+/** state.ts holds these until /api/finance/rates returns; standalone has no
+ *  rates endpoint, so this stays the app's own pre-fetch default. */
+const rates = { CHF: 1, USD: 1, EUR: 1, GBP: 1 }
+
+function fmtMoney(amountCHF, currency, rates) {
+  const rate = rates[currency] || 1
+  const num = (Number(amountCHF) || 0) * rate
+  const hasFraction = Math.abs(num % 1) > 0.005
+  return `${currency} ${num.toLocaleString('en-US', {
+    minimumFractionDigits: hasFraction ? 2 : 0,
+    maximumFractionDigits: 2,
+  })}`
+}
+
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ))
+}
+
+function genId(p) { return `${p}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}` }
+
+// -----------------------------------------------------------------------------
+// small formatters
+// -----------------------------------------------------------------------------
+
+function fmtPct(p) {
+  return `${p >= 0 ? '+' : ''}${p.toFixed(2)}%`
+}
+/** mint when up/flat, warm amber when down — never red (colour law). */
+function moveClass(p) {
+  return p >= 0 ? 'stkUp' : 'stkDown'
+}
+function arrow(p) {
+  return p >= 0 ? '↑' : '↓'
+}
+
+// -----------------------------------------------------------------------------
+// 2. Today's pick — seed data
+//
+// A scheduled Claude routine overwrites this daily (read_data / save_data into a
+// finance slot) with a fresh, personalised idea. Until then it ships as a clearly
+// marked EXAMPLE so the tab boots with something real instead of an empty shell.
+// The user's holdings lean broad-market US + tech (VOO, VO, QQQ) plus Disney and
+// Altria, so the seeded pick diversifies AWAY from that concentration.
+// -----------------------------------------------------------------------------
+
+const DAILY_PICK = {
+  ticker: 'VXUS',
+  name: 'Vanguard Total International Stock',
+  kind: 'etf',
+  reason:
+    'You lean heavily on US companies and tech. This one holds thousands of businesses outside the US, so a rough patch at home does not drag down everything you own at once.',
+}
+
+// -----------------------------------------------------------------------------
+// 3. News — only about tickers you hold
+//
+// A scheduled Claude routine refreshes this daily. Seeded with plausible,
+// plain-English items for the user's actual tickers; RENDERED only when the
+// ticker is in the user's stock holdings, so the feed is always about you.
+// -----------------------------------------------------------------------------
+
+// Ships empty. The scheduled routine writes real news in. An invented headline
+// reads as fact to whoever installs this.
+const HOLDING_NEWS = [];
+
+const SIGNAL_LABEL = {
+  good: 'good',
+  watch: 'watch',
+  negative: 'heads up',
+}
+const SIGNAL_CLASS = {
+  good: 'stkSigGood',
+  watch: 'stkSigWatch',
+  negative: 'stkSigNeg',
+}
+
+// -----------------------------------------------------------------------------
+// 4. Holdings health — seed data
+//
+// A scheduled Claude routine fills this in (read_data / save_data). Keyed by
+// ticker. Everything is plain English on purpose: "Growing" not "revenue CAGR",
+// "Expensive" not "P/E 32x", "Low" not a debt ratio. `flagged` gives the card an
+// amber pulse + a "worth a look" nudge — amber, never red. MO is seeded flagged
+// so the attention state is visible out of the box.
+// -----------------------------------------------------------------------------
+
+// Ships empty. A made up health rating is a lie with a mint dot next to it.
+const STOCK_HEALTH = {};
+
+const STANDPOINT_CLASS = {
+  Strong: 'stkStandStrong',
+  Healthy: 'stkStandHealthy',
+  Watch: 'stkStandWatch',
+  Weak: 'stkStandWeak',
+}
+
+const DOT_META = [
+  { key: 'business', label: 'Business' },
+  { key: 'value', label: 'Value' },
+  { key: 'growth', label: 'Growth' },
+  { key: 'financials', label: 'Financials' },
+  { key: 'news', label: 'News' },
+]
+
+// -----------------------------------------------------------------------------
+// Store — the empty store is { holdings: [] }.
+// -----------------------------------------------------------------------------
+
+const store = { holdings: [], currency: 'CHF' }
+/** QuoteMap: ticker -> StockQuote. Live only, never persisted (as in state.ts). */
+const quotes = {}
+/** HealthCard `open` state, keyed by account id. */
+const openCards = new Set()
+/** The quick-add row's two useState values. */
+let tickerInput = ''
+let sharesInput = ''
+
+function save() {
+  // The tile's one honest number: the basket's value today, into the ledger.
+  // One report call site; re-reporting a day replaces it, never duplicates.
+  const total = store.holdings.reduce((s, a) => s + (Number(a.amountCHF) || 0), 0)
+  if (isFinite(total) && total > 0) {
+    Vitality.report({ key: 'portfolio', label: 'Portfolio', value: Math.round(total), date: todayKey(), kind: 'money', goalDirection: 'up' })
+  }
+  return window.Vitality.save({ holdings: store.holdings, currency: store.currency })
+}
+
+function fmt(chf) { return fmtMoney(chf, store.currency, rates) }
+
+// --- actions -----------------------------------------------------------------
+
+function addHolding(ticker, shares) {
+  const t = String(ticker).trim().toUpperCase()
+  if (!t || !isFinite(shares) || shares <= 0) return
+  // Optimistically value at 0 — the quote lookup fills it in once it returns.
+  const acct = {
+    id: genId('acc'),
+    type: 'stocks',
+    name: t,
+    ticker: t,
+    shares,
+    amountCHF: 0,
+  }
+  store.holdings.push(acct)
+  save()
+  render()
+  priceHolding(acct)
+}
+
+function deleteAccount(id) {
+  const i = store.holdings.findIndex(a => a.id === id)
+  if (i >= 0) store.holdings.splice(i, 1)
+  openCards.delete(id)
+  save()
+  render()
+}
+
+/**
+ * Ask the host for a live quote. amountCHF = shares × priceUSD ÷ rates.USD,
+ * the same arithmetic the quote-sync effect in state.ts runs. When the host has
+ * no Finnhub key (`no_key`) or the ticker doesn't price, let the user type it.
+ */
+function priceHolding(acct) {
+  const t = (acct.ticker || '').toUpperCase()
+  return Promise.resolve()
+    .then(() => window.Vitality.stock(t))
+    .then(q => {
+      const priceUSD = typeof q === 'number' ? q : Number(q && (q.priceUSD != null ? q.priceUSD : (q.price != null ? q.price : q.c)))
+      if (!isFinite(priceUSD) || priceUSD <= 0) throw new Error('no_price')
+      let changePct = null
+      if (q && typeof q === 'object') {
+        const raw = q.changePct != null ? q.changePct : q.dp
+        if (raw != null && isFinite(Number(raw))) changePct = Number(raw)
+      }
+      applyQuote(acct, priceUSD, changePct)
+    })
+    .catch(() => askPrice(acct))
+}
+
+/** No live price available (no key, no host): take the number by hand. */
+function askPrice(acct) {
+  const t = (acct.ticker || '').toUpperCase()
+  const typed = window.prompt(`No live price for ${t}. Type the price per share in USD (leave blank to skip):`, '')
+  if (typed == null) return
+  const priceUSD = parseFloat(typed)
+  if (!isFinite(priceUSD) || priceUSD <= 0) return
+  applyQuote(acct, priceUSD, null)
+}
+
+function applyQuote(acct, priceUSD, changePct) {
+  const t = (acct.ticker || '').toUpperCase()
+  quotes[t] = { ticker: t, priceUSD, changePct, fetchedAt: Date.now() }
+  const live = store.holdings.find(a => a.id === acct.id)
+  if (!live) return
+  live.amountCHF = (Number(live.shares) || 0) * priceUSD / (rates.USD || 1)
+  save()
+  render()
+}
+
+function refreshQuotes() {
+  store.holdings.filter(a => a.type === 'stocks').forEach(priceHolding)
+}
+
+// =============================================================================
+// 1. Your stocks — every holding as one personal index
+// =============================================================================
+
+function YourStocks(holdings, total) {
+  // Value-weighted daily move: weight each holding's changePct by its value,
+  // over only the holdings we currently have a live quote for. No new data —
+  // straight off the QuoteMap + the cached amountCHF.
+  let move = null
+  let sumValue = 0
+  let sumWeighted = 0
+  let priced = 0
+  for (const h of holdings) {
+    const q = quotes[(h.ticker || '').toUpperCase()]
+    if (!q || q.changePct == null) continue
+    const v = Number(h.amountCHF) || 0
+    if (v <= 0) continue
+    sumValue += v
+    sumWeighted += v * q.changePct
+    priced++
+  }
+  if (priced > 0 && sumValue > 0) move = { pct: sumWeighted / sumValue, priced }
+
+  return `
+    <div class="stkIndexCard">
+      <div class="stkIndexLabel">Your stocks</div>
+      <div class="stkIndexValueRow">
+        <span class="stkIndexValue">${esc(fmt(total))}</span>
+        ${move
+          ? `<span class="stkIndexChange ${moveClass(move.pct)}">
+              ${arrow(move.pct)} ${esc(fmtPct(move.pct))} <span class="stkIndexChangeUnit">today</span>
+            </span>`
+          : `<span class="stkIndexWaiting">waiting on today&#39;s prices</span>`}
+      </div>
+      <div class="stkIndexSub">
+        ${holdings.length} ${holdings.length === 1 ? 'holding' : 'holdings'}, read as one basket${move && move.priced < holdings.length ? ` · ${move.priced} priced live` : ''}
+      </div>
+    </div>
+  `
+}
+
+// =============================================================================
+// 2. Today's pick
+// =============================================================================
+
+function TodaysPick() {
+  const p = (FEED.pick && FEED.pick.ticker && FEED.pick.reason) ? FEED.pick : DAILY_PICK
+  const isExample = p === DAILY_PICK
+  return `
+    <div class="stkPickCard">
+      <div class="stkPickHead">
+        <span class="stkPickKind">${p.kind === 'etf' ? 'ETF' : 'Stock'}</span>
+        ${isExample ? '<span class="stkPickExample" title="An illustrative example, refreshed daily">example</span>' : ''}
+      </div>
+      <div class="stkPickTicker">${esc(p.ticker)}</div>
+      <div class="stkPickName">${esc(p.name)}</div>
+      <div class="stkPickReason">${esc(p.reason)}</div>
+      <div class="stkPickNote">Research, not financial advice.</div>
+    </div>
+  `
+}
+
+// =============================================================================
+// 3. News — your holdings only
+// =============================================================================
+
+function HoldingsNews(heldTickers) {
+  const items = feedNews().filter(n => heldTickers.has(n.ticker.toUpperCase()))
+  if (items.length === 0) return ''
+
+  return `
+    <div class="stkNewsList">
+      ${items.map(n => `
+        <div class="stkNewsItem">
+          <div class="stkNewsHead">
+            <span class="stkSignal ${SIGNAL_CLASS[n.signal]}">${esc(SIGNAL_LABEL[n.signal])}</span>
+            <span class="stkNewsTicker">${esc(n.ticker)}</span>
+          </div>
+          <div class="stkNewsHeadline">${esc(n.headline)}</div>
+          <div class="stkNewsWhy">${esc(n.why)}</div>
+        </div>
+      `).join('')}
+    </div>
+  `
+}
+
+// =============================================================================
+// 4. Holdings — plain-English health cards
+// =============================================================================
+
+function HealthCard(acct) {
+  const open = openCards.has(acct.id)
+  const ticker = (acct.ticker || acct.name || '').toUpperCase()
+  const quote = quotes[(acct.ticker || '').toUpperCase()]
+  const health = feedHealth()[ticker]
+  const pct = quote && quote.changePct != null ? quote.changePct : null
+  const flagged = !!(health && health.flagged)
+
+  return `
+    <div class="stkHealthCard ${flagged ? 'stkHealthFlagged' : ''}">
+      <button
+        type="button"
+        class="stkHealthTop"
+        data-toggle="${esc(acct.id)}"
+        aria-expanded="${open}"
+        aria-label="${esc(ticker)} details"
+      >
+        <div class="stkHealthIdent">
+          <span class="stkHealthTicker">${esc(ticker)}</span>
+          ${health
+            ? `<span class="stkStandpoint ${STANDPOINT_CLASS[health.standpoint]}">
+                ${esc(health.standpoint)}
+              </span>`
+            : ''}
+        </div>
+        <div class="stkHealthNums">
+          <span class="stkHealthValue">${esc(fmt(acct.amountCHF))}</span>
+          ${pct != null
+            ? `<span class="stkHealthChange ${moveClass(pct)}">${esc(fmtPct(pct))}</span>`
+            : `<span class="stkHealthChangeNone">${acct.amountCHF > 0 ? 'cached' : 'pending'}</span>`}
+        </div>
+        <span class="stkChevron ${open ? 'stkChevronOpen' : ''}" aria-hidden="true">⌄</span>
+      </button>
+
+      ${health ? `
+        <div class="stkDots">
+          ${DOT_META.map(d => {
+            const m = health.marks[d.key]
+            return `
+              <span class="stkDotItem" title="${esc(d.label)}: ${m === 'good' ? 'good' : 'worth a look'}">
+                <span class="stkDotCircle ${m === 'good' ? 'stkGood' : 'stkCaution'}" aria-hidden="true"></span>
+                <span class="stkDotLabel">${esc(d.label)}</span>
+              </span>
+            `
+          }).join('')}
+        </div>
+
+        ${flagged && health.nudge ? `
+          <div class="stkFlagNudge">
+            <span class="stkFlagTag">worth a look</span>
+            ${esc(health.nudge)}
+          </div>
+        ` : ''}
+
+        ${open ? `
+          <div class="stkExpand">
+            <div class="stkExpandBlock">
+              <div class="stkExpandLabel">What changed</div>
+              <div class="stkExpandText">${esc(health.changed)}</div>
+            </div>
+            <div class="stkExpandBlock">
+              <div class="stkExpandLabel">Long term</div>
+              <div class="stkLongGrid">
+                <div class="stkLongItem"><span class="stkLongLabel">10-year</span><span class="stkLongValue">${esc(health.longTerm.tenYear)}</span></div>
+                <div class="stkLongItem"><span class="stkLongLabel">Revenue</span><span class="stkLongValue">${esc(health.longTerm.revenue)}</span></div>
+                <div class="stkLongItem"><span class="stkLongLabel">Cash flow</span><span class="stkLongValue">${esc(health.longTerm.cashFlow)}</span></div>
+                <div class="stkLongItem"><span class="stkLongLabel">Debt</span><span class="stkLongValue">${esc(health.longTerm.debt)}</span></div>
+              </div>
+            </div>
+            <button type="button" class="stkRemove" data-remove="${esc(acct.id)}">Remove holding</button>
+          </div>
+        ` : ''}
+      ` : (open ? `
+        <div class="stkExpand">
+          <div class="stkExpandText">No read yet for ${esc(ticker)}. A daily routine fills this in.</div>
+          <button type="button" class="stkRemove" data-remove="${esc(acct.id)}">Remove holding</button>
+        </div>
+      ` : '')}
+    </div>
+  `
+}
+
+function Holdings(holdings) {
+  return `
+    ${holdings.length === 0 ? `
+      <div class="emptyState">
+        <div class="emptyTitle">No holdings yet.</div>
+        <div class="emptyBody">
+          Add a ticker and how many shares you hold. Live prices pull in on their own once your
+          Finnhub key is set, and each holding gets its own plain-English health card.
+        </div>
+      </div>
+    ` : `
+      <div class="stkHealthList">
+        ${holdings.map(HealthCard).join('')}
+      </div>
+    `}
+
+    <div class="addEyebrow">+ add a stock</div>
+    <div class="quickAdd">
+      <input
+        class="quickAddInput"
+        id="qaTicker"
+        type="text"
+        placeholder="Ticker (e.g. VOO)"
+        autocapitalize="characters"
+        spellcheck="false"
+      />
+      <input
+        class="quickAddInput"
+        id="qaShares"
+        type="number"
+        inputmode="decimal"
+        step="0.0001"
+        placeholder="Shares"
+      />
+      <button type="button" class="quickAddBtn" id="qaAdd">+ Add</button>
+    </div>
+
+    ${holdings.length > 0 ? `
+      <div class="holdingsFooter">
+        <button
+          type="button"
+          class="linkAction"
+          id="refreshPrices"
+          title="Force a fresh quote fetch (otherwise cached for 15 min)"
+        >
+          ↻ refresh prices
+        </button>
+      </div>
+    ` : ''}
+  `
+}
+
+// =============================================================================
+// Root view
+// =============================================================================
+
+function StocksView() {
+  const holdings = store.holdings.filter(a => a.type === 'stocks')
+  const total = holdings.reduce((s, a) => s + (Number(a.amountCHF) || 0), 0)
+  const heldTickers = new Set()
+  holdings.forEach(a => { if (a.ticker) heldTickers.add(a.ticker.toUpperCase()) })
+
+  const newsCount = feedNews().filter(n => heldTickers.has(n.ticker.toUpperCase())).length
+
+  return `
+    <section class="section">
+      <!-- 1. Your stocks -->
+      <div class="sectionEyebrow">
+        <span>Your stocks</span>
+        <span class="sectionCount">${holdings.length} ${holdings.length === 1 ? 'holding' : 'holdings'}</span>
+      </div>
+      ${YourStocks(holdings, total)}
+
+      <!-- 2. Today's pick -->
+      <div class="sectionEyebrow">
+        <span>Today&#39;s pick</span>
+        <span class="sectionCount">for you</span>
+      </div>
+      ${TodaysPick()}
+
+      <!-- 3. News, your holdings only -->
+      ${newsCount > 0 ? `
+        <div class="sectionEyebrow">
+          <span>News on what you own</span>
+          <span class="sectionCount">${newsCount} ${newsCount === 1 ? 'item' : 'items'}</span>
+        </div>
+        ${HoldingsNews(heldTickers)}
+      ` : ''}
+
+      <!-- 4. Holdings health -->
+      <div class="sectionEyebrow">
+        <span>Holdings</span>
+      </div>
+      ${Holdings(holdings)}
+    </section>
+  `
+}
+
+// =============================================================================
+// FinanceHeader — the currency segment
+// =============================================================================
+
+function CurrencySeg() {
+  return CURRENCIES.map(c => `
+    <button
+      type="button"
+      aria-pressed="${c === store.currency}"
+      aria-label="Show amounts in ${c}"
+      class="currencyBtn ${c === store.currency ? 'currencyBtnActive' : ''}"
+      data-currency="${c}"
+    >${c}</button>
+  `).join('')
+}
+
+// =============================================================================
+// Render + wiring
+// =============================================================================
+
+const tabView = document.getElementById('tabView')
+const currencySeg = document.getElementById('currencySeg')
+
+function render() {
+  // React keeps the input nodes across a re-render; we rebuild them, so carry
+  // focus + caret over by hand or typing would drop the keyboard.
+  const active = document.activeElement
+  const focusId = active && (active.id === 'qaTicker' || active.id === 'qaShares') ? active.id : null
+  const caret = focusId === 'qaTicker' && active.selectionStart != null ? active.selectionStart : null
+
+  currencySeg.innerHTML = CurrencySeg()
+  tabView.innerHTML = StocksView()
+
+  const t = document.getElementById('qaTicker')
+  const s = document.getElementById('qaShares')
+  t.value = tickerInput
+  s.value = sharesInput
+
+  if (focusId) {
+    const el = document.getElementById(focusId)
+    if (el) {
+      el.focus()
+      if (caret != null) { try { el.setSelectionRange(caret, caret) } catch (e) {} }
+    }
+  }
+}
+
+function addStock() {
+  const s = parseFloat(sharesInput)
+  if (!tickerInput.trim() || !isFinite(s) || s <= 0) return
+  const t = tickerInput
+  tickerInput = ''
+  sharesInput = ''
+  addHolding(t, s)
+}
+
+// Delegated so the handlers survive every re-render.
+tabView.addEventListener('input', e => {
+  if (e.target.id === 'qaTicker') {
+    tickerInput = e.target.value.toUpperCase()
+    e.target.value = tickerInput
+  } else if (e.target.id === 'qaShares') {
+    sharesInput = e.target.value
+  }
+})
+
+tabView.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return
+  if (e.target.id === 'qaTicker' || e.target.id === 'qaShares') addStock()
+})
+
+tabView.addEventListener('click', e => {
+  const toggle = e.target.closest('[data-toggle]')
+  if (toggle) {
+    const id = toggle.getAttribute('data-toggle')
+    if (openCards.has(id)) openCards.delete(id); else openCards.add(id)
+    render()
+    return
+  }
+  const remove = e.target.closest('[data-remove]')
+  if (remove) { deleteAccount(remove.getAttribute('data-remove')); return }
+  if (e.target.closest('#qaAdd')) { addStock(); return }
+  if (e.target.closest('#refreshPrices')) { refreshQuotes(); return }
+})
+
+// Currency pills. `rates` is the app's own pre-fetch default ({CHF:1,USD:1,
+// EUR:1,GBP:1}), so a pill re-labels the prefix exactly as fmtMoney does before
+// /api/finance/rates lands.
+currencySeg.addEventListener('click', e => {
+  const btn = e.target.closest('[data-currency]')
+  if (!btn) return
+  store.currency = btn.getAttribute('data-currency')
+  save()
+  render()
+})
+
+// WelcomeBackdrop — the drifting particle field (DEFAULT_CHROME: 24, speed 1).
+;(function particles() {
+  const root = document.getElementById('particles')
+  const count = 24
+  const speed = 1
+  const N = window.innerWidth < 640 ? Math.round(count * 0.6) : count
+  for (let i = 0; i < N; i++) {
+    const s = document.createElement('span')
+    s.style.left = Math.random() * 100 + '%'
+    s.style.top = 60 + Math.random() * 40 + '%'
+    const size = 1.2 + Math.random() * 1.2
+    s.style.width = s.style.height = size + 'px'
+    const dur = (22 + Math.random() * 28) / Math.max(0.2, speed)
+    s.style.animationDuration = dur + 's'
+    s.style.animationDelay = -Math.random() * dur + 's'
+    s.style.setProperty('--dx', Math.random() * 30 - 15 + 'px')
+    s.style.setProperty('--dy', -(60 + Math.random() * 50) + 'vh')
+    root.appendChild(s)
+  }
+})()
+
+// --- the feed's application ---------------------------------------------------
+
+function feedNews() { return Array.isArray(FEED.news) ? FEED.news : HOLDING_NEWS }
+function feedHealth() { return (FEED.health && typeof FEED.health === 'object') ? FEED.health : STOCK_HEALTH }
+
+/**
+ * Mentor-managed holdings. When the feed carries holdings, the feed IS the
+ * list (the routine prices them; the mentor edits them on request). Feed
+ * holdings map onto the exact shape addHolding builds, ids derived from the
+ * ticker so re-feeds keep card-open state stable.
+ */
+function onFeed() {
+  if (Array.isArray(FEED.holdings) && FEED.holdings.length) {
+    store.holdings = FEED.holdings
+      .filter(h => h && h.ticker && isFinite(Number(h.shares)) && Number(h.shares) > 0)
+      .map(h => ({
+        id: 'feed-' + String(h.ticker).trim().toUpperCase(),
+        type: 'stocks',
+        name: h.name ? String(h.name) : String(h.ticker).trim().toUpperCase(),
+        ticker: String(h.ticker).trim().toUpperCase(),
+        shares: Number(h.shares),
+        amountCHF: 0,
+      }))
+  }
+  render()
+  refreshQuotes()
+}
+
+// --- boot --------------------------------------------------------------------
+
+Promise.resolve(window.Vitality.load()).then(d => {
+  const data = d && typeof d === 'object' ? d : {}
+  store.holdings = Array.isArray(data.holdings) ? data.holdings : []
+  store.currency = CURRENCIES.indexOf(data.currency) >= 0 ? data.currency : 'CHF'
+  render()
+  // Price whatever is already stored. No-op on an empty board.
+  refreshQuotes()
+}).catch(() => render())
+</script>
+</body>
+</html>
