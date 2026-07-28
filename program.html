@@ -260,7 +260,6 @@ tbody tr.isToday td { background:rgba(var(--success-rgb),0.10); box-shadow:inset
    * =================================================================== */
 
   const KEY = 'patron_program_v1';
-  const ON_SERVER = location.protocol === 'http:' || location.protocol === 'https:';
 
   function load() {
     try {
@@ -333,18 +332,12 @@ tbody tr.isToday td { background:rgba(var(--success-rgb),0.10); box-shadow:inset
     return out;
   }
 
+  /* Google serves published sheets with Access-Control-Allow-Origin: *, so the
+   * browser can read them directly — no server-side proxy needed. */
   async function fetchText(url) {
-    try {
-      const r = await fetch(url + (url.indexOf('?') === -1 ? '?' : '&') + '_=' + Date.now(), { cache: 'no-store' });
-      if (r.ok) return await r.text();
-      throw new Error(statusHint(r.status));
-    } catch (err) {
-      if (!ON_SERVER) throw err;
-      const r2 = await fetch('/api/sheet?url=' + encodeURIComponent(url), { cache: 'no-store' });
-      const t2 = await r2.text();
-      if (!r2.ok) { let msg = t2; try { msg = (JSON.parse(t2) || {}).error || t2; } catch (e) {} throw new Error(msg); }
-      return t2;
-    }
+    const r = await fetch(url + (url.indexOf('?') === -1 ? '?' : '&') + '_=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) throw new Error(statusHint(r.status));
+    return await r.text();
   }
 
   /* Add every tab of the published document the given link belongs to. */
@@ -564,26 +557,10 @@ tbody tr.isToday td { background:rgba(var(--success-rgb),0.10); box-shadow:inset
     return 'Sheet responded ' + status + '.';
   }
   async function fetchCsv(url) {
-    // Try the browser first; fall back to our own read-only proxy when the
-    // publish URL doesn't send CORS headers (only possible on the deployed app).
-    try {
-      const r = await fetch(url + (url.indexOf('?') === -1 ? '?' : '&') + '_=' + Date.now(), { cache: 'no-store' });
-      if (r.ok) {
-        const t = await r.text();
-        if (!/^\s*<(!doctype|html)/i.test(t)) return t;
-        throw new Error('Got a web page instead of CSV — is the sheet published (or link-shared)?');
-      }
-      throw new Error(statusHint(r.status));
-    } catch (err) {
-      if (!ON_SERVER) throw err;
-      const r2 = await fetch('/api/sheet?url=' + encodeURIComponent(url), { cache: 'no-store' });
-      const t2 = await r2.text();
-      if (!r2.ok) {
-        let m = t2; try { m = (JSON.parse(t2) || {}).error || t2; } catch (e) {}
-        throw new Error(m);
-      }
-      return t2;
-    }
+    const t = await fetchText(url);
+    // Google hands back its sign-in page as HTML when a sheet isn't public.
+    if (/^\s*<(!doctype|html)/i.test(t)) throw new Error('Got a web page instead of CSV — is the sheet published (or link-shared)?');
+    return t;
   }
 
   async function refresh(only) {
