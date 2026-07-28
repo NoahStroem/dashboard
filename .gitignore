@@ -1,0 +1,15 @@
+# Your keys. Never committed, never shared, never on camera.
+.env.local
+.env
+.env.*
+!.env.example
+
+# OS + editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Node
+node_modules/
+npm-debug.log*

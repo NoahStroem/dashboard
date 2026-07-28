@@ -1,0 +1,19 @@
+# Keeps the pinned prompt in Discord #start-here byte-identical to README.md.
+# The prompt in the repo is the single source of truth; the pin follows it.
+name: sync-pin
+on:
+  push:
+    branches: [main]
+    paths: ['README.md']
+  workflow_dispatch: {}
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node automation/sync-pin.mjs
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
