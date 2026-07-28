@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<title>Lift</title>
+<style>
+* { box-sizing: border-box }
+html, body { margin: 0; padding: 0; height: 100%; }
+body {
+  background: transparent;
+  color: #E7ECEA;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100%;
+  overflow-x: hidden;
+}
+body.pageMode { background: #050505; }
+::selection { background: rgba(110,231,183,.28); }
+
+.wrap {
+  padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
+  padding-top: calc(20px + env(safe-area-inset-top));
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  opacity: 0;
+  transform: translateY(6px);
+  animation: riseIn .6s ease forwards;
+}
+@keyframes riseIn { to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) {
+  .wrap { animation: none; opacity: 1; transform: none; }
+  .liftBtn, .bar { transition: none !important; }
+}
+
+.eyebrow {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: .16em;
+  color: #94A39E;
+}
+
+.heroRow { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.hero {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  font-size: 52px;
+  line-height: 1;
+  color: #E7ECEA;
+}
+.unit {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  color: #5C6B66;
+}
+.pill {
+  margin-left: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(110,231,183,.4);
+  color: #6EE7B7;
+  white-space: nowrap;
+}
+.sub {
+  font-size: 13px;
+  color: #94A39E;
+}
+
+.pageOnly { display: none; }
+body.pageMode .pageOnly { display: block; }
+
+.card {
+  background: rgba(9,13,12,0.72);
+  border: 1px solid rgba(148,163,158,0.16);
+  border-radius: 18px;
+  padding: 18px;
+}
+.card + .card { margin-top: 14px; }
+
+.buttons { display: flex; gap: 10px; }
+.liftBtn {
+  flex: 1;
+  padding: 12px 10px;
+  min-height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(148,163,158,0.2);
+  background: rgba(255,255,255,0.03);
+  color: #E7ECEA;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform .15s ease, background .2s ease, border-color .2s ease;
+}
+.liftBtn:active { transform: scale(.97); }
+.liftBtn.active {
+  background: #6EE7B7;
+  color: #042a1c;
+  border-color: #6EE7B7;
+}
+
+.chartLabel {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: .14em;
+  color: #5C6B66;
+  margin-bottom: 12px;
+}
+.bars { display: flex; align-items: flex-end; gap: 8px; height: 64px; }
+.barCol { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; height: 100%; }
+.barTrack { width: 100%; max-width: 20px; height: 100%; display: flex; align-items: flex-end; }
+.bar {
+  width: 100%;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.05);
+  height: 6px;
+  transition: opacity .3s ease;
+}
+.bar.hit { background: rgba(110,231,183,0.5); height: 100%; }
+.bar.hit.today { background: #6EE7B7; }
+.bar.today:not(.hit) { background: rgba(255,255,255,0.1); }
+.dayLabel {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 9.5px;
+  color: #5C6B66;
+}
+.dayLabel.today { color: #6EE7B7; }
+.emptyNote { font-size: 12.5px; color: #5C6B66; }
+</style>
+</head>
+<body>
+<script>
+(function () {
+  var embedded = window.self !== window.top
+  var hasPageHash = /page/.test(location.hash)
+  document.body.className = (embedded && !hasPageHash) ? 'posterMode' : 'pageMode'
+})()
+</script>
+
+<div class="wrap">
+  <div class="eyebrow">Training</div>
+  <div class="heroRow">
+    <span class="hero" id="heroNum">0</span><span class="unit">/3 this week</span>
+    <span class="pill" id="pill">-</span>
+  </div>
+
+  <div class="pageOnly">
+    <div class="sub">Powerlifting, 3x a week. No deadlift.</div>
+
+    <div class="card">
+      <div class="buttons" id="buttons">
+        <button type="button" class="liftBtn" data-type="squat">Squat</button>
+        <button type="button" class="liftBtn" data-type="bench">Bench</button>
+        <button type="button" class="liftBtn" data-type="press">Press</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="chartLabel">Last 7 days</div>
+      <div class="bars" id="bars"></div>
+      <div class="emptyNote" id="emptyNote" style="display:none">No sessions yet. Log today's to start.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// --- the Vitality bridge -----------------------------------------------------
+// The shipped contract, verbatim: the tile defines the bridge, speaks postMessage
+// to the sealed frame's parent, and never touches storage itself (the sandbox
+// has none - a localStorage fallback here would silently lose every save).
+var Vitality={_w:{},_sv:false,save:function(d){Vitality._sv=true;parent.postMessage({source:'vitality-tile',type:'save',data:d},'*')},load:function(){return new Promise(function(res){var id=Math.random().toString(36).slice(2);var ask=function(){parent.postMessage({source:'vitality-tile',type:'load',id:id},'*')};var n=0;var t=setInterval(function(){n++;if(n===1){ask();return}clearInterval(t);if(Vitality._w[id]){Vitality._w[id]=function(d){if(d!=null&&!Vitality._sv)location.reload()};res(null)}},3000);Vitality._w[id]=function(d){clearInterval(t);res(d)};ask()})},report:function(s){parent.postMessage({source:'vitality-tile',type:'report',stream:s},'*')}}
+window.addEventListener('message', function (e) {
+  var m = e.data
+  if (!m || m.source !== 'vitality-host') return
+  if (m.type === 'load:result' && Vitality._w[m.id]) { Vitality._w[m.id](m.data); delete Vitality._w[m.id]; return }
+})
+
+// Standalone (opened directly, no host): fall back to localStorage so the file
+// still runs anywhere. Sealed frames never take this branch.
+if (window.self === window.top) {
+  window.Vitality = {
+    save: function (d) { try { localStorage.setItem('v:lift', JSON.stringify(d)) } catch (e) {} return Promise.resolve(true) },
+    load: function () { try { return Promise.resolve(JSON.parse(localStorage.getItem('v:lift') || 'null')) } catch (e) { return Promise.resolve(null) } },
+    report: function () {},
+  }
+}
+
+function todayKey(d) {
+  d = d || new Date()
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
+}
+
+function mondayOf(d) {
+  var day = (d.getDay() + 6) % 7
+  var start = new Date(d)
+  start.setDate(d.getDate() - day)
+  start.setHours(0, 0, 0, 0)
+  return start
+}
+
+var store = { sessions: [] } // [{ date: 'YYYY-MM-DD', type: 'squat'|'bench'|'press' }]
+
+var heroNum = document.getElementById('heroNum')
+var pill = document.getElementById('pill')
+var buttons = document.getElementById('buttons')
+var bars = document.getElementById('bars')
+var emptyNote = document.getElementById('emptyNote')
+
+function reportToday() {
+  var did = store.sessions.some(function (s) { return s.date === todayKey() })
+  Vitality.report({ key: 'lift_session', label: 'Training', value: did ? 1 : 0, date: todayKey(), kind: 'done', goalDirection: 'up' })
+}
+
+function render() {
+  var monday = mondayOf(new Date())
+  var weekCount = store.sessions.filter(function (s) {
+    var d = new Date(s.date + 'T00:00:00')
+    return d >= monday
+  }).length
+
+  heroNum.textContent = String(weekCount)
+
+  var today = todayKey()
+  var todaySession = store.sessions.find(function (s) { return s.date === today })
+  pill.textContent = todaySession ? 'Logged' : (weekCount >= 3 ? 'Done for week' : 'Not yet')
+
+  var buttonEls = buttons.querySelectorAll('.liftBtn')
+  for (var i = 0; i < buttonEls.length; i++) {
+    buttonEls[i].classList.toggle('active', !!todaySession && todaySession.type === buttonEls[i].dataset.type)
+  }
+
+  bars.innerHTML = ''
+  if (store.sessions.length === 0) {
+    bars.style.display = 'none'
+    emptyNote.style.display = 'block'
+  } else {
+    bars.style.display = 'flex'
+    emptyNote.style.display = 'none'
+    for (var back = 6; back >= 0; back--) {
+      var d = new Date()
+      d.setDate(d.getDate() - back)
+      var key = todayKey(d)
+      var isToday = key === today
+      var hit = store.sessions.some(function (s) { return s.date === key })
+
+      var col = document.createElement('div')
+      col.className = 'barCol'
+
+      var track = document.createElement('div')
+      track.className = 'barTrack'
+      var bar = document.createElement('div')
+      bar.className = 'bar' + (hit ? ' hit' : '') + (isToday ? ' today' : '')
+      track.appendChild(bar)
+
+      var label = document.createElement('div')
+      label.className = 'dayLabel' + (isToday ? ' today' : '')
+      label.textContent = 'SMTWTFS'[d.getDay()]
+
+      col.appendChild(track)
+      col.appendChild(label)
+      bars.appendChild(col)
+    }
+  }
+}
+
+buttons.addEventListener('click', function (e) {
+  var btn = e.target.closest('.liftBtn')
+  if (!btn) return
+  var type = btn.dataset.type
+  var today = todayKey()
+  var existing = store.sessions.findIndex(function (s) { return s.date === today })
+  if (existing >= 0 && store.sessions[existing].type === type) {
+    store.sessions.splice(existing, 1)
+  } else if (existing >= 0) {
+    store.sessions[existing].type = type
+  } else {
+    store.sessions.push({ date: today, type: type })
+  }
+  render()
+  reportToday()
+  Vitality.save(store)
+})
+
+Promise.resolve(Vitality.load()).then(function (d) {
+  if (d && Array.isArray(d.sessions)) store = d
+  render()
+})
+</script>
+</body>
+</html>
