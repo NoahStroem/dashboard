@@ -9,7 +9,7 @@
 - [x] 4. Supabase. free project, run supabase/sync.sql               RECOMMENDED
        your vault tables, made and waiting. the board runs on this device
        for now; the live sync arrives in a later episode
-- [ ] 5. Vercel. import the repo, hit deploy                          RECOMMENDED
+- [x] 5. Vercel. import the repo, hit deploy                          RECOMMENDED
        your dashboard live at your own URL. every push updates it
 - [ ] 6. Phone. open the live URL, Share, Add to Home Screen          OPTIONAL
        the dashboard as an app in your pocket
