@@ -1,0 +1,891 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Radar · every dollar, on schedule</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#000; --fg:#fff;
+  --cu:#E8A268; --cu-cool:#F5CFA8; --cu-deep:#4d331f; --cu-ink:#2a1807;
+  --amber:#E7C36B;
+  --solid:#161007; /* solid sheets + dropdowns: never see-through, on purpose */
+  --muted:rgba(255,255,255,.5); --muted-strong:rgba(255,255,255,.72);
+  --border:rgba(255,255,255,.08); --border-strong:rgba(255,255,255,.16);
+  --card:rgba(255,255,255,.02);
+  --r-card:18px;
+  --serif:'Instrument Serif',Georgia,serif;
+  --sans:'Inter',system-ui,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --ease:cubic-bezier(.16,1,.3,1);
+  --spring:cubic-bezier(.34,1.56,.64,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+::selection{background:rgba(232,162,104,.28);color:#fff}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+input,select{font:inherit;color:inherit}
+
+/* ── the Vitality backdrop (ported from components/WelcomeBackdrop): aurora
+      wash + a drifting particle field, tinted to the copper accent. Mandatory
+      on every Lab standalone. ── */
+.atmos{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    radial-gradient(60% 50% at 50% 26%, color-mix(in srgb, var(--cu) 15%, transparent) 0%, color-mix(in srgb, var(--cu) 6%, transparent) 34%, transparent 66%),
+    radial-gradient(28% 22% at 50% 40%, rgba(255,226,181,.06) 0%, rgba(255,226,181,0) 70%),
+    radial-gradient(120% 80% at 50% 100%, rgba(40,26,10,.5) 0%, rgba(4,4,6,.96) 76%);
+  background-repeat:no-repeat;background-size:100% 100%}
+.particles{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.particles span{position:absolute;width:1.6px;height:1.6px;border-radius:50%;
+  background:rgba(240,232,220,.72);box-shadow:0 0 6px color-mix(in srgb, var(--cu-cool) 60%, transparent);
+  animation:vtDrift linear infinite}
+@keyframes vtDrift{0%{transform:translate3d(0,0,0);opacity:0}10%{opacity:.72}90%{opacity:.5}100%{transform:translate3d(var(--dx,12px),var(--dy,-100vh),0);opacity:0}}
+@media(prefers-reduced-motion:reduce){.particles span{animation:none;opacity:0}}
+/* the living gradient: two slow-drifting copper aurora blobs behind the world.
+   Ported feel from Vitality's animated washes; gentle, 100% loop, GPU transform. */
+.aurora{position:fixed;inset:-20% -10%;z-index:0;pointer-events:none;filter:blur(46px);opacity:.9}
+.aurora b{position:absolute;border-radius:50%;display:block}
+.aurora b:nth-child(1){width:52vw;height:52vw;left:6%;top:-8%;background:radial-gradient(circle, rgba(232,162,104,.16), transparent 66%);animation:auroraA 34s ease-in-out infinite}
+.aurora b:nth-child(2){width:44vw;height:44vw;right:2%;top:24%;background:radial-gradient(circle, rgba(245,207,168,.11), transparent 66%);animation:auroraB 44s ease-in-out infinite}
+.aurora b:nth-child(3){width:60vw;height:60vw;left:20%;bottom:-24%;background:radial-gradient(circle, rgba(77,51,31,.28), transparent 64%);animation:auroraC 52s ease-in-out infinite}
+@keyframes auroraA{0%,100%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(6vw,4vh,0) scale(1.12)}}
+@keyframes auroraB{0%,100%{transform:translate3d(0,0,0) scale(1.05)}50%{transform:translate3d(-5vw,6vh,0) scale(.92)}}
+@keyframes auroraC{0%,100%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(4vw,-5vh,0) scale(1.1)}}
+@media(prefers-reduced-motion:reduce){.aurora b{animation:none}}
+/* ── the glass system (Vitality premium: rgba dark + blur22 saturate). Only on
+      big STATIC cards, never on the hover-lifting rows (blur+transform = phone lag). ── */
+.hero,.radar,.sheet,.dropzone{background:rgba(14,10,6,.62)!important;-webkit-backdrop-filter:blur(20px) saturate(1.1);backdrop-filter:blur(20px) saturate(1.1)}
+.alerts .al{background:rgba(231,195,107,.08);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+/* breathing tile-glow on the hero (living, like a dashboard tile) */
+.hero{position:relative;isolation:isolate}
+.hero::before{content:"";position:absolute;inset:-1px;border-radius:inherit;z-index:-1;pointer-events:none;
+  background:radial-gradient(120% 100% at 12% 0%, rgba(232,162,104,.14), transparent 60%);
+  animation:tileBreathe 5.5s ease-in-out infinite}
+@keyframes tileBreathe{0%,100%{opacity:.55}50%{opacity:1}}
+@media(prefers-reduced-motion:reduce){.hero::before{animation:none}}
+/* living dot on the status pill (dashboard livingDot) */
+.status-pill{position:relative;padding-left:20px}
+.status-pill::before{content:"";position:absolute;left:9px;top:50%;transform:translateY(-50%);width:5px;height:5px;border-radius:50%;background:var(--cu);box-shadow:0 0 7px var(--cu);animation:pillLive 2.4s ease-in-out infinite}
+@keyframes pillLive{0%,100%{opacity:.55}50%{opacity:1}}
+
+.app{position:relative;z-index:2;max-width:min(1060px,100%);margin:0 auto;padding:clamp(22px,4.5vw,40px) clamp(16px,4.5vw,34px) 90px}
+
+/* ── header ── */
+.head{margin-bottom:18px}
+.eyebrow{font-family:var(--mono);font-size:.6rem;text-transform:uppercase;letter-spacing:.24em;color:var(--cu);margin-bottom:9px}
+.h-row{display:flex;align-items:flex-end;justify-content:space-between;gap:14px}
+.h-title{font-family:var(--serif);font-weight:400;font-size:clamp(2rem,7vw,2.7rem);line-height:1}
+.h-side{display:flex;align-items:flex-end;gap:9px}
+.h-date{font-family:var(--mono);font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);padding-bottom:6px}
+.demo-pill{font-family:var(--mono);font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:var(--cu-cool);border:1px solid rgba(232,162,104,.4);border-radius:99px;padding:7px 13px;margin-bottom:2px;transition:all .25s;flex:none}
+.demo-pill.on{background:var(--cu);color:var(--cu-ink);border-color:var(--cu)}
+
+/* ── the burn hero: count-up money ── */
+.burn{margin-top:14px;border:1px solid var(--border);background:var(--card);border-radius:var(--r-card);padding:18px 20px;display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap}
+.burn .lb{font-family:var(--mono);font-size:.56rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.burn .n{font-family:var(--serif);font-size:clamp(2.1rem,7vw,2.8rem);line-height:1.05;font-variant-numeric:tabular-nums;color:var(--cu-cool);margin-top:6px}
+.burn .n small{font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;color:var(--muted);margin-left:6px}
+.burn .yr{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;color:var(--muted-strong);margin-top:8px}
+.burn .yr b{color:var(--cu);font-weight:500}
+.burn .side{text-align:right}
+.burn .cnt{font-family:var(--mono);font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.cur-row{display:flex;gap:6px;margin-top:9px;justify-content:flex-end}
+.cur{font-family:var(--mono);font-size:.6rem;border:1px solid var(--border);color:var(--muted);border-radius:99px;padding:5px 10px;transition:all .2s}
+.cur.on{background:var(--cu);border-color:var(--cu);color:var(--cu-ink)}
+.cur:not(.on):hover{border-color:rgba(232,162,104,.45);color:var(--cu-cool)}
+
+/* ── attention strip: trials + hikes ── */
+.alerts{margin-top:12px;display:none;flex-direction:column;gap:8px}
+.alerts.on{display:flex}
+.al{display:flex;align-items:center;gap:11px;border:1px solid rgba(231,195,107,.26);background:rgba(231,195,107,.06);border-radius:14px;padding:11px 13px;animation:riseIn .35s var(--ease) both}
+.al .tag{flex:none;font-family:var(--mono);font-size:.5rem;letter-spacing:.13em;text-transform:uppercase;font-weight:500;color:var(--cu-ink);background:var(--amber);border-radius:99px;padding:4px 9px}
+.al .tx{font-size:.86rem;color:var(--muted-strong);min-width:0;font-variant-numeric:tabular-nums}
+.al .tx b{color:var(--fg);font-weight:600}
+.al .tx i{font-family:var(--serif);color:var(--amber)}
+@keyframes riseIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ── the radar: coming up ── */
+.radar{margin-top:16px;border:1px solid var(--border);background:var(--card);border-radius:var(--r-card);padding:16px 18px;display:none}
+.radar.on{display:block;animation:riseIn .4s var(--ease)}
+.radar .top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.radar .k{font-family:var(--mono);font-size:.56rem;letter-spacing:.18em;text-transform:uppercase;color:var(--cu)}
+.radar .tot{font-family:var(--mono);font-size:.72rem;color:var(--cu-cool);font-variant-numeric:tabular-nums}
+.radar .tot small{font-size:.54rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-left:6px}
+.brow{display:grid;grid-template-columns:12px 1fr auto;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--border)}
+.brow:last-child{border-bottom:0}
+.bdot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.24);justify-self:center}
+.bdot.soon{background:var(--cu)}
+.bdot.imminent{background:var(--amber);box-shadow:0 0 10px rgba(231,195,107,.65);animation:dotPulse 1.6s ease-in-out infinite}
+@keyframes dotPulse{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.25)}}
+.brow .nm{font-size:.9rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.brow .wh{font-family:var(--mono);font-size:.6rem;color:var(--muted);margin-top:2px}
+.brow .wh.soon{color:var(--cu-cool)}
+.brow .wh.imminent{color:var(--amber)}
+.brow .amt{font-family:var(--mono);font-size:.78rem;font-variant-numeric:tabular-nums;color:var(--fg)}
+
+/* ── add row + paste import ── */
+.addwrap{margin-top:18px}
+.add-k{font-family:var(--mono);font-size:.56rem;letter-spacing:.18em;text-transform:uppercase;color:var(--cu);margin-bottom:9px;display:flex;justify-content:space-between;align-items:center}
+.paste-btn{font-family:var(--mono);font-size:.54rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);border:1px solid var(--border);border-radius:99px;padding:6px 11px;transition:all .2s}
+.paste-btn:hover{border-color:rgba(232,162,104,.45);color:var(--cu-cool)}
+.addgrid{display:grid;grid-template-columns:1.4fr .8fr auto auto auto;gap:8px;align-items:center}
+.in{background:rgba(255,255,255,.025);border:1px solid var(--border-strong);border-radius:12px;padding:12px 13px;font-size:.9rem;outline:none;transition:border-color .25s;color:var(--fg);width:100%}
+.in:focus{border-color:rgba(232,162,104,.5)}
+.in::placeholder{color:rgba(255,255,255,.32)}
+.in.date{font-family:var(--mono);font-size:.72rem}
+.seg{display:inline-flex;border:1px solid var(--border-strong);border-radius:12px;overflow:hidden}
+.seg button{font-family:var(--mono);font-size:.58rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:12px 11px;transition:all .2s}
+.seg button.on{background:var(--cu);color:var(--cu-ink)}
+.add-btn{background:var(--cu);color:var(--cu-ink);font-weight:600;font-size:.9rem;border-radius:12px;padding:12px 18px;transition:transform .2s var(--spring)}
+.add-btn:active{transform:scale(.96)}
+@media(max-width:720px){.addgrid{grid-template-columns:1fr 1fr}.addgrid .in.name{grid-column:1/-1}.add-btn{grid-column:1/-1}}
+
+/* ── the list ── */
+.rail{margin-top:16px;display:flex;flex-direction:column;gap:9px}
+.row{border:1px solid var(--border);background:var(--card);border-radius:15px;padding:13px 14px;transition:border-color .3s;position:relative;animation:riseIn .35s var(--ease) both}
+.row:hover{border-color:rgba(232,162,104,.26)}
+.row.urgent{box-shadow:inset 2.5px 0 0 var(--amber);background:rgba(231,195,107,.045)}
+.r-main{display:flex;align-items:center;gap:12px}
+.r-bd{flex:1;min-width:0}
+.r-nm{font-size:.95rem;font-weight:500}
+.r-meta{display:flex;align-items:center;gap:8px;margin-top:4px;flex-wrap:wrap}
+.r-per{font-family:var(--mono);font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.r-renew{font-family:var(--mono);font-size:.58rem;color:var(--cu-cool)}
+.r-renew.urgent{color:var(--amber)}
+.r-trial{font-family:var(--mono);font-size:.56rem;color:var(--amber)}
+.r-cost{text-align:right;flex:none}
+.r-cost .big{font-family:var(--serif);font-size:1.2rem;font-variant-numeric:tabular-nums;color:var(--cu-cool)}
+.r-cost .unit{font-family:var(--mono);font-size:.52rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:2px}
+.r-cost .billed{font-family:var(--mono);font-size:.54rem;color:var(--muted);margin-top:3px}
+.r-acts{display:flex;flex-direction:column;gap:2px;flex:none}
+.icb{color:rgba(255,255,255,.3);padding:5px;transition:color .25s;display:grid;place-items:center}
+.icb:hover{color:var(--cu)}
+.icb svg{width:14px;height:14px}
+.icb.x:hover{color:#f0a5a5}
+.icb.confirm{color:#f0a5a5;font-family:var(--mono);font-size:.5rem;letter-spacing:.08em;text-transform:uppercase;border:1px solid rgba(240,165,165,.4);border-radius:99px;padding:4px 8px}
+
+/* inline editor */
+.r-edit{display:none;margin-top:12px;border-top:1px solid var(--border);padding-top:12px}
+.row.editing .r-edit{display:block;animation:riseIn .3s var(--ease)}
+.e-grid{display:grid;grid-template-columns:1.3fr .7fr auto;gap:8px;align-items:center}
+.e-row2{display:grid;grid-template-columns:1fr 1fr 1.2fr;gap:8px;margin-top:8px}
+.e-lbl{font-family:var(--mono);font-size:.5rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 4px 2px}
+.e-acts{display:flex;gap:8px;margin-top:12px}
+.e-save{background:var(--cu);color:var(--cu-ink);font-weight:600;font-size:.84rem;border-radius:11px;padding:10px 18px}
+.e-cancel{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:10px 12px}
+@media(max-width:720px){.e-grid,.e-row2{grid-template-columns:1fr 1fr}}
+
+/* first use, never blank */
+.first{margin-top:30px;text-align:center;display:none}
+.first.on{display:block}
+.first .l1{font-family:var(--serif);font-size:1.3rem;color:var(--muted-strong)}
+.first .l2{font-size:.86rem;color:var(--muted);margin-top:7px;line-height:1.5}
+.first button{margin-top:14px;font-family:var(--mono);font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--cu-ink);background:var(--cu);border-radius:99px;padding:11px 20px}
+
+/* ── paste import sheet ── */
+.sheet-veil{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.72);opacity:0;pointer-events:none;transition:opacity .3s}
+.sheet-veil.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:90;background:var(--solid);border:1px solid var(--border-strong);border-bottom:0;border-radius:22px 22px 0 0;max-width:640px;margin:0 auto;padding:22px 20px calc(22px + env(safe-area-inset-bottom));transform:translateY(104%);transition:transform .5s var(--ease);max-height:86vh;overflow-y:auto}
+.sheet.on{transform:none}
+.sheet .grab{width:40px;height:4px;border-radius:99px;background:rgba(255,255,255,.16);margin:0 auto 16px}
+.sheet h3{font-family:var(--serif);font-weight:400;font-size:1.45rem;margin-bottom:4px}
+.sheet .sub{font-size:.84rem;color:var(--muted);margin-bottom:14px;line-height:1.5}
+.dropzone{border:1.5px dashed rgba(232,162,104,.42);border-radius:16px;padding:26px 18px;text-align:center;cursor:pointer;transition:border-color .25s,background .25s,transform .2s var(--spring);margin-bottom:12px}
+.dropzone:hover,.dropzone:focus-visible{border-color:rgba(232,162,104,.75);background:rgba(232,162,104,.04);outline:none}
+.dropzone.over{border-color:var(--cu);background:rgba(232,162,104,.08);transform:scale(1.01)}
+.dz-icon{width:52px;height:52px;border-radius:50%;background:var(--cu);color:var(--cu-ink);display:grid;place-items:center;margin:0 auto 12px}
+.dz-icon svg{width:24px;height:24px}
+.dz-t{font-family:var(--serif);font-style:italic;font-size:1.3rem;color:var(--fg)}
+.dz-s{font-family:var(--mono);font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+.dz-or{display:flex;align-items:center;gap:12px;margin:2px 0 12px;color:var(--muted)}
+.dz-or::before,.dz-or::after{content:"";flex:1;height:1px;background:var(--border-strong)}
+.dz-or span{font-family:var(--mono);font-size:.54rem;letter-spacing:.12em;text-transform:uppercase}
+.paste-in{width:100%;min-height:120px;background:rgba(255,255,255,.025);border:1px solid var(--border-strong);border-radius:13px;padding:12px 13px;font-family:var(--mono);font-size:.74rem;line-height:1.6;color:var(--fg);outline:none;resize:vertical}
+.paste-in:focus{border-color:rgba(232,162,104,.5)}
+.sheet .go{display:block;width:100%;margin-top:12px;background:var(--cu);color:var(--cu-ink);font-weight:600;font-size:.95rem;border-radius:14px;padding:14px;transition:transform .2s var(--spring)}
+.sheet .go:active{transform:scale(.98)}
+/* the cozy reader (Vitality's Pop / cozy treatment, ported) */
+.reader{margin-top:14px;display:none;border:1px solid rgba(232,162,104,.35);background:rgba(255,255,255,.02);border-radius:16px;padding:15px}
+.reader.on{display:block}
+.reader .rt{font-family:var(--serif);font-style:italic;font-size:1.02rem;color:var(--cu)}
+.rbar{margin-top:11px;height:4px;border-radius:99px;background:var(--border-strong);overflow:hidden}
+.rbar span{display:block;height:100%;width:40%;border-radius:99px;background:linear-gradient(90deg,transparent,var(--cu),transparent);animation:cozySlide 1.4s var(--ease) infinite}
+@keyframes cozySlide{from{transform:translateX(-120%)}to{transform:translateX(320%)}}
+.rdots{display:flex;gap:6px;margin-top:11px}
+.rdots i{width:6px;height:6px;border-radius:50%;background:var(--cu);opacity:.4;animation:cozyDot 1.2s ease-in-out infinite}
+.rdots i:nth-child(2){animation-delay:.2s}
+.rdots i:nth-child(3){animation-delay:.4s}
+@keyframes cozyDot{0%,100%{opacity:.35;transform:scale(1)}50%{opacity:1;transform:scale(1.5)}}
+/* parsed preview the reader resolves into */
+.pv{display:none;margin-top:14px}
+.pv.on{display:block;animation:riseIn .4s var(--ease)}
+.pv .k{font-family:var(--mono);font-size:.54rem;letter-spacing:.16em;text-transform:uppercase;color:var(--cu);margin-bottom:8px}
+.pv-row{display:flex;align-items:center;gap:10px;border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:7px;animation:riseIn .35s var(--ease) both}
+.pv-row .nm{flex:1;font-size:.88rem;font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pv-row .amt{font-family:var(--mono);font-size:.72rem;color:var(--cu-cool);font-variant-numeric:tabular-nums}
+.pv-row .per{font-family:var(--mono);font-size:.52rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.pv-row .rm{color:rgba(255,255,255,.28);padding:2px 5px;font-size:.9rem}
+.pv-st{font-family:var(--mono);font-size:.5rem;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--border-strong);color:var(--muted);border-radius:99px;padding:3px 8px;flex:none}
+.pv-st.up{border-color:rgba(231,195,107,.5);color:var(--amber)}
+.pv-row .rm:hover{color:#f0a5a5}
+.pv-none{font-family:var(--serif);font-style:italic;color:var(--muted);font-size:.92rem}
+
+/* ── the cancel win toast ── */
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(140%);z-index:120;background:var(--solid);border:1px solid rgba(232,162,104,.45);border-radius:16px;padding:13px 18px;display:flex;align-items:center;gap:11px;box-shadow:0 14px 44px -8px rgba(0,0,0,.85);transition:transform .5s var(--spring);max-width:92vw}
+.toast.on{transform:translateX(-50%) translateY(0)}
+.toast .ic{flex:none;width:30px;height:30px;border-radius:50%;background:var(--cu);color:var(--cu-ink);display:grid;place-items:center}
+.toast .ic svg{width:15px;height:15px}
+.toast .t1{font-size:.9rem;font-weight:600}
+.toast .t1 b{color:var(--cu-cool);font-variant-numeric:tabular-nums}
+.toast .t2{font-family:var(--mono);font-size:.58rem;color:var(--muted);margin-top:2px;font-variant-numeric:tabular-nums}
+
+.foot{margin-top:34px;text-align:center;font-family:var(--mono);font-size:.54rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.28)}
+
+
+/* ── the vitals-revamp structure, radar edition ── */
+.eyebrow-top{display:flex;align-items:center;gap:10px;margin-bottom:12px;animation:secIn .7s var(--spring) both}
+.eyebrow-top .k{font-family:var(--mono);font-size:.6rem;text-transform:uppercase;letter-spacing:.24em;color:var(--cu)}
+.eyebrow-top .rule{flex:1;height:1px;background:linear-gradient(90deg,var(--border-strong),transparent)}
+.status-pill{font-family:var(--mono);font-size:.56rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;padding:5px 11px;border-radius:99px;color:var(--cu);border:1px solid rgba(232,162,104,.4);background:rgba(232,162,104,.05);flex:none}
+.h-title{font-style:italic;letter-spacing:-.02em}
+.sec-eyebrow{display:flex;align-items:center;gap:11px;margin:26px 0 12px}
+.sec-eyebrow .n{font-family:var(--serif);font-style:italic;font-size:1.15rem;color:var(--cu);line-height:1}
+.sec-eyebrow .l{font-family:var(--mono);font-size:.58rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted-strong)}
+.sec-eyebrow .rule{flex:1;height:1px;background:linear-gradient(90deg,var(--border-strong),transparent)}
+.hero{position:relative;overflow:hidden;display:grid;grid-template-columns:auto 1fr auto;gap:22px;align-items:center;border:1px solid rgba(232,162,104,.22);border-radius:var(--r-card);padding:20px 22px;background:radial-gradient(130% 90% at 0% 0%, rgba(232,162,104,.08), transparent 55%),var(--card);box-shadow:0 0 0 1px rgba(232,162,104,.08),0 0 60px -26px rgba(232,162,104,.42)}
+@media(max-width:720px){.hero{grid-template-columns:1fr;justify-items:start}}
+.rviz{position:relative;width:148px;flex:none}
+.rviz svg{width:100%;height:148px;display:block}
+.rviz .grid-c{fill:none;stroke:rgba(232,162,104,.14);stroke-width:1}
+.rviz .grid-x{stroke:rgba(232,162,104,.09);stroke-width:1}
+.rviz .sweep{transform-origin:74px 74px;animation:rsweep 6s linear infinite;opacity:.8}
+@keyframes rsweep{to{transform:rotate(360deg)}}
+.rviz .blip{fill:var(--cu);filter:drop-shadow(0 0 4px rgba(232,162,104,.6))}
+.rviz .blip.hot{fill:var(--amber);filter:drop-shadow(0 0 7px rgba(231,195,107,.9));animation:blipPulse 1.6s ease-in-out infinite}
+@keyframes blipPulse{0%,100%{opacity:.8}50%{opacity:1}}
+.rviz .ctr{fill:#fff;filter:drop-shadow(0 0 5px rgba(255,255,255,.7))}
+.rviz-lb{display:block;margin-top:8px;text-align:center;font-family:var(--mono);font-size:.48rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+@keyframes secIn{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+.s-in{animation:secIn .7s var(--spring) both}
+.s-in.d1{animation-delay:.06s}.s-in.d2{animation-delay:.12s}.s-in.d3{animation-delay:.18s}.s-in.d4{animation-delay:.24s}.s-in.d5{animation-delay:.3s}
+.row{transition:transform .22s cubic-bezier(.22,1,.36,1),border-color .3s,box-shadow .22s}
+.row:hover{transform:translateY(-1px);box-shadow:0 6px 22px -14px rgba(232,162,104,.35)}
+.winpulse{position:fixed;inset:0;z-index:110;pointer-events:none;background:radial-gradient(60% 45% at 50% 88%, rgba(232,162,104,.16), transparent 70%);opacity:0}
+.winpulse.on{animation:winP 1.1s var(--ease)}
+@keyframes winP{0%{opacity:0}25%{opacity:1}100%{opacity:0}}
+
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+
+<div class="atmos"></div>
+<div class="aurora" aria-hidden="true"><b></b><b></b><b></b></div>
+<div class="particles" id="particles" aria-hidden="true"></div>
+<main class="app">
+
+  <header class="head s-in">
+    <div class="eyebrow-top"><span class="k">The Radar · Finance</span><span class="rule"></span><span class="status-pill" id="statusPill">on watch</span></div>
+    <div class="h-row">
+      <h1 class="h-title">Every dollar, on schedule</h1>
+      <div class="h-side">
+        <span class="h-date" id="hDate"></span>
+        <button class="demo-pill" id="demoBtn">demo data</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- @episode-start:burn -->
+  <div class="sec-eyebrow s-in d1"><span class="n">01</span><span class="l">The burn</span><span class="rule"></span></div>
+  <section class="burn hero s-in d1">
+    <!-- @episode-start:ring -->
+    <div class="rviz" id="rviz" aria-hidden="true">
+      <svg viewBox="0 0 148 148">
+        <circle class="grid-c" cx="74" cy="74" r="22"/>
+        <circle class="grid-c" cx="74" cy="74" r="44"/>
+        <circle class="grid-c" cx="74" cy="74" r="66"/>
+        <line class="grid-x" x1="74" y1="8" x2="74" y2="140"/>
+        <line class="grid-x" x1="8" y1="74" x2="140" y2="74"/>
+        <g class="sweep"><path d="M74 74 L74 9 A65 65 0 0 1 106 17 Z" fill="rgba(232,162,104,.13)"/><line x1="74" y1="74" x2="74" y2="9" stroke="rgba(232,162,104,.55)" stroke-width="1.4"/></g>
+        <g id="rvizBlips"></g>
+        <circle class="ctr" cx="74" cy="74" r="3"/>
+      </svg>
+      <span class="rviz-lb">each blip = a renewal · closer = sooner</span>
+    </div>
+    <!-- @episode-end:ring -->
+    <!-- The ring's blips are placed by renderRadarViz() in the script below;
+         copy that function + the .rviz CSS along with this markup. -->
+
+    <div>
+      <div class="lb">Monthly burn</div>
+      <div class="n"><span id="burnN">0.00</span><small>/ mo</small></div>
+      <div class="yr" id="burnYr"></div>
+    </div>
+    <div class="side">
+      <div class="cnt" id="subCnt">0 subs</div>
+      <div class="cur-row" id="curRow"></div>
+    </div>
+  </section>
+  <!-- @episode-end:burn -->
+
+  <!-- @episode-start:alerts -->
+  <section class="alerts" id="alerts"></section>
+  <!-- @episode-end:alerts -->
+
+  <!-- @episode-start:radar -->
+  <section class="radar s-in d2" id="radar">
+    <div class="top">
+      <span class="k">02 · Coming up</span>
+      <span class="tot" id="radarTot"></span>
+    </div>
+    <div id="radarList"></div>
+  </section>
+  <!-- @episode-end:radar -->
+
+  <!-- @episode-start:add -->
+  <div class="sec-eyebrow s-in d3"><span class="n">03</span><span class="l">Add to the radar</span><span class="rule"></span></div>
+  <section class="addwrap s-in d3" style="margin-top:0">
+    <div class="add-k"><span>+ new subscription</span>
+      <button class="paste-btn" id="pasteOpen">paste a bill instead</button>
+    </div>
+    <div class="addgrid">
+      <input class="in name" id="aName" placeholder="Service (Netflix, gym, hosting)" autocomplete="off">
+      <input class="in" id="aAmt" type="number" inputmode="decimal" step="0.01" min="0" placeholder="Amount">
+      <div class="seg" id="aSeg">
+        <button data-p="monthly" class="on">mo</button><button data-p="yearly">yr</button><button data-p="weekly">wk</button>
+      </div>
+      <input class="in date" id="aDate" type="date" title="Next renewal date" aria-label="Next renewal date">
+      <button class="add-btn" id="aBtn">Add</button>
+    </div>
+  </section>
+  <!-- @episode-end:add -->
+
+  <!-- @episode-start:list -->
+  <div class="sec-eyebrow s-in d4"><span class="n">04</span><span class="l">Every subscription</span><span class="rule"></span></div>
+  <section class="rail s-in d4" id="rail" style="margin-top:0"></section>
+  <div class="first" id="first">
+    <p class="l1">Nothing auto-renews yet.</p>
+    <p class="l2">Add anything on a schedule. Netflix, the gym, hosting bills,<br>whatever quietly leaves your account every month.</p>
+    <button id="firstDemo">see it full · demo data</button>
+  </div>
+  <!-- @episode-end:list -->
+
+  <p class="foot">the radar · built from vitality dna · yours forever</p>
+</main>
+
+<!-- @episode-start:paste -->
+<!-- paste import sheet -->
+<div class="sheet-veil" id="veil"></div>
+<div class="sheet" id="sheet" role="dialog" aria-label="Paste a bill">
+  <div class="grab"></div>
+  <h3>Bring a bill in</h3>
+  <p class="sub">Paste any messy billing text: a bank statement line, a receipt, a billing page. Nothing leaves your device. Bring it again next month and a price that quietly went up fires the warning by itself.</p>
+  <textarea class="paste-in" id="pasteIn" placeholder="Netflix $15.99/month&#10;Spotify Premium 11.99 monthly&#10;Adobe CC - 263.88 per year"></textarea>
+  <button class="go" id="pasteGo">Read it</button>
+  <div class="reader" id="reader">
+    <p class="rt" id="readerLine">Reading your bill…</p>
+    <div class="rbar"><span></span></div>
+    <div class="rdots"><i></i><i></i><i></i></div>
+  </div>
+  <div class="pv" id="pv">
+    <p class="k" id="pvK">Found these</p>
+    <div id="pvList"></div>
+    <button class="go" id="pvAdd">Add them all</button>
+  </div>
+</div>
+
+<!-- @episode-end:paste -->
+
+<!-- @episode-start:win -->
+<div class="winpulse" id="winpulse"></div>
+
+<!-- cancel win toast -->
+<div class="toast" id="toast">
+  <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg></span>
+  <div>
+    <div class="t1" id="toastT1"></div>
+    <div class="t2" id="toastT2"></div>
+  </div>
+</div>
+<!-- @episode-end:win -->
+<!-- The win fires from cancelWin() in the script below; copy that function +
+     the .toast / .winpulse CSS along with this markup. -->
+
+
+<script>
+var Vitality={_w:{},_sv:false,save:function(d){Vitality._sv=true;parent.postMessage({source:'vitality-tile',type:'save',data:d},'*')},load:function(){return new Promise(function(res){var id=Math.random().toString(36).slice(2);var ask=function(){parent.postMessage({source:'vitality-tile',type:'load',id:id},'*')};var n=0;var t=setInterval(function(){n++;if(n===1){ask();return}clearInterval(t);if(Vitality._w[id]){Vitality._w[id]=function(d){if(d!=null&&!Vitality._sv)location.reload()};res(null)}},3000);Vitality._w[id]=function(d){clearInterval(t);res(d)};ask()})},report:function(s){parent.postMessage({source:'vitality-tile',type:'report',stream:s},'*')}};
+window.Vitality = Vitality;
+window.addEventListener('message', function (e) {
+  var m = e.data;
+  if (!m || m.source !== 'vitality-host') return;
+  if (m.type === 'load:result' && Vitality._w[m.id]) { Vitality._w[m.id](m.data); delete Vitality._w[m.id]; return; }
+});
+if (window.self === window.top) {
+  window.Vitality = {
+    save: function (d) { try { localStorage.setItem('v:radar', JSON.stringify(d)) } catch (e) {} return Promise.resolve(true) },
+    load: function () { try { return Promise.resolve(JSON.parse(localStorage.getItem('v:radar') || 'null')) } catch (e) { return Promise.resolve(null) } },
+    report: function () {},
+  };
+}
+let MEM = {};
+let __t = null;
+const __hasLS = (function(){ try { window.localStorage.setItem('__vt','1'); window.localStorage.removeItem('__vt'); return true; } catch(e){ return false; } })();
+function __persist(){ clearTimeout(__t); __t = setTimeout(__flush, 400); }
+function __flush(){
+  if (window.Vitality && window.Vitality.save) { try { window.Vitality.save(MEM); } catch(e){} }
+  else if (__hasLS) { try { window.localStorage.setItem('vitality.finance.tile', JSON.stringify(MEM)); } catch(e){} }
+}
+addEventListener('pagehide', __flush);
+document.addEventListener('visibilitychange', function(){ if (document.visibilityState === 'hidden') __flush(); });
+const VStore = {
+  getItem: function(k){ return Object.prototype.hasOwnProperty.call(MEM, k) ? MEM[k] : null },
+  setItem: function(k, v){ MEM[k] = String(v); __persist(); },
+  removeItem: function(k){ delete MEM[k]; __persist(); },
+};
+async function __loadMem(){
+  if (window.Vitality && window.Vitality.load) {
+    try { const d = await window.Vitality.load(); if (d && typeof d === 'object' && !Array.isArray(d)) return d; } catch(e){}
+    return {};
+  }
+  if (__hasLS) { try { const raw = window.localStorage.getItem('vitality.finance.tile'); if (raw){ const o = JSON.parse(raw); if (o && typeof o === 'object') return o; } } catch(e){} }
+  return {};
+}
+async function __bootTile(){
+
+/* ── engine: ported line for line from Vitality app/app/finance/state.ts ── */
+const DAY = 86400000;
+const startOfToday = () => { const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); };
+const parseLocalDate = iso => {
+  if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null;
+  const [y, m, d] = iso.split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  return isNaN(dt) ? null : dt;
+};
+/* monthly cost: yearly/12, weekly*52/12 (honest math: weekly*12 === *52 annualized) */
+const monthlyEquiv = s => { const a = Number(s.amount) || 0; return s.period === 'yearly' ? a / 12 : s.period === 'weekly' ? a * 52 / 12 : a; };
+/* roll the renewal anchor forward until it lands today or later */
+function nextRenewal(iso, period) {
+  const d = parseLocalDate(iso); if (!d) return null;
+  const today = startOfToday(); let safety = 0;
+  while (d < today && safety++ < 600) {
+    if (period === 'weekly') d.setDate(d.getDate() + 7);
+    else if (period === 'yearly') d.setFullYear(d.getFullYear() + 1);
+    else d.setMonth(d.getMonth() + 1);
+  }
+  return d;
+}
+const daysTo = date => Math.round((new Date(date.getFullYear(), date.getMonth(), date.getDate()) - startOfToday()) / DAY);
+function whenLabel(n) { return n === 0 ? 'today' : n === 1 ? 'tomorrow' : 'in ' + n + 'd'; }
+function dateLabel(d) { return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }); }
+function normalizeUrl(raw) {
+  const t = (raw || '').trim(); if (!t) return null;
+  const w = /^https?:\/\//i.test(t) ? t : 'https://' + t;
+  try { const u = new URL(w); return (u.protocol === 'http:' || u.protocol === 'https:') ? u.toString() : null } catch { return null }
+}
+/* count-up (Vitality useCountUp: easeOutCubic, honors reduced motion) */
+const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function countUp(el, to, fmt, dur = 650) {
+  const from = Number(el.dataset.v || 0);
+  el.dataset.v = to;
+  if (REDUCE || from === to) { el.textContent = fmt(to); return; }
+  const t0 = performance.now();
+  (function tick(now) {
+    const t = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - t, 3);
+    el.textContent = fmt(from + (to - from) * e);
+    if (t < 1) requestAnimationFrame(tick);
+  })(t0);
+}
+
+/* ── state: clean slate by default, demo lives in memory only ── */
+const KEY = 'radar.v1';
+let demo = false;
+let real = load();
+let subs = real;
+function load() {
+  try {
+    const raw = JSON.parse(VStore.getItem(KEY) || 'null');
+    if (!raw) return { currency: '$', list: [] };
+    /* migrate forward: fill any field older saves did not have */
+    raw.currency = raw.currency || '$';
+    raw.list = (raw.list || []).map(s => ({ trialEnds: null, manageUrl: null, prevAmount: null, priceChangedAt: null, ...s }));
+    return raw;
+  } catch { return { currency: '$', list: [] } }
+}
+function save() { if (!demo) VStore.setItem(KEY, JSON.stringify(real)); }
+const uid = () => 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const sym = () => subs.currency;
+const money = v => sym() + (Math.round(v * 100) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+function demoData() {
+  const iso = n => { const d = new Date(Date.now() + n * DAY); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+  return { currency: '$', list: [
+    { id: 'd1', name: 'Netflix', amount: 15.99, period: 'monthly', renewal: iso(2), trialEnds: null, manageUrl: 'https://netflix.com/account', prevAmount: null, priceChangedAt: null },
+    { id: 'd2', name: 'Claude Pro', amount: 20, period: 'monthly', renewal: iso(4), trialEnds: null, manageUrl: null, prevAmount: null, priceChangedAt: null },
+    { id: 'd3', name: 'Spotify', amount: 11.99, period: 'monthly', renewal: iso(6), trialEnds: null, manageUrl: null, prevAmount: null, priceChangedAt: null },
+    { id: 'd4', name: 'Gym', amount: 45, period: 'monthly', renewal: iso(9), trialEnds: null, manageUrl: null, prevAmount: null, priceChangedAt: null },
+    { id: 'd5', name: 'iCloud+', amount: 2.99, period: 'monthly', renewal: iso(12), trialEnds: null, manageUrl: null, prevAmount: null, priceChangedAt: null },
+    { id: 'd6', name: 'Disney+', amount: 9.99, period: 'monthly', renewal: iso(17), trialEnds: null, manageUrl: null, prevAmount: null, priceChangedAt: null },
+    { id: 'd7', name: 'Adobe CC', amount: 263.88, period: 'yearly', renewal: iso(21), trialEnds: null, manageUrl: null, prevAmount: 239.88, priceChangedAt: Date.now() - 9 * DAY },
+    { id: 'd8', name: 'Figma', amount: 15, period: 'monthly', renewal: iso(30), trialEnds: iso(3), manageUrl: null, prevAmount: null, priceChangedAt: null },
+    { id: 'd9', name: 'Amazon Prime', amount: 139, period: 'yearly', renewal: iso(26), trialEnds: null, manageUrl: null, prevAmount: null, priceChangedAt: null },
+  ]};
+}
+
+/* ── render ── */
+const $ = id => document.getElementById(id);
+const ICONS = {
+  link: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.5.5l3-3a5 5 0 00-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 00-7.5-.5l-3 3a5 5 0 007 7l1.7-1.7"/></svg>',
+  pen: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>',
+  x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>',
+};
+let editingId = null, confirmId = null;
+
+function render() {
+  const list = subs.list;
+  renderRadarViz(list);
+  /* burn hero */
+  const burn = list.reduce((s, x) => s + monthlyEquiv(x), 0);
+  countUp($('burnN'), burn, money);
+  $('burnYr').innerHTML = burn > 0 ? 'that is <b>' + money(burn * 12) + '</b> a year' : 'add what auto-renews, watch the real number appear';
+  $('subCnt').textContent = list.length + (list.length === 1 ? ' sub' : ' subs');
+  const dueSoonCt = list.filter(x => { const nx = nextRenewal(x.renewal, x.period); const n = nx ? daysTo(nx) : null; return n != null && n <= 7 && n >= 0; }).length;
+  const pill = $('statusPill');
+  if (list.length === 0) { pill.style.display = 'none'; }
+  else { pill.style.display = ''; pill.textContent = dueSoonCt > 0 ? dueSoonCt + ' due this week' : 'all clear'; }
+  /* currency pills */
+  $('curRow').innerHTML = ['$', '€', '£', 'CHF'].map(c =>
+    '<button class="cur' + (sym() === c ? ' on' : '') + '" data-c="' + c + '">' + c + '</button>').join('');
+  /* alerts: trials within 14d sort first, hikes within 60d */
+  const als = [];
+  for (const s of list) {
+    const t = parseLocalDate(s.trialEnds);
+    if (t) { const n = daysTo(t); if (n >= 0 && n <= 14) als.push({ kind: 'trial', s, n }); }
+    if (s.prevAmount != null && s.amount > s.prevAmount + .005 && (!s.priceChangedAt || Date.now() - s.priceChangedAt <= 60 * DAY))
+      als.push({ kind: 'hike', s });
+  }
+  als.sort((a, b) => a.kind !== b.kind ? (a.kind === 'trial' ? -1 : 1) : (a.n || 0) - (b.n || 0));
+  $('alerts').classList.toggle('on', als.length > 0);
+  $('alerts').innerHTML = als.map(a => a.kind === 'trial'
+    ? '<div class="al"><span class="tag">trial ending</span><span class="tx"><b>' + esc(a.s.name) + '</b> free trial ends <i>' + whenLabel(a.n) + '</i> · cancel before it charges you</span></div>'
+    : '<div class="al"><span class="tag">price up</span><span class="tx"><b>' + esc(a.s.name) + '</b> went up ' + money(a.s.prevAmount) + ' → <b>' + money(a.s.amount) + '</b></span></div>').join('');
+  /* the radar: next 30 days, real charge amounts */
+  const bills = list.map(s => { const nx = nextRenewal(s.renewal, s.period); return nx && { s, nx, n: daysTo(nx) }; })
+    .filter(b => b && b.n >= 0 && b.n <= 30).sort((a, b) => a.n - b.n);
+  $('radar').classList.toggle('on', bills.length > 0);
+  if (bills.length) {
+    $('radarTot').innerHTML = money(bills.reduce((t, b) => t + (Number(b.s.amount) || 0), 0)) + '<small>next 30 days</small>';
+    $('radarList').innerHTML = bills.map(b => {
+      const tone = b.n <= 3 ? 'imminent' : b.n <= 7 ? 'soon' : '';
+      return '<div class="brow"><span class="bdot ' + tone + '"></span><div><div class="nm">' + esc(b.s.name) + '</div>' +
+        '<div class="wh ' + tone + '">' + whenLabel(b.n) + ' · ' + dateLabel(b.nx) + '</div></div>' +
+        '<span class="amt">' + money(b.s.amount) + '</span></div>';
+    }).join('');
+  }
+  /* the list */
+  $('first').classList.toggle('on', list.length === 0);
+  $('rail').innerHTML = list.map((s, i) => {
+    const nx = nextRenewal(s.renewal, s.period);
+    const n = nx ? daysTo(nx) : null;
+    const urgent = n != null && n <= 5;
+    const trialN = s.trialEnds ? daysTo(parseLocalDate(s.trialEnds)) : null;
+    const billed = s.period !== 'monthly' ? 'billed ' + money(s.amount) + ' / ' + (s.period === 'yearly' ? 'yr' : 'wk') : '';
+    if (editingId === s.id) return editRow(s, i);
+    return '<div class="row' + (urgent ? ' urgent' : '') + '" style="animation-delay:' + Math.min(i * 40, 300) + 'ms">' +
+      '<div class="r-main"><div class="r-bd"><div class="r-nm">' + esc(s.name) + '</div><div class="r-meta">' +
+      '<span class="r-per">' + s.period + '</span>' +
+      (nx ? '<span class="r-renew' + (urgent ? ' urgent' : '') + '">↻ ' + (n < 0 ? 'past' : whenLabel(n)) + ' · ' + dateLabel(nx) + '</span>' : '') +
+      (trialN != null && trialN >= 0 ? '<span class="r-trial">trial ends ' + whenLabel(trialN) + '</span>' : '') +
+      '</div></div>' +
+      '<div class="r-cost"><div class="big">' + money(monthlyEquiv(s)) + '</div><div class="unit">/ month</div>' +
+      (billed ? '<div class="billed">' + billed + '</div>' : '') + '</div>' +
+      '<div class="r-acts">' +
+      (s.manageUrl ? '<a class="icb" href="' + esc(s.manageUrl) + '" target="_blank" rel="noopener noreferrer" title="Open billing page">' + ICONS.link + '</a>' : '') +
+      '<button class="icb" data-edit="' + s.id + '" title="Edit">' + ICONS.pen + '</button>' +
+      (confirmId === s.id
+        ? '<button class="icb confirm" data-del="' + s.id + '">sure?</button>'
+        : '<button class="icb x" data-ask="' + s.id + '" title="Cancel this sub">' + ICONS.x + '</button>') +
+      '</div></div><div class="r-edit"></div></div>';
+  }).join('');
+}
+function editRow(s) {
+  return '<div class="row editing"><div class="r-main"><div class="r-bd"><div class="r-nm">' + esc(s.name) + '</div></div></div>' +
+    '<div class="r-edit" data-eid="' + s.id + '">' +
+    '<div class="e-grid">' +
+    '<div><p class="e-lbl">service</p><input class="in" data-f="name" value="' + esc(s.name) + '"></div>' +
+    '<div><p class="e-lbl">amount</p><input class="in" data-f="amount" type="number" step="0.01" min="0" value="' + s.amount + '"></div>' +
+    '<div><p class="e-lbl">billed</p><div class="seg" data-f="period">' + ['monthly', 'yearly', 'weekly'].map(p =>
+      '<button data-p="' + p + '"' + (s.period === p ? ' class="on"' : '') + '>' + p.slice(0, 2) + '</button>').join('') + '</div></div>' +
+    '</div><div class="e-row2">' +
+    '<div><p class="e-lbl">next renewal</p><input class="in date" data-f="renewal" type="date" value="' + (s.renewal || '') + '"></div>' +
+    '<div><p class="e-lbl">free trial ends</p><input class="in date" data-f="trialEnds" type="date" value="' + (s.trialEnds || '') + '"></div>' +
+    '<div><p class="e-lbl">billing page link</p><input class="in" data-f="manageUrl" type="url" placeholder="netflix.com/account" value="' + esc(s.manageUrl || '') + '"></div>' +
+    '</div><div class="e-acts"><button class="e-save" data-save="' + s.id + '">Save</button>' +
+    '<button class="e-cancel" data-cancel="1">cancel</button></div></div></div>';
+}
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+/* the radar ring: pure derivation. Angle = a stable hash of the name (blips
+   never jump around), radius = how soon it renews (center = today, rim = 30d).
+   Hot blip inside 3 days. */
+function renderRadarViz(list) {
+  const g = document.getElementById('rvizBlips');
+  if (!g) return;
+  const blips = [];
+  for (const s of list) {
+    const nx = nextRenewal(s.renewal, s.period);
+    if (!nx) continue;
+    const n = daysTo(nx);
+    if (n < 0 || n > 30) continue;
+    let h = 0; for (let i = 0; i < s.name.length; i++) h = (h * 31 + s.name.charCodeAt(i)) >>> 0;
+    const ang = (h % 360) * Math.PI / 180;
+    const r = 12 + (n / 30) * 54;
+    blips.push({ x: 74 + Math.cos(ang) * r, y: 74 + Math.sin(ang) * r, hot: n <= 3 });
+  }
+  g.innerHTML = blips.map(b => '<circle class="blip' + (b.hot ? ' hot' : '') + '" cx="' + b.x.toFixed(1) + '" cy="' + b.y.toFixed(1) + '" r="3.4"/>').join('');
+}
+
+/* ── actions ── */
+let addPeriod = 'monthly';
+$('aSeg').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  addPeriod = b.dataset.p;
+  $('aSeg').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+});
+function addSub() {
+  const name = $('aName').value.trim(), a = parseFloat($('aAmt').value);
+  if (!name || !isFinite(a) || a <= 0) return;
+  subs.list.push({ id: uid(), name, amount: a, period: addPeriod, renewal: $('aDate').value || null, trialEnds: null, manageUrl: null, prevAmount: null, priceChangedAt: null });
+  $('aName').value = ''; $('aAmt').value = ''; $('aDate').value = '';
+  save(); render(); $('aName').focus();
+}
+$('aBtn').addEventListener('click', addSub);
+[$('aName'), $('aAmt')].forEach(el => el.addEventListener('keydown', e => { if (e.key === 'Enter') addSub(); }));
+
+document.addEventListener('click', e => {
+  const cur = e.target.closest('.cur');
+  if (cur) { subs.currency = cur.dataset.c; save(); render(); return; }
+  const ask = e.target.closest('[data-ask]');
+  if (ask) { confirmId = ask.dataset.ask; render(); setTimeout(() => { if (confirmId === ask.dataset.ask) { confirmId = null; render(); } }, 3200); return; }
+  const del = e.target.closest('[data-del]');
+  if (del) {
+    const i = subs.list.findIndex(x => x.id === del.dataset.del);
+    if (i > -1) { const s = subs.list[i]; subs.list.splice(i, 1); confirmId = null; save(); render(); cancelWin(s); }
+    return;
+  }
+  const ed = e.target.closest('[data-edit]');
+  if (ed) { editingId = ed.dataset.edit; confirmId = null; render(); return; }
+  if (e.target.closest('[data-cancel]')) { editingId = null; render(); return; }
+  const sv = e.target.closest('[data-save]');
+  if (sv) {
+    const box = document.querySelector('[data-eid="' + sv.dataset.save + '"]');
+    const s = subs.list.find(x => x.id === sv.dataset.save); if (!s || !box) return;
+    const get = f => box.querySelector('[data-f="' + f + '"]');
+    const name = get('name').value.trim(), a = parseFloat(get('amount').value);
+    if (!name || !isFinite(a) || a <= 0) return;
+    if (a > s.amount + .005) { s.prevAmount = s.amount; s.priceChangedAt = Date.now(); } /* stamp the hike */
+    s.name = name; s.amount = a;
+    s.period = get('period').querySelector('.on').dataset.p;
+    s.renewal = get('renewal').value || null;
+    s.trialEnds = get('trialEnds').value || null;
+    s.manageUrl = normalizeUrl(get('manageUrl').value);
+    editingId = null; save(); render(); return;
+  }
+  const seg = e.target.closest('.r-edit .seg button');
+  if (seg) { seg.parentElement.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === seg)); }
+});
+
+/* the cancel win: deleting a sub tells you what you just got back */
+let toastTimer;
+function cancelWin(s) {
+  const m = monthlyEquiv(s);
+  $('toastT1').innerHTML = 'Canceled ' + esc(s.name) + ' · <b>+' + money(m) + '/mo</b> back';
+  $('toastT2').textContent = 'that is ' + money(m * 12) + ' a year in your pocket';
+  const wp = $('winpulse'); wp.classList.remove('on'); void wp.offsetWidth; wp.classList.add('on');
+  $('toast').classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => $('toast').classList.remove('on'), 3600);
+}
+
+/* ── demo pill: showcase set, memory only, never touches real data ── */
+function setDemo(on) {
+  demo = on;
+  subs = demo ? demoData() : real;
+  $('demoBtn').textContent = demo ? 'clear demo' : 'demo data';
+  $('demoBtn').classList.toggle('on', demo);
+  editingId = null; confirmId = null;
+  render();
+}
+$('demoBtn').addEventListener('click', () => setDemo(!demo));
+$('firstDemo').addEventListener('click', () => setDemo(true));
+
+/* @episode-start:paste */
+/* ── paste importer: deterministic, no AI, nothing leaves the page ── */
+const PERIOD_WORDS = [
+  [/per\s*year|yearly|annual|\/\s*y(ea)?r|a\s*year/i, 'yearly'],
+  [/per\s*week|weekly|\/\s*w(ee)?k|a\s*week/i, 'weekly'],
+  [/per\s*month|monthly|\/\s*mo(nth)?|a\s*month/i, 'monthly'],
+];
+function parseBill(text) {
+  const out = [];
+  for (const lineRaw of text.split(/\n+/)) {
+    const line = lineRaw.trim(); if (!line) continue;
+    const m = line.match(/(?:[$€£]|CHF|USD|EUR|GBP)?\s*(\d{1,3}(?:[ ,]\d{3})*(?:[.,]\d{1,2})?)(?!\d)/);
+    if (!m) continue;
+    const amount = parseFloat(m[1].replace(/[ ,](?=\d{3}\b)/g, '').replace(',', '.'));
+    if (!isFinite(amount) || amount <= 0) continue;
+    let period = 'monthly';
+    for (const [re, p] of PERIOD_WORDS) if (re.test(line)) { period = p; break; }
+    let name = line.slice(0, m.index).replace(/[-–—·:|]+\s*$/, '').trim();
+    if (!name) name = line.slice(m.index + m[0].length).replace(/^[-–—·:|]+\s*/, '').replace(/(per|a)\s*(year|month|week)|yearly|monthly|weekly|annual/ig, '').trim();
+    if (!name) continue;
+    if (name.length > 42) name = name.slice(0, 42).trim();
+    out.push({ name, amount, period });
+  }
+  return out;
+}
+/* a full RECEIPT is a document, not a list. The line parser choked on it
+   (grabbed the tax number, VAT, and VISA digits as fake subs). This reads ONE
+   clean subscription out of a receipt: the merchant (fuzzy-matched, because OCR
+   drops letters), the TOTAL (never the VAT/subtotal, never a date), the
+   currency (any common one), for any real bill photo. */
+function subseq(a, b) { let i = 0; for (const ch of b) { if (ch === a[i]) i++; if (i === a.length) return true; } return i === a.length; }
+function fuzzyBrand(full) {
+  const B = ['netflix', 'spotify', 'disney', 'hulu', 'youtube', 'amazon', 'adobe', 'icloud', 'apple', 'hbo', 'audible', 'notion', 'figma', 'dropbox', 'patreon', 'twitch', 'canva', 'paramount', 'peacock'];
+  const low = full.toLowerCase();
+  for (const b of B) { if (low.includes(b)) return b; }
+  const toks = (low.match(/[a-z]{4,}/g) || []);
+  for (const b of B) for (const t of toks) if (Math.abs(b.length - t.length) <= 2 && (subseq(t, b) || subseq(b, t))) return b;
+  return null;
+}
+function parseReceipt(text) {
+  const lines = text.split(/\n+/).map(l => l.trim()).filter(Boolean);
+  const full = lines.join(' ');
+  const CUR = [['€', /€|\bEUR\b/i], ['£', /£|\bGBP\b/i], ['CHF', /\bCHF\b|\bfranc/i], ['$', /\$|\bUSD\b/i], ['¥', /¥|\bJPY\b/i], ['₹', /₹|\bINR\b/i]];
+  let sym = '$'; for (const x of CUR) { if (x[1].test(full)) { sym = x[0]; break; } }
+  // money = a number ADJACENT to a currency (either side). This excludes dates like 28.02.2020.
+  const CA = /(?:€|£|\$|¥|₹|CHF|USD|EUR|GBP)\s?(\d{1,4}(?:[.,]\d{2}))|(\d{1,4}(?:[.,]\d{2}))\s?(?:€|£|\$|CHF|USD|EUR|GBP)/gi;
+  const amounts = l => [...l.matchAll(CA)].map(m => parseFloat((m[1] || m[2]).replace(',', '.'))).filter(v => v > 0 && v < 100000);
+  let amount = null;
+  const totalLine = lines.find(l => /(^|\b)total\b/i.test(l) && !/subtotal/i.test(l) && amounts(l).length);
+  if (totalLine) { const a = amounts(totalLine); amount = a[a.length - 1]; }
+  if (amount == null) { const all = amounts(full); if (all.length) amount = Math.max(...all); }
+  let brand = fuzzyBrand(full), name = null;
+  if (brand) name = brand.replace(/\b\w/g, c => c.toUpperCase());
+  if (!name) { const d = full.match(/([a-z0-9-]{3,})\.(?:com|net|io|co|org|app)/i); if (d) name = d[1].replace(/\b\w/g, c => c.toUpperCase()); }
+  if (!name && lines.length) name = (lines.find(l => /^[A-Za-z][A-Za-z .&'-]{2,30}$/.test(l)) || lines[0]).slice(0, 30);
+  return { name, amount, currency: sym };
+}
+/* decide: a receipt (one merchant, a total) vs a statement list (many rows). */
+function parseAny(text, source) {
+  // A receipt (one merchant, a total) vs a statement list (many subs).
+  // An IMAGE drop is almost always a single receipt, so bias to the receipt
+  // reader there; a pasted list stays line mode unless it clearly reads as a
+  // receipt (several receipt words). OCR mangles brand names, so we never gate
+  // on the brand here.
+  const sigs = (text.match(/\b(total|receipt|invoice|vat|payment\s*method|tax\s*number|subtotal|amount\s*due|order\s*(no|number|confirmation)|billed\s*to)\b/gi) || []).length;
+  const wantReceipt = source === 'image' ? sigs >= 1 : sigs >= 3;
+  if (wantReceipt) {
+    const r = parseReceipt(text);
+    if (r.name && r.amount) return { items: [{ name: r.name, amount: r.amount, period: 'monthly' }], currency: r.currency };
+  }
+  return { items: parseBill(text), currency: null };
+}
+const READER_LINES = ['Reading your bill…', 'Finding what auto-renews…', 'Adding up the damage…'];
+/* the honest price watch: a re-pasted statement is matched BY NAME against what
+   is already tracked. Same name + higher number = the price quietly went up out
+   in the real world -> the hike is stamped and the warning row appears. No
+   internet, no AI: the radar only ever reads data the user walks in. */
+const normName = s => s.trim().toLowerCase().replace(/\s+/g, ' ');
+function pasteStatus(p) {
+  const ex = subs.list.find(x => normName(x.name) === normName(p.name));
+  if (!ex) return null;
+  if (p.amount > ex.amount + .005) return 'price up';
+  if (p.amount < ex.amount - .005) return 'price down';
+  return 'tracked';
+}
+let pvItems = [];
+function openSheet() { $('veil').classList.add('on'); $('sheet').classList.add('on'); $('pv').classList.remove('on'); $('reader').classList.remove('on'); setTimeout(() => $('pasteIn').focus(), 350); }
+function closeSheet() { $('veil').classList.remove('on'); $('sheet').classList.remove('on'); }
+$('pasteOpen').addEventListener('click', openSheet);
+$('veil').addEventListener('click', closeSheet);
+/* one shared review path: text (paste) and OCR (screenshot) both land here.
+   Shows the cozy reader for `hold` ms, then resolves into the real review rows. */
+function runReview(text, hold, source) {
+  const parsed = parseAny(text, source);
+  pvItems = parsed.items;
+  if (parsed.currency && parsed.currency !== subs.currency) subs.currency = parsed.currency;
+  $('pv').classList.remove('on'); $('reader').classList.add('on');
+  let li = 0; $('readerLine').textContent = READER_LINES[0];
+  const lineTimer = setInterval(() => { li = (li + 1) % READER_LINES.length; $('readerLine').textContent = READER_LINES[li]; }, 700);
+  setTimeout(() => {
+    clearInterval(lineTimer);
+    $('reader').classList.remove('on');
+    $('pvK').textContent = pvItems.length ? 'Found ' + pvItems.length + (pvItems.length === 1 ? ' subscription' : ' subscriptions') : 'Nothing found';
+    $('pvList').innerHTML = pvItems.length ? pvItems.map((p, i) => {
+      const st = pasteStatus(p);
+      return '<div class="pv-row" style="animation-delay:' + i * 70 + 'ms"><span class="nm">' + esc(p.name) + '</span>' +
+      (st ? '<span class="pv-st' + (st === 'price up' ? ' up' : '') + '">' + st + '</span>' : '') +
+      '<span class="amt">' + money(p.amount) + '</span><span class="per">' + p.period + '</span>' +
+      '<button class="rm" data-rm="' + i + '" title="Skip this one">×</button></div>';
+    }).join('')
+      : '<p class="pv-none">Could not read a price on any line. Try one subscription per line, like: Netflix $15.99/month</p>';
+    $('pvAdd').style.display = pvItems.length ? 'block' : 'none';
+    $('pv').classList.add('on');
+  }, REDUCE ? 50 : (hold || 1900));
+}
+$('pasteGo').addEventListener('click', () => runReview($('pasteIn').value, 1900, 'paste'));
+
+
+$('pvList').addEventListener('click', e => {
+  const rm = e.target.closest('[data-rm]'); if (!rm) return;
+  pvItems.splice(Number(rm.dataset.rm), 1);
+  rm.closest('.pv-row').remove();
+  $('pvK').textContent = pvItems.length ? 'Found ' + pvItems.length + (pvItems.length === 1 ? ' subscription' : ' subscriptions') : 'Nothing left';
+  if (!pvItems.length) $('pvAdd').style.display = 'none';
+});
+$('pvAdd').addEventListener('click', () => {
+  for (const p of pvItems) {
+    const ex = subs.list.find(x => normName(x.name) === normName(p.name));
+    if (ex) {
+      if (p.amount > ex.amount + .005) { ex.prevAmount = ex.amount; ex.priceChangedAt = Date.now(); ex.amount = p.amount; }
+      else if (p.amount < ex.amount - .005) { ex.amount = p.amount; }
+      continue; /* never duplicate a re-pasted row */
+    }
+    subs.list.push({ id: uid(), name: p.name, amount: p.amount, period: p.period, renewal: null, trialEnds: null, manageUrl: null, prevAmount: null, priceChangedAt: null });
+  }
+  save(); render(); closeSheet(); $('pasteIn').value = '';
+});
+
+/* @episode-end:paste */
+
+/* the Vitality particle field (ported from WelcomeBackdrop): spans drift up
+   with a slight sway, staggered, glow tinted to the accent. Fewer on phones. */
+(function seedParticles() {
+  const root = $('particles');
+  if (!root || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const N = innerWidth < 640 ? 22 : 40;
+  for (let i = 0; i < N; i++) {
+    const s = document.createElement('span');
+    s.style.left = (Math.random() * 100) + '%';
+    s.style.top = (60 + Math.random() * 42) + '%';
+    const sz = 1.2 + Math.random() * 1.3;
+    s.style.width = s.style.height = sz + 'px';
+    const dur = 22 + Math.random() * 28;
+    s.style.animationDuration = dur + 's';
+    s.style.animationDelay = (-Math.random() * dur) + 's';
+    s.style.setProperty('--dx', (Math.random() * 30 - 15) + 'px');
+    s.style.setProperty('--dy', -(64 + Math.random() * 52) + 'vh');
+    root.appendChild(s);
+  }
+})();
+
+/* ── boot ── */
+$('hDate').textContent = new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+$('burnN').dataset.v = 0;
+render();
+
+}
+__loadMem().then(function(m){ MEM = m; __bootTile(); });
+</script>
+</html>
