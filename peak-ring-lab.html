@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>peak-ring-lab</title>
+<!--
+================================================================================
+  PEAK RING LAB  ·  rowan4
+================================================================================
+  THE THING: a circular progress ring that shows a 0–100 "peak" score (the 63).
+  This is a visual playground to compare 10 distinct ring STYLES side by side and
+  dial in the one we want to ship in peak.html.
+
+  WORKFLOW:
+    1. Open this file in a browser (or via the dev server).
+    2. Use the sticky top bar to set value / color / animation / font / thickness
+       and toggles — every card re-renders live.
+    3. To change one card, tell Claude e.g. "card 4, make the inner ring spin the
+       other way" or "card 7, thinner neon". Claude edits THIS file.
+    4. Refresh the browser to see it.
+
+  Each card = one ring style. Corner tag = mono id. ↻ replays its animation,
+  ⧉ copies a PEAK-RING config code you can paste back to Claude.
+
+  No build step, no deps. Vanilla HTML/CSS/JS, all inline. Fonts via Google link.
+================================================================================
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#08090a;
+    --fg:#f4f4f5;
+    --dim:#8a8f98;
+    --accent:#6EE7B7;
+    --track:rgba(255,255,255,.07);
+    --stroke:12;
+    --num-font:'Instrument Serif',serif;
+    --ease:cubic-bezier(.16,1,.3,1);
+    --line:rgba(255,255,255,.08);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:var(--bg);
+    color:var(--fg);
+    font-family:'Inter',system-ui,sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+    position:relative;
+    overflow-x:hidden;
+  }
+  /* ambient glows */
+  body::before{
+    content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:
+      radial-gradient(620px 480px at 12% -8%, color-mix(in srgb,var(--accent) 16%, transparent), transparent 70%),
+      radial-gradient(720px 520px at 108% 8%, rgba(120,120,255,.06), transparent 70%),
+      radial-gradient(900px 700px at 50% 120%, color-mix(in srgb,var(--accent) 8%, transparent), transparent 70%);
+  }
+
+  /* ---------- top bar ---------- */
+  .bar{
+    position:sticky;top:0;z-index:20;
+    display:flex;flex-wrap:wrap;align-items:center;gap:18px;
+    padding:14px 22px;
+    background:rgba(12,13,15,.62);
+    backdrop-filter:blur(18px) saturate(140%);
+    -webkit-backdrop-filter:blur(18px) saturate(140%);
+    border-bottom:1px solid var(--line);
+  }
+  .brand{display:flex;flex-direction:column;line-height:1;margin-right:6px}
+  .brand b{font-family:'Instrument Serif',serif;font-style:italic;font-weight:400;font-size:24px;letter-spacing:.3px}
+  .brand span{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:2px;margin-top:5px}
+  .grp{display:flex;flex-direction:column;gap:6px}
+  .grp>label{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase}
+  .grp .row{display:flex;align-items:center;gap:8px}
+
+  .swatches{display:flex;gap:7px;align-items:center}
+  .sw{width:18px;height:18px;border-radius:50%;border:1px solid rgba(255,255,255,.18);cursor:pointer;padding:0;transition:transform .25s var(--ease),box-shadow .25s var(--ease)}
+  .sw:hover{transform:scale(1.18)}
+  .sw.on{box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px var(--fg);transform:scale(1.1)}
+  input[type=color]{width:24px;height:24px;padding:0;border:1px solid var(--line);border-radius:6px;background:transparent;cursor:pointer}
+
+  select{
+    appearance:none;background:rgba(255,255,255,.04);color:var(--fg);
+    border:1px solid var(--line);border-radius:8px;padding:6px 26px 6px 10px;
+    font-family:'Inter',sans-serif;font-size:12.5px;cursor:pointer;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M1 3l4 4 4-4' stroke='%238a8f98' fill='none' stroke-width='1.4'/></svg>");
+    background-repeat:no-repeat;background-position:right 9px center;
+  }
+  select:focus{outline:none;border-color:color-mix(in srgb,var(--accent) 60%,transparent)}
+
+  input[type=range]{ -webkit-appearance:none;appearance:none;height:3px;width:120px;border-radius:3px;background:var(--track);cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);border:none;box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 18%,transparent)}
+  input[type=range]::-moz-range-thumb{width:14px;height:14px;border:none;border-radius:50%;background:var(--accent)}
+  .val{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--fg);min-width:30px;text-align:right}
+
+  .toggles{display:flex;gap:14px;flex-wrap:wrap}
+  .tg{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--dim);cursor:pointer;user-select:none}
+  .tg input{appearance:none;width:30px;height:17px;border-radius:20px;background:var(--track);position:relative;cursor:pointer;transition:background .25s var(--ease)}
+  .tg input::after{content:"";position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;background:var(--dim);transition:transform .28s var(--ease),background .25s}
+  .tg input:checked{background:color-mix(in srgb,var(--accent) 35%,transparent)}
+  .tg input:checked::after{transform:translateX(13px);background:var(--accent)}
+  .tg input:checked + span{color:var(--fg)}
+
+  .btn{
+    font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.5px;
+    background:rgba(255,255,255,.04);color:var(--fg);border:1px solid var(--line);
+    border-radius:8px;padding:8px 14px;cursor:pointer;transition:all .25s var(--ease);
+  }
+  .btn:hover{background:color-mix(in srgb,var(--accent) 14%,transparent);border-color:color-mix(in srgb,var(--accent) 45%,transparent)}
+  .btn:active{transform:translateY(1px)}
+
+  /* ---------- grid ---------- */
+  .head{padding:30px 26px 6px}
+  .head h1{font-family:'Instrument Serif',serif;font-style:italic;font-weight:400;font-size:30px;margin:0}
+  .head p{color:var(--dim);font-size:13px;margin:8px 0 0;max-width:640px;line-height:1.5}
+
+  .lab{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));
+    gap:18px;padding:22px 26px 80px;
+  }
+  .card{
+    position:relative;border:1px solid var(--line);border-radius:18px;
+    background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,.008));
+    padding:22px;display:flex;flex-direction:column;align-items:center;gap:14px;
+    overflow:hidden;transition:border-color .3s var(--ease),transform .3s var(--ease);
+  }
+  .card:hover{border-color:rgba(255,255,255,.16)}
+  .card::after{content:"";position:absolute;inset:0;border-radius:18px;pointer-events:none;
+    background:radial-gradient(420px 200px at 50% -30%, color-mix(in srgb,var(--accent) 7%,transparent), transparent 70%);}
+  .tag{position:absolute;top:14px;left:16px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--dim)}
+  .ctitle{font-family:'Instrument Serif',serif;font-style:italic;font-weight:400;font-size:21px;margin-top:6px;text-align:center}
+  .cdesc{font-size:11px;color:var(--dim);text-align:center;margin-top:-8px;min-height:14px}
+
+  .stage{position:relative;width:184px;height:184px;display:flex;align-items:center;justify-content:center}
+  .stage svg{width:184px;height:184px;display:block;overflow:visible}
+  .center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+  .num{font-family:var(--num-font);font-size:54px;line-height:.9;color:var(--fg);font-weight:500}
+  .lab.italic .num{font-style:italic}
+  .ringlabel{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2.5px;color:var(--dim);margin-top:7px}
+  .lab.no-label .ringlabel{display:none}
+
+  .track{fill:none;stroke:var(--track);stroke-width:calc(var(--stroke)*1px)}
+  .lab.no-track .track{opacity:0}
+  .prog{fill:none;stroke:var(--accent);stroke-width:calc(var(--stroke)*1px);stroke-linecap:round}
+  .lab:not(.no-glow) .glow{filter:drop-shadow(0 0 7px color-mix(in srgb,var(--accent) 85%,transparent))}
+
+  .actions{display:flex;gap:8px;margin-top:2px}
+  .icbtn{display:flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--dim);
+    background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:20px;padding:6px 12px;cursor:pointer;transition:all .25s var(--ease)}
+  .icbtn:hover{color:var(--fg);border-color:color-mix(in srgb,var(--accent) 45%,transparent);background:color-mix(in srgb,var(--accent) 10%,transparent)}
+  .icbtn.ok{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 55%,transparent)}
+
+  @keyframes pls{0%{transform:scale(1)}40%{transform:scale(1.05)}100%{transform:scale(1)}}
+  .stage.pulse{animation:pls .55s var(--ease)}
+  @keyframes breathe{0%,100%{opacity:.35;transform:scale(1)}50%{opacity:.8;transform:scale(1.04)}}
+  @keyframes wavemove{from{transform:translateX(0)}to{transform:translateX(-60px)}}
+  @keyframes orbitspin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <div class="brand"><b>Peak Ring Lab</b><span>ROWAN4</span></div>
+
+  <div class="grp">
+    <label>Value</label>
+    <div class="row">
+      <input id="value" type="range" min="0" max="100" value="63">
+      <span class="val" id="valOut">63</span>
+    </div>
+  </div>
+
+  <div class="grp">
+    <label>Color</label>
+    <div class="row">
+      <div class="swatches" id="swatches"></div>
+      <input type="color" id="custom" value="#6EE7B7" title="custom color">
+    </div>
+  </div>
+
+  <div class="grp">
+    <label>Animation</label>
+    <div class="row">
+      <select id="anim">
+        <option value="sweep">Sweep</option>
+        <option value="count">Count-up</option>
+        <option value="pulse">Pulse</option>
+        <option value="spring">Spring</option>
+      </select>
+      <button class="btn" id="replayAll">↻ Replay all</button>
+    </div>
+  </div>
+
+  <div class="grp">
+    <label>Font</label>
+    <div class="row">
+      <select id="font">
+        <option value="serif">Instrument Serif</option>
+        <option value="inter">Inter</option>
+        <option value="mono">JetBrains Mono</option>
+        <option value="grotesk">Space Grotesk</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="grp">
+    <label>Thickness</label>
+    <div class="row">
+      <input id="thick" type="range" min="3" max="22" value="12">
+      <span class="val" id="thickOut">12</span>
+    </div>
+  </div>
+
+  <div class="grp">
+    <label>Toggles</label>
+    <div class="toggles">
+      <label class="tg"><input type="checkbox" id="tGlow" checked><span>Glow</span></label>
+      <label class="tg"><input type="checkbox" id="tTrack" checked><span>Track</span></label>
+      <label class="tg"><input type="checkbox" id="tLabel" checked><span>Label</span></label>
+      <label class="tg"><input type="checkbox" id="tReplay" checked><span>Replay on change</span></label>
+    </div>
+  </div>
+</div>
+
+<div class="head">
+  <h1>Ten rings, one peak score.</h1>
+  <p>Each card is a distinct take on the circular peak tracker. Drive them all from the top bar, then tell Claude “card N, do X” to refine one. ↻ replays · ⧉ copies a config code.</p>
+</div>
+
+<div class="lab italic" id="lab"></div>
+
+<script>
+"use strict";
+/* ------------------------------------------------------------------ helpers */
+const $ = s => document.querySelector(s);
+const lab = $('#lab');
+const SVGNS = 'http://www.w3.org/2000/svg';
+const TAU = Math.PI*2;
+
+function svgEl(tag, attrs){
+  const e = document.createElementNS(SVGNS, tag);
+  for(const k in attrs) e.setAttribute(k, attrs[k]);
+  return e;
+}
+// 0deg = top, clockwise
+function polar(cx,cy,r,deg){ const a=(deg-90)*Math.PI/180; return {x:cx+r*Math.cos(a), y:cy+r*Math.sin(a)}; }
+function arcPath(cx,cy,r,a0,a1){
+  const s=polar(cx,cy,r,a1), e=polar(cx,cy,r,a0);
+  const large = (a1-a0)<=180?0:1;
+  return `M ${s.x.toFixed(2)} ${s.y.toFixed(2)} A ${r} ${r} 0 ${large} 0 ${e.x.toFixed(2)} ${e.y.toFixed(2)}`;
+}
+const clamp01 = p => Math.max(0, Math.min(1, p));
+
+/* ------------------------------------------------------------------ easings */
+const EASES = {
+  sweep:  t => t===1?1:1-Math.pow(2,-10*t),                 // easeOutExpo
+  count:  t => t,                                            // linear
+  pulse:  t => 1-Math.pow(1-t,3),                            // easeOutCubic
+  spring: t => { const c1=1.70158,c3=c1+1; return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2); }, // easeOutBack
+};
+
+/* ------------------------------------------------------------------ state */
+const state = {
+  value:63, color:'#6EE7B7', anim:'sweep', font:'serif', thick:12,
+  glow:true, track:true, label:true, replay:true,
+};
+const PRESETS = [
+  ['#6EE7B7','Mint'],['#38BDF8','Cyan'],['#A78BFA','Violet'],
+  ['#FBBF24','Amber'],['#FB7185','Rose'],['#F4F4F5','White'],
+];
+const FONTS = {
+  serif:["'Instrument Serif',serif", true],
+  inter:["'Inter',sans-serif", false],
+  mono:["'JetBrains Mono',monospace", false],
+  grotesk:["'Space Grotesk',sans-serif", false],
+};
+
+/* =================================================================== CARDS
+   Each builder gets the .stage element and returns apply(p):
+   it paints ONLY the svg for progress p (number/label are handled centrally).
+==================================================================== */
+const C = 100; // pathLength normalized
+
+// base svg + center number/label scaffold; returns {svg, num, label}
+function scaffold(stage){
+  const svg = svgEl('svg',{viewBox:'0 0 200 200'});
+  stage.appendChild(svg);
+  const center = document.createElement('div'); center.className='center';
+  const num = document.createElement('div'); num.className='num';
+  const lbl = document.createElement('div'); lbl.className='ringlabel'; lbl.textContent='PEAK';
+  center.appendChild(num); center.appendChild(lbl); stage.appendChild(center);
+  return {svg, num, label:lbl};
+}
+
+const CARDS = [
+  /* 1 — CLASSIC ------------------------------------------------------ */
+  { id:'classic', title:'Classic', desc:'Single solid arc · count-up',
+    build(s){ const {svg}=scaffold(s);
+      svg.appendChild(svgEl('circle',{class:'track',cx:100,cy:100,r:80,pathLength:C}));
+      const p=svgEl('circle',{class:'prog glow',cx:100,cy:100,r:80,pathLength:C,
+        'stroke-dasharray':C,'stroke-dashoffset':C,transform:'rotate(-90 100 100)'});
+      svg.appendChild(p);
+      return q=>{ p.setAttribute('stroke-dashoffset', C*(1-q)); };
+    }},
+
+  /* 2 — GRADIENT SWEEP ---------------------------------------------- */
+  { id:'gradient', title:'Gradient Sweep', desc:'Two-tone stroke gradient',
+    build(s){ const {svg}=scaffold(s);
+      const defs=svgEl('defs'); const g=svgEl('linearGradient',{id:'gr',x1:0,y1:0,x2:1,y2:1});
+      g.appendChild(svgEl('stop',{offset:'0%','stop-color':'var(--accent)'}));
+      g.appendChild(svgEl('stop',{offset:'100%','stop-color':'color-mix(in srgb,var(--accent) 35%, #fff 18%)'}));
+      defs.appendChild(g); svg.appendChild(defs);
+      svg.appendChild(svgEl('circle',{class:'track',cx:100,cy:100,r:80,pathLength:C}));
+      const p=svgEl('circle',{class:'prog glow',cx:100,cy:100,r:80,pathLength:C,stroke:'url(#gr)',
+        'stroke-dasharray':C,'stroke-dashoffset':C,transform:'rotate(-90 100 100)'});
+      svg.appendChild(p);
+      return q=>{ p.setAttribute('stroke-dashoffset', C*(1-q)); };
+    }},
+
+  /* 3 — DOTTED / SEGMENTED TICKS ------------------------------------ */
+  { id:'dotted', title:'Dotted Ticks', desc:'40 marks fill round the dial',
+    build(s){ const {svg}=scaffold(s); const N=40; const ticks=[];
+      for(let i=0;i<N;i++){ const a=(i/N)*360; const o=polar(100,100,86,a), inn=polar(100,100,70,a);
+        const ln=svgEl('line',{x1:inn.x,y1:inn.y,x2:o.x,y2:o.y,'stroke-width':3,'stroke-linecap':'round',stroke:'var(--track)'});
+        ln.classList.add('tickline'); svg.appendChild(ln); ticks.push(ln);
+      }
+      return q=>{ const k=Math.round(clamp01(q)*N);
+        ticks.forEach((t,i)=>{ const on=i<k; t.setAttribute('stroke', on?'var(--accent)':'var(--track)');
+          t.style.filter = on && state.glow ? 'drop-shadow(0 0 5px var(--accent))':'none'; });
+      };
+    }},
+
+  /* 4 — DUAL RING --------------------------------------------------- */
+  { id:'dual', title:'Dual Ring', desc:'Outer + counter-rotating inner',
+    build(s){ const {svg}=scaffold(s);
+      svg.appendChild(svgEl('circle',{class:'track',cx:100,cy:100,r:82,pathLength:C}));
+      const outer=svgEl('circle',{class:'prog glow',cx:100,cy:100,r:82,pathLength:C,'stroke-dasharray':C,'stroke-dashoffset':C,transform:'rotate(-90 100 100)'});
+      const innerTrack=svgEl('circle',{class:'track',cx:100,cy:100,r:60,pathLength:C,style:'stroke-width:calc(var(--stroke)*0.5px)'});
+      const inner=svgEl('circle',{cx:100,cy:100,r:60,pathLength:C,fill:'none',stroke:'var(--accent)','stroke-opacity':.45,
+        'stroke-width':'calc(var(--stroke)*0.5px)','stroke-linecap':'round','stroke-dasharray':C,'stroke-dashoffset':C,transform:'rotate(90 100 100)'});
+      svg.appendChild(outer); svg.appendChild(innerTrack); svg.appendChild(inner);
+      return q=>{ outer.setAttribute('stroke-dashoffset', C*(1-q)); inner.setAttribute('stroke-dashoffset', C*(1-q*0.66)); };
+    }},
+
+  /* 5 — GLOW PULSE -------------------------------------------------- */
+  { id:'glowpulse', title:'Glow Pulse', desc:'Breathing halo behind the arc',
+    build(s){ const {svg}=scaffold(s);
+      const halo=svgEl('circle',{cx:100,cy:100,r:80,pathLength:C,fill:'none',stroke:'var(--accent)',
+        'stroke-width':'calc(var(--stroke)*1px)','stroke-linecap':'round','stroke-dasharray':C,'stroke-dashoffset':C,
+        transform:'rotate(-90 100 100)',style:'filter:blur(7px);transform-origin:100px 100px;animation:breathe 2.6s ease-in-out infinite'});
+      svg.appendChild(svgEl('circle',{class:'track',cx:100,cy:100,r:80,pathLength:C}));
+      svg.appendChild(halo);
+      const p=svgEl('circle',{class:'prog',cx:100,cy:100,r:80,pathLength:C,'stroke-dasharray':C,'stroke-dashoffset':C,transform:'rotate(-90 100 100)'});
+      svg.appendChild(p);
+      return q=>{ const o=C*(1-q); p.setAttribute('stroke-dashoffset',o); halo.setAttribute('stroke-dashoffset',o); };
+    }},
+
+  /* 6 — GAUGE (270°) ------------------------------------------------ */
+  { id:'gauge', title:'Gauge', desc:'270° open-bottom dial w/ end ticks',
+    build(s){ const {svg}=scaffold(s);
+      svg.appendChild(svgEl('circle',{class:'track',cx:100,cy:100,r:80,pathLength:C,'stroke-dasharray':'75 25','stroke-linecap':'round',transform:'rotate(135 100 100)'}));
+      const p=svgEl('circle',{class:'prog glow',cx:100,cy:100,r:80,pathLength:C,'stroke-dasharray':'0 100','stroke-linecap':'round',transform:'rotate(135 100 100)'});
+      svg.appendChild(p);
+      [225,135].forEach(a=>{ const o=polar(100,100,92,a),inn=polar(100,100,66,a);
+        svg.appendChild(svgEl('line',{x1:inn.x,y1:inn.y,x2:o.x,y2:o.y,stroke:'var(--track)','stroke-width':2})); });
+      return q=>{ p.setAttribute('stroke-dasharray', `${(75*clamp01(q)).toFixed(2)} 100`); };
+    }},
+
+  /* 7 — NEON STROKE ------------------------------------------------- */
+  { id:'neon', title:'Neon', desc:'Thin bright line, deep track',
+    build(s){ const {svg}=scaffold(s);
+      svg.appendChild(svgEl('circle',{cx:100,cy:100,r:80,pathLength:C,fill:'none',stroke:'rgba(255,255,255,.05)','stroke-width':'calc(var(--stroke)*1px)'}));
+      const p=svgEl('circle',{cx:100,cy:100,r:80,pathLength:C,fill:'none',stroke:'var(--accent)','stroke-linecap':'round',
+        'stroke-width':'calc(var(--stroke)*0.32px)','stroke-dasharray':C,'stroke-dashoffset':C,transform:'rotate(-90 100 100)',
+        style:'filter:drop-shadow(0 0 4px var(--accent)) drop-shadow(0 0 12px var(--accent))'});
+      svg.appendChild(p);
+      return q=>{ p.setAttribute('stroke-dashoffset', C*(1-q)); };
+    }},
+
+  /* 8 — STEPPED / BLOCKY -------------------------------------------- */
+  { id:'stepped', title:'Stepped', desc:'12 chunky segments, battery-style',
+    build(s){ const {svg}=scaffold(s); const N=12,gap=7,segs=[];
+      for(let i=0;i<N;i++){ const a0=i*(360/N)+gap/2, a1=(i+1)*(360/N)-gap/2;
+        const seg=svgEl('path',{d:arcPath(100,100,80,a0,a1),fill:'none',stroke:'var(--track)',
+          'stroke-width':'calc(var(--stroke)*1px)','stroke-linecap':'round'});
+        svg.appendChild(seg); segs.push(seg);
+      }
+      return q=>{ const k=Math.round(clamp01(q)*N);
+        segs.forEach((seg,i)=>{ const on=i<k; seg.setAttribute('stroke',on?'var(--accent)':'var(--track)');
+          seg.style.filter = on && state.glow ? 'drop-shadow(0 0 5px var(--accent))':'none'; });
+      };
+    }},
+
+  /* 9 — LIQUID FILL ------------------------------------------------- */
+  { id:'liquid', title:'Liquid Fill', desc:'Wave rises inside the ring',
+    build(s){ const {svg}=scaffold(s);
+      const defs=svgEl('defs'); const cp=svgEl('clipPath',{id:'lq'});
+      cp.appendChild(svgEl('circle',{cx:100,cy:100,r:72})); defs.appendChild(cp); svg.appendChild(defs);
+      const g=svgEl('g',{'clip-path':'url(#lq)'});
+      const water=svgEl('g',{}); // translated vertically by apply
+      // two tiled wave crests so the horizontal loop is seamless
+      const wpath='M0 8 q15 -8 30 0 t30 0 t30 0 t30 0 t30 0 V160 H0 Z';
+      const w1=svgEl('path',{d:wpath,fill:'var(--accent)','fill-opacity':.22,transform:'translate(-10 0)'});
+      const w2=svgEl('path',{d:wpath,fill:'var(--accent)','fill-opacity':.34,transform:'translate(-10 4)'});
+      w1.style.cssText='animation:wavemove 3.4s linear infinite';
+      w2.style.cssText='animation:wavemove 2.3s linear infinite';
+      water.appendChild(w1); water.appendChild(w2); g.appendChild(water); svg.appendChild(g);
+      svg.appendChild(svgEl('circle',{cx:100,cy:100,r:72,fill:'none',stroke:'var(--track)','stroke-width':3}));
+      const ring=svgEl('circle',{class:'prog glow',cx:100,cy:100,r:80,pathLength:C,'stroke-dasharray':C,'stroke-dashoffset':C,transform:'rotate(-90 100 100)'});
+      svg.appendChild(ring);
+      return q=>{ const qq=clamp01(q);
+        ring.setAttribute('stroke-dashoffset', C*(1-q));
+        water.setAttribute('transform', `translate(70 ${(28 + (1-qq)*150).toFixed(1)})`);
+      };
+    }},
+
+  /* 10 — ORBIT ------------------------------------------------------ */
+  { id:'orbit', title:'Orbit', desc:'Travelling comet leaves a trail',
+    build(s){ const {svg}=scaffold(s);
+      svg.appendChild(svgEl('circle',{class:'track',cx:100,cy:100,r:80,pathLength:C}));
+      const trail=svgEl('circle',{cx:100,cy:100,r:80,pathLength:C,fill:'none',stroke:'var(--accent)','stroke-opacity':.5,
+        'stroke-width':'calc(var(--stroke)*0.6px)','stroke-linecap':'round','stroke-dasharray':C,'stroke-dashoffset':C,transform:'rotate(-90 100 100)'});
+      svg.appendChild(trail);
+      const dot=svgEl('circle',{class:'glow',cx:100,cy:20,r:'calc(var(--stroke)*0.6px)',fill:'var(--accent)'});
+      svg.appendChild(dot);
+      return q=>{ const qq=clamp01(q); trail.setAttribute('stroke-dashoffset', C*(1-q));
+        const pt=polar(100,100,80,qq*360); dot.setAttribute('cx',pt.x.toFixed(2)); dot.setAttribute('cy',pt.y.toFixed(2));
+      };
+    }},
+];
+
+/* =================================================================== render */
+const instances = []; // {cfg, apply, num, label, stage}
+
+function buildCards(){
+  CARDS.forEach((cfg,i)=>{
+    const card=document.createElement('div'); card.className='card';
+    card.innerHTML = `<div class="tag">card_${String(i+1).padStart(2,'0')} · ${cfg.id}</div>`;
+    const stage=document.createElement('div'); stage.className='stage';
+    card.appendChild(stage);
+    const title=document.createElement('div'); title.className='ctitle'; title.textContent=cfg.title;
+    const desc=document.createElement('div'); desc.className='cdesc'; desc.textContent=cfg.desc;
+    const actions=document.createElement('div'); actions.className='actions';
+    const rep=document.createElement('button'); rep.className='icbtn'; rep.innerHTML='↻ replay';
+    const cp=document.createElement('button'); cp.className='icbtn'; cp.innerHTML='⧉ copy';
+    actions.appendChild(rep); actions.appendChild(cp);
+    card.appendChild(title); card.appendChild(desc); card.appendChild(actions);
+    lab.appendChild(card);
+
+    const apply = cfg.build(stage);
+    const inst = {cfg, apply, num:stage.querySelector('.num'), label:stage.querySelector('.ringlabel'), stage};
+    instances.push(inst);
+
+    rep.onclick = ()=> animateCard(inst);
+    cp.onclick = ()=> copyCard(inst, cp);
+  });
+}
+
+function animateCard(inst){
+  const ease = EASES[state.anim], dur = state.anim==='spring'?1200:1050;
+  const start = performance.now(); const target = state.value/100;
+  function frame(now){
+    let t = Math.min(1,(now-start)/dur); const p = ease(t)*target;
+    inst.apply(p); inst.num.textContent = Math.round(clamp01(p)*state.value);
+    if(t<1) requestAnimationFrame(frame);
+    else { inst.apply(target); inst.num.textContent = state.value;
+      if(state.anim==='pulse'){ inst.stage.classList.remove('pulse'); void inst.stage.offsetWidth; inst.stage.classList.add('pulse'); } }
+  }
+  requestAnimationFrame(frame);
+}
+
+function snapCard(inst){ const target=state.value/100; inst.apply(target); inst.num.textContent=state.value; }
+
+function applyAll(animate){ instances.forEach(inst=> animate?animateCard(inst):snapCard(inst)); }
+
+/* =================================================================== controls */
+function syncVars(){
+  lab.style.setProperty('--accent', state.color);
+  lab.style.setProperty('--stroke', state.thick);
+  const [fam,ital]=FONTS[state.font];
+  lab.style.setProperty('--num-font', fam);
+  lab.classList.toggle('italic', ital);
+  lab.classList.toggle('no-glow', !state.glow);
+  lab.classList.toggle('no-track', !state.track);
+  lab.classList.toggle('no-label', !state.label);
+  document.documentElement.style.setProperty('--accent', state.color); // ambient glow
+}
+
+function buildSwatches(){
+  const wrap=$('#swatches');
+  PRESETS.forEach(([hex,name])=>{
+    const b=document.createElement('button'); b.className='sw'; b.style.background=hex; b.title=name;
+    b.onclick=()=>{ state.color=hex; $('#custom').value=hex; markSwatch(); syncVars(); applyAll(state.replay?true:false); };
+    wrap.appendChild(b);
+  });
+  markSwatch();
+}
+function markSwatch(){ document.querySelectorAll('.sw').forEach((b,i)=> b.classList.toggle('on', PRESETS[i][0].toLowerCase()===state.color.toLowerCase())); }
+
+function copyCard(inst, btn){
+  const code = `PEAK-RING · style=${inst.cfg.id} · value=${state.value} · color=${state.color} · stroke=${state.thick} · anim=${state.anim} · font=${state.font} · glow=${state.glow?'on':'off'} · track=${state.track?'on':'off'} · label=${state.label?'on':'off'}`;
+  navigator.clipboard.writeText(code).then(()=>{ const old=btn.innerHTML; btn.innerHTML='✓ copied'; btn.classList.add('ok');
+    setTimeout(()=>{ btn.innerHTML=old; btn.classList.remove('ok'); },1200); });
+}
+
+/* wire up */
+$('#value').addEventListener('input', e=>{ state.value=+e.target.value; $('#valOut').textContent=state.value; applyAll(false); });
+$('#value').addEventListener('change', ()=>{ if(state.replay) applyAll(true); });
+$('#thick').addEventListener('input', e=>{ state.thick=+e.target.value; $('#thickOut').textContent=state.thick; syncVars(); applyAll(false); });
+$('#anim').addEventListener('change', e=>{ state.anim=e.target.value; if(state.replay) applyAll(true); });
+$('#font').addEventListener('change', e=>{ state.font=e.target.value; syncVars(); });
+$('#custom').addEventListener('input', e=>{ state.color=e.target.value; markSwatch(); syncVars(); applyAll(false); });
+$('#replayAll').addEventListener('click', ()=> applyAll(true));
+$('#tGlow').addEventListener('change', e=>{ state.glow=e.target.checked; syncVars(); applyAll(false); });
+$('#tTrack').addEventListener('change', e=>{ state.track=e.target.checked; syncVars(); });
+$('#tLabel').addEventListener('change', e=>{ state.label=e.target.checked; syncVars(); });
+$('#tReplay').addEventListener('change', e=>{ state.replay=e.target.checked; });
+
+/* boot */
+buildSwatches();
+buildCards();
+syncVars();
+applyAll(true);
+</script>
+</body>
+</html>

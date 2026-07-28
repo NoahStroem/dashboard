@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#0C0C12" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Patron" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="icon" type="image/svg+xml" href="icon.svg" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<style id="pwa-mobile">
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+img{max-width:100%;height:auto}
+@media (max-width:480px){input,select,textarea{font-size:16px !important}}
+@supports (padding:max(0px)){body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}}
+</style>
+<title>Creator · standalone</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<script>try{document.documentElement.setAttribute("data-theme",localStorage.getItem("patron_theme")||"nocturne");}catch(e){document.documentElement.setAttribute("data-theme","nocturne");}</script>
+<style>
+
+/* ============================================================
+ * Creator — restyled to "Patron": soft-dark electric-violet
+ * modern-fintech skin. Same token system + 3 themes as the suite.
+ * Legacy --accent / --accent-rgb / --mint* aliases repoint to the
+ * brand per theme so inline-JS rgba() calls retint correctly.
+ * ============================================================ */
+:root{
+  color-scheme: dark;
+  --bg:#0C0C12; --bg-elevated:#15151F; --fg:#F3F2F8;
+  --brand:#8B7CFF; --brand-2:#C7BBFF; --brand-ink:#130E2E;
+  --brand-soft:rgba(139,124,255,0.12); --brand-line:rgba(139,124,255,0.28); --brand-glow:rgba(139,124,255,0.42);
+  --accent:#8B7CFF; --accent-rgb:139,124,255; --mint:#8B7CFF; --mint-hover:#9d90ff; --mint-glow:rgba(139,124,255,0.42);
+  --pos:#46E0A8; --pos-rgb:70,224,168; --neg:#FB7185; --amber:#FBBF24; --red:#FB7185;
+  --muted:rgba(243,242,248,0.50); --muted-strong:rgba(243,242,248,0.74);
+  --border:rgba(255,255,255,0.08); --border-strong:rgba(255,255,255,0.17);
+  --card:rgba(255,255,255,0.028); --card-elevated:rgba(255,255,255,0.055);
+  --card-shadow:0 1px 0 rgba(255,255,255,0.04) inset, 0 18px 44px -30px rgba(0,0,0,0.85);
+  --glow-1:rgba(139,124,255,0.12); --glow-2:rgba(70,224,168,0.05); --grain-opacity:0.05;
+  --space-1:.25rem;--space-2:.5rem;--space-3:.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;
+  --radius-sm:8px;--radius-md:11px;--radius-lg:14px;--radius-xl:18px;--radius-pill:999px;
+  --text-xs:.75rem;--text-sm:.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.375rem;--text-2xl:1.75rem;--text-3xl:2.5rem;
+  --ease:cubic-bezier(.2,.8,.2,1); --ease-premium:cubic-bezier(.16,1,.3,1);
+  --duration-fast:120ms;--duration:200ms;
+  --font-inter:'Hanken Grotesk';--font-serif:'Space Grotesk';--font-mono:'JetBrains Mono';
+}
+[data-theme="aurora"]{
+  color-scheme: dark;
+  --bg:#080913; --bg-elevated:#12131F; --fg:#EEF0FF;
+  --brand:#8B7BFF; --brand-2:#B9ABFF; --brand-ink:#0A0922;
+  --brand-soft:rgba(139,123,255,0.15); --brand-line:rgba(139,123,255,0.32); --brand-glow:rgba(124,107,255,0.6);
+  --accent:#8B7BFF; --accent-rgb:139,123,255; --mint:#8B7BFF; --mint-hover:#a59bff; --mint-glow:rgba(124,107,255,0.6);
+  --pos:#4FE3D0; --pos-rgb:79,227,208; --neg:#FF6FA5; --amber:#FFC65C; --red:#FF6FA5;
+  --muted:rgba(220,225,255,0.52); --muted-strong:rgba(220,225,255,0.76);
+  --border:rgba(150,160,255,0.11); --border-strong:rgba(150,160,255,0.22);
+  --card:rgba(150,160,255,0.045); --card-elevated:rgba(150,160,255,0.08);
+  --card-shadow:0 0 0 1px rgba(140,130,255,0.05) inset, 0 22px 56px -28px rgba(78,60,210,0.55);
+  --glow-1:rgba(124,107,255,0.20); --glow-2:rgba(79,227,208,0.13); --grain-opacity:0.05;
+}
+[data-theme="daylight"]{
+  color-scheme: light;
+  --bg:#F3F2FA; --bg-elevated:#FFFFFF; --fg:#171622;
+  --brand:#6A45FF; --brand-2:#8E6BFF; --brand-ink:#FFFFFF;
+  --brand-soft:rgba(106,69,255,0.08); --brand-line:rgba(106,69,255,0.24); --brand-glow:rgba(106,69,255,0.28);
+  --accent:#6A45FF; --accent-rgb:106,69,255; --mint:#6A45FF; --mint-hover:#5a37e0; --mint-glow:rgba(106,69,255,0.28);
+  --pos:#0E9E64; --pos-rgb:14,158,100; --neg:#E11D63; --amber:#B4690E; --red:#E11D63;
+  --muted:rgba(23,22,34,0.52); --muted-strong:rgba(23,22,34,0.72);
+  --border:rgba(23,22,60,0.10); --border-strong:rgba(23,22,60,0.18);
+  --card:#FFFFFF; --card-elevated:#FAF9FF;
+  --card-shadow:0 1px 2px rgba(23,22,60,0.05), 0 16px 34px -24px rgba(23,22,60,0.24);
+  --glow-1:rgba(106,69,255,0.07); --glow-2:rgba(14,158,100,0.04); --grain-opacity:0.02;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-inter),-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:var(--text-base);-webkit-font-smoothing:antialiased;transition:background var(--duration) var(--ease)}
+.grain-overlay{position:relative}
+.grain-overlay::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:1;opacity:var(--grain-opacity);mix-blend-mode:overlay;background-image:url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");background-size:200px 200px}
+.page{position:relative;min-height:100dvh;background:var(--bg);padding:var(--space-8) var(--space-5) var(--space-16);isolation:isolate}
+.page::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:-1;background:radial-gradient(58% 42% at 82% 6%,var(--glow-1),transparent 70%),radial-gradient(48% 38% at 12% 92%,var(--glow-2),transparent 72%)}
+.shell{max-width:900px;margin:0 auto}
+
+/* Header */
+.header{display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-4);margin-bottom:var(--space-8);flex-wrap:wrap}
+.headerLeft{display:flex;flex-direction:column;gap:var(--space-4)}
+.headerRight{display:flex;flex-direction:column;align-items:flex-end;gap:var(--space-2)}
+.back{display:inline-flex;align-items:center;gap:var(--space-2);align-self:flex-start;padding:6px 13px 6px 9px;background:var(--brand-soft);border:1px solid var(--brand-line);border-radius:var(--radius-pill);color:var(--brand);font-size:var(--text-xs);font-weight:600;letter-spacing:.01em;text-decoration:none;transition:background var(--duration) var(--ease-premium),border-color var(--duration) var(--ease-premium)}
+.back:hover{background:color-mix(in srgb, var(--brand) 18%, transparent);border-color:var(--brand)}
+.backArrow{font-size:14px;line-height:1}
+.detailHero{display:flex;align-items:center;gap:var(--space-3)}
+.detailEmoji{font-size:42px;line-height:1}
+.detailHeroText{display:flex;flex-direction:column;gap:6px}
+.title{font-family:var(--font-serif);font-weight:600;font-size:var(--text-3xl);line-height:1.0;letter-spacing:-0.03em;margin:0}
+.detailChip{align-self:flex-start;font-family:var(--font-mono),ui-monospace,monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--brand);background:var(--brand-soft);border:1px solid var(--brand-line);padding:3px 9px;border-radius:var(--radius-pill)}
+.detailBlurb{font-size:13px;color:var(--muted-strong);margin:0;max-width:46ch;line-height:1.5}
+.editBtn{appearance:none;background:transparent;border:1px solid var(--border);color:var(--muted-strong);font-family:inherit;font-size:11px;letter-spacing:.04em;padding:7px 14px;border-radius:var(--radius-pill);cursor:pointer;transition:color var(--duration) var(--ease-premium),border-color var(--duration) var(--ease-premium)}
+.editBtn:hover{color:var(--fg);border-color:var(--border-strong)}
+
+/* Theme switcher */
+.themeSeg{display:inline-flex;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-pill);padding:3px;gap:2px}
+.themeBtn{appearance:none;background:transparent;border:0;color:var(--muted);font-family:var(--font-inter);font-size:11px;font-weight:600;letter-spacing:.02em;padding:5px 11px 5px 8px;border-radius:var(--radius-pill);cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:background var(--duration) var(--ease-premium),color var(--duration) var(--ease-premium)}
+.themeBtn:hover{color:var(--muted-strong)}
+.themeSwatch{width:11px;height:11px;border-radius:50%;box-shadow:0 0 0 1px var(--border-strong) inset;flex-shrink:0}
+.themeBtnActive,.themeBtnActive:hover{background:var(--brand-soft);color:var(--fg)}
+.themeBtnActive .themeSwatch{box-shadow:0 0 0 2px var(--bg),0 0 0 3px var(--brand)}
+
+/* Eyebrow */
+.eyebrow{display:inline-flex;align-items:center;gap:var(--space-2);font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--muted-strong)}
+.eyebrowMark{font-family:var(--font-mono);font-size:10px;color:var(--brand)}
+.eyebrowRule{width:24px;height:1px;background:var(--border-strong)}
+
+/* Section card */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-xl);padding:var(--space-5);margin-bottom:var(--space-4);box-shadow:var(--card-shadow)}
+.cardHead{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);margin-bottom:var(--space-4);flex-wrap:wrap}
+
+/* Schedule */
+.scheduleList{display:flex;flex-direction:column;gap:var(--space-3)}
+.scheduleRow{position:relative;display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);padding:var(--space-4);background:var(--card-elevated);border:1px solid var(--border);border-radius:var(--radius-lg);flex-wrap:wrap;transition:border-color var(--duration) var(--ease-premium)}
+.scheduleRow:hover{border-color:var(--border-strong)}
+.scheduleRowHit{border-color:var(--brand-line);background:var(--brand-soft)}
+.scheduleInfo{flex:1;min-width:200px;display:flex;flex-direction:column;gap:10px}
+.scheduleTitleRow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.platformBadge{font-family:var(--font-mono),ui-monospace,monospace;font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--brand);background:var(--brand-soft);border:1px solid var(--brand-line);padding:2px 7px;border-radius:var(--radius-sm)}
+.scheduleLabel{font-family:var(--font-serif);font-weight:600;font-size:var(--text-lg);letter-spacing:-0.01em}
+.scheduleSpec{font-family:var(--font-mono),ui-monospace,monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.scheduleGear{margin-left:auto;appearance:none;background:transparent;border:0;color:var(--muted);font-size:14px;cursor:pointer;padding:2px 6px;border-radius:var(--radius-sm)}
+.scheduleGear:hover{color:var(--fg)}
+.setupPill{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border:1px solid var(--brand-line);background:var(--brand-soft);color:var(--brand);border-radius:var(--radius-pill);font-size:12px;cursor:pointer;font-family:inherit}
+.setupDot{width:7px;height:7px;border-radius:50%;background:var(--brand);box-shadow:0 0 8px var(--brand-glow)}
+.setupPill b{font-family:var(--font-mono);font-size:11px;letter-spacing:.04em}
+.scheduleProgressRow{display:flex;align-items:center;gap:var(--space-3)}
+.scheduleCount{font-family:var(--font-serif);font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;letter-spacing:-0.02em}
+.scheduleCountNum{font-size:30px}
+.scheduleCountSlash{font-size:18px;color:var(--muted);margin:0 2px}
+.scheduleCountTarget{font-size:18px;color:var(--muted-strong)}
+.scheduleBar{flex:1;height:5px;background:var(--track,rgba(255,255,255,.06));border-radius:var(--radius-pill);overflow:hidden}
+.progressFill{height:100%;background:var(--brand);border-radius:var(--radius-pill);transition:width .6s var(--ease-premium);box-shadow:0 0 12px var(--brand-glow)}
+.progressFillDone{background:linear-gradient(90deg,var(--brand),var(--pos))}
+.scheduleControls{display:flex;align-items:center;gap:var(--space-3)}
+.scheduleLogGroup{display:inline-flex;border:1px solid var(--border-strong);border-radius:var(--radius-pill);overflow:hidden}
+.scheduleMinus,.scheduleLogBtn{appearance:none;background:transparent;border:0;color:var(--fg);font-family:inherit;font-size:13px;padding:8px 12px;cursor:pointer;white-space:nowrap;transition:background var(--duration) var(--ease-premium)}
+.scheduleLogGroup{flex-shrink:0}
+.scheduleMinus{border-right:1px solid var(--border-strong);font-size:16px;line-height:1}
+.scheduleMinus:disabled{opacity:.3;cursor:not-allowed}
+.scheduleLogBtn{color:var(--brand);font-weight:700}
+.scheduleMinus:hover:not(:disabled),.scheduleLogBtn:hover{background:var(--brand-soft)}
+.countdownChip{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono),ui-monospace,monospace;font-size:11px;letter-spacing:.04em;padding:6px 11px;border:1px solid;border-radius:var(--radius-pill);font-variant-numeric:tabular-nums;white-space:nowrap}
+.cdDot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.dlToggle{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted-strong);cursor:pointer}
+.addBtnGhost{width:100%;margin-top:var(--space-3);appearance:none;background:transparent;border:1px dashed var(--border-strong);border-radius:var(--radius-lg);color:var(--muted);font-family:inherit;font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:12px;cursor:pointer;transition:color var(--duration) var(--ease-premium),border-color var(--duration) var(--ease-premium),background var(--duration) var(--ease-premium)}
+.addBtnGhost:hover{color:var(--brand);border-color:var(--brand-line);background:var(--brand-soft);border-style:solid}
+
+/* Inline editors */
+.editor{flex-basis:100%;margin-top:var(--space-2);padding-top:var(--space-3);border-top:1px solid var(--border);display:flex;flex-wrap:wrap;gap:var(--space-3);align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:5px}
+.fieldLabel{font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.input,.select{appearance:none;background:var(--card-elevated);border:1px solid var(--border-strong);border-radius:var(--radius-md);color:var(--fg);font-family:inherit;font-size:13px;padding:9px 11px;outline:none;transition:border-color var(--duration) var(--ease-premium),box-shadow var(--duration) var(--ease-premium)}
+.input:focus,.select:focus{border-color:var(--brand-line);box-shadow:0 0 0 3px var(--brand-soft)}
+.input::placeholder{color:var(--muted)}
+.editorActions{margin-left:auto;display:flex;gap:8px}
+.btnSm{appearance:none;border:1px solid var(--border);background:transparent;color:var(--muted-strong);font-family:inherit;font-size:12px;padding:7px 13px;border-radius:var(--radius-pill);cursor:pointer}
+.btnSm:hover{color:var(--fg);border-color:var(--border-strong)}
+.btnDanger:hover{color:var(--red);border-color:var(--brand-line)}
+
+/* Accounts compact grid */
+.ccReach{font-family:var(--font-serif);font-weight:600;font-variant-numeric:tabular-nums;font-size:var(--text-xl);letter-spacing:-0.02em}
+.ccReachLabel{font-family:var(--font-mono);font-weight:400;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-left:4px}
+.headRight{display:flex;align-items:center;gap:var(--space-4)}
+.accountGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-3)}
+@media(max-width:720px){.accountGrid{grid-template-columns:1fr}}
+.accountCard{display:flex;flex-direction:column;gap:10px;padding:var(--space-4);background:var(--card-elevated);border:1px solid var(--border);border-radius:var(--radius-lg);transition:border-color var(--duration) var(--ease-premium),transform var(--duration) var(--ease-premium)}
+.accountCard:hover{border-color:var(--border-strong);transform:translateY(-1px)}
+.accountTop{display:flex;align-items:center;gap:10px}
+.avatar{width:36px;height:36px;border-radius:50%;overflow:hidden;flex-shrink:0;display:grid;place-items:center;background:var(--brand-soft);border:1px solid var(--brand-line)}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.avatarFallback{font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--brand)}
+.accountHandle{font-size:13px;color:var(--muted-strong);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.refreshBtn{appearance:none;background:transparent;border:1px solid var(--border);color:var(--muted);width:28px;height:28px;border-radius:50%;cursor:pointer;flex-shrink:0;transition:color var(--duration) var(--ease-premium),border-color var(--duration) var(--ease-premium)}
+.refreshBtn:hover{color:var(--brand);border-color:var(--brand-line)}
+.accountNumRow{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.accountNum{font-family:var(--font-serif);font-weight:600;font-size:30px;font-variant-numeric:tabular-nums;line-height:1;letter-spacing:-0.03em}
+.accountNumLabel{font-family:var(--font-mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.delta{font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:var(--radius-pill)}
+.deltaUp{color:var(--pos);background:var(--pos-soft,rgba(70,224,168,.12))}
+.deltaDown{color:var(--red);background:var(--neg-soft,rgba(251,113,133,.12))}
+.deltaMuted{font-size:10px;color:var(--muted);font-style:italic}
+.deltaFlat{font-size:11px;color:var(--muted)}
+.spark{width:100%;display:block}
+.accountError{font-size:10px;color:var(--amber)}
+
+/* Editable account rows */
+.accountList{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.accountEditRow{display:grid;grid-template-columns:90px 1fr 110px auto auto;gap:8px;align-items:center}
+@media(max-width:600px){.accountEditRow{grid-template-columns:1fr 1fr}}
+.addForm{display:flex;gap:8px;margin-top:var(--space-3);flex-wrap:wrap}
+.addForm .input{flex:1;min-width:120px}
+.ytKeyRow{display:flex;gap:8px;margin-top:var(--space-4);padding-top:var(--space-4);border-top:1px solid var(--border);flex-wrap:wrap;align-items:flex-end}
+
+/* Analytics */
+.statsHero{display:grid;grid-template-columns:1fr 1.1fr;gap:var(--space-4);align-items:center;padding:var(--space-4);background:var(--card-elevated);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:var(--space-4)}
+@media(max-width:680px){.statsHero{grid-template-columns:1fr}}
+.statsHeroLabel{font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.statsHeroNum{font-family:var(--font-serif);font-weight:600;font-size:52px;line-height:1;font-variant-numeric:tabular-nums;margin:6px 0 10px;letter-spacing:-0.03em}
+.statsHeroMeta{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.statsHeroMilestone{font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:.04em}
+.statsHeroSpark{height:64px}
+.platformGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-3)}
+@media(max-width:600px){.platformGrid{grid-template-columns:1fr}}
+.platformCard{display:flex;flex-direction:column;gap:8px;padding:var(--space-4);background:var(--card-elevated);border:1px solid var(--border);border-radius:var(--radius-lg)}
+.platformCardHead{display:flex;align-items:center;gap:8px}
+.platformCardNumWrap{display:flex;align-items:baseline;gap:8px}
+.platformCardNum{font-family:var(--font-serif);font-weight:600;font-size:28px;font-variant-numeric:tabular-nums;line-height:1;letter-spacing:-0.03em}
+.platformCardFoot{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:2px}
+.secondaryStat{font-family:var(--font-mono);font-size:11px;color:var(--muted-strong);font-variant-numeric:tabular-nums}
+.secondaryStatSub{color:var(--brand)}
+
+/* Links */
+.linkList{list-style:none;margin:0 0 var(--space-3);padding:0;display:flex;flex-direction:column;gap:8px}
+.linkRow{display:grid;grid-template-columns:1fr 1.4fr auto auto;gap:8px;align-items:center}
+@media(max-width:600px){.linkRow{grid-template-columns:1fr 1fr}}
+.linkOpen{display:grid;place-items:center;width:34px;height:34px;border:1px solid var(--border);border-radius:var(--radius-md);color:var(--brand);text-decoration:none;transition:border-color var(--duration) var(--ease-premium)}
+.linkOpen:hover{border-color:var(--brand-line)}
+
+.emptyText{font-size:13px;color:var(--muted);line-height:1.6;margin:0}
+.noteLine{font-size:11px;color:var(--muted);margin:var(--space-3) 0 0;font-style:italic}
+.delBtn{appearance:none;background:transparent;border:1px solid var(--border);color:var(--muted);font-size:14px;line-height:1;width:30px;height:30px;border-radius:var(--radius-md);cursor:pointer}
+.delBtn:hover{color:var(--red);border-color:var(--brand-line)}
+.primaryBtn{appearance:none;background:var(--brand);border:0;color:var(--brand-ink);font-family:inherit;font-weight:700;font-size:13px;padding:9px 16px;border-radius:var(--radius-pill);cursor:pointer;transition:filter var(--duration) var(--ease-premium),box-shadow var(--duration) var(--ease-premium)}
+.primaryBtn:hover{filter:brightness(1.08);box-shadow:0 0 22px var(--brand-glow)}
+@media(prefers-reduced-motion:reduce){.progressFill{transition:none}}
+
+</style>
+<link rel="stylesheet" href="skin.css?v=1">
+</head>
+<body>
+<main class="page grain-overlay"><div class="shell" id="app"></div></main>
+<script>
+/* ============================ Platform maps ============================ */
+const PLATFORM_SHORT={tiktok:'TT',instagram:'IG',youtube:'YT',youtube_long:'YT',x:'X',linkedin:'IN',threads:'TH',substack:'SS',patreon:'PT',etsy:'ET',shopify:'SH',website:'WB',other:'··'};
+const PLATFORM_LABELS={tiktok:'TikTok',instagram:'Instagram',youtube:'YouTube',youtube_long:'YouTube (long)',x:'X / Twitter',linkedin:'LinkedIn',threads:'Threads',substack:'Substack',patreon:'Patreon',etsy:'Etsy',shopify:'Shopify',website:'Website',other:'Other'};
+const ALL_PLATFORMS=['tiktok','instagram','youtube','youtube_long','x','linkedin','threads','substack','patreon','etsy','shopify','website','other'];
+const UNITS=['posts','videos','shorts','episodes','newsletters'];
+const LIVE=new Set(['youtube','youtube_long','tiktok']); // auto-refresh: TikTok (scrape) + YouTube (API). IG needs per-user OAuth → manual.
+const ON_SERVER=location.protocol==='http:'||location.protocol==='https:'; // scrape/API only work on the deployed host
+const DAY=86400000;
+
+/* ============================ Helpers ============================ */
+function fmtCount(n){if(n>=1e6)return (n/1e6).toFixed(1).replace(/\.0$/,'')+'M';if(n>=1e3)return (n/1e3).toFixed(1).replace(/\.0$/,'')+'K';return Math.round(n).toLocaleString();}
+function nextMilestone(n){const ms=[1e3,5e3,1e4,2e4,5e4,1e5,25e4,5e5,1e6];for(const m of ms)if(m>n)return m;return Math.ceil(n/1e6)*1e6+1e6;}
+function latestSnap(hist,f){if(!hist||!hist.length)return undefined;for(let i=hist.length-1;i>=0;i--){const v=hist[i][f];if(typeof v==='number')return v;}return undefined;}
+function deltaSinceDays(hist,f,days){if(!hist||hist.length<2)return null;const now=Date.now();const cutoff=now-days*DAY;let base=null;for(const s of hist){if(s.t>=cutoff&&typeof s[f]==='number'){base=s;break;}}if(!base){for(let i=hist.length-1;i>=0;i--){if(typeof hist[i][f]==='number'){base=hist[i];break;}}}const last=latestSnap(hist,f);if(base==null||typeof last!=='number'||typeof base[f]!=='number')return null;return last-base[f];}
+function combinedSeries(accounts,f){const longest=accounts.reduce((m,a)=>Math.max(m,(a.history||[]).length),0);if(longest<2)return[];const out=[];for(let i=0;i<longest;i++){let total=0,any=false;for(const a of accounts){const h=a.history||[];if(!h.length)continue;const v=h[Math.min(i,h.length-1)][f];if(typeof v==='number'){total+=v;any=true;}}if(any)out.push(total);}return out;}
+const WEEKDAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+function minutesToTime(m){m=m||0;return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');}
+function timeToMinutes(v){const p=(v||'').split(':');const h=parseInt(p[0],10),m=parseInt(p[1],10);if(!isFinite(h)||!isFinite(m))return 0;return Math.max(0,Math.min(1439,h*60+m));}
+function nextDeadline(s,now){
+  if(!s.deadline)return null;
+  const min=s.deadline.minutes||0;const d=new Date(now);
+  d.setHours(Math.floor(min/60),min%60,0,0);
+  if(s.period==='weekly'){const wd=s.deadline.weekday||0;let diff=(wd-d.getDay()+7)%7;d.setDate(d.getDate()+diff);if(d.getTime()<=now.getTime())d.setDate(d.getDate()+7);return d;}
+  if(d.getTime()<=now.getTime())d.setDate(d.getDate()+1);
+  return d;
+}
+function formatCountdown(ms){
+  if(ms<=0)return 'overdue';
+  const s=Math.floor(ms/1000),d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60),sec=s%60;
+  if(d>0)return d+'d '+h+'h';
+  if(h>0)return h+'h '+String(m).padStart(2,'0')+'m';
+  return m+'m '+String(sec).padStart(2,'0')+'s';
+}
+function clamp01(x){return Math.max(0,Math.min(1,x));}
+function deadlineUrgency(remaining,period){if(remaining<=0)return 1;const th=period==='weekly'?36*3600000:6*3600000;return clamp01(1-remaining/th);}
+const _ACC=[139,124,255],_AMB=[251,191,36],_RED=[251,113,133];
+function _lerp(a,b,t){return Math.round(a+(b-a)*t);}
+function urgencyColor(u){let c;if(u<.5){const t=u/.5;c=[_lerp(_ACC[0],_AMB[0],t),_lerp(_ACC[1],_AMB[1],t),_lerp(_ACC[2],_AMB[2],t)];}else{const t=(u-.5)/.5;c=[_lerp(_AMB[0],_RED[0],t),_lerp(_AMB[1],_RED[1],t),_lerp(_AMB[2],_RED[2],t)];}return c.join(',');}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function genId(p){return p+'_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,6);}
+
+/* Sparkline SVG */
+function sparkSvg(values,height,color){
+  if(!values||values.length<2)return '';
+  height=height||40;color=color||'var(--accent)';const W=240,padY=4;
+  const min=Math.min.apply(null,values),max=Math.max.apply(null,values),range=(max-min)||1;
+  const pts=values.map((v,i)=>((i/(values.length-1))*W).toFixed(1)+','+(height-padY-((v-min)/range)*(height-padY*2)).toFixed(1)).join(' ');
+  const lastY=(height-padY-((values[values.length-1]-min)/range)*(height-padY*2)).toFixed(1);
+  const gid='g'+Math.random().toString(36).slice(2,8);
+  return '<svg class="spark" height="'+height+'" viewBox="0 0 '+W+' '+height+'" preserveAspectRatio="none" aria-hidden>'
+    +'<defs><linearGradient id="'+gid+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+color+'" stop-opacity=".25"/><stop offset="100%" stop-color="'+color+'" stop-opacity="0"/></linearGradient></defs>'
+    +'<polygon points="0,'+height+' '+pts+' '+W+','+height+'" fill="url(#'+gid+')"/>'
+    +'<polyline points="'+pts+'" fill="none" stroke="'+color+'" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>'
+    +'<circle cx="'+W+'" cy="'+lastY+'" r="3" fill="'+color+'"/></svg>';
+}
+
+/* ============================ State ============================ */
+const LS='creator_standalone_v1';
+const THEMES=[{key:'nocturne',label:'Nocturne',swatch:'#8B7CFF'},{key:'aurora',label:'Aurora',swatch:'linear-gradient(135deg,#8B7BFF,#4FE3D0)'},{key:'daylight',label:'Daylight',swatch:'#6A45FF'}];
+let currentTheme=(function(){try{return localStorage.getItem('patron_theme')||'nocturne';}catch(e){return 'nocturne';}})();
+if(!THEMES.some(t=>t.key===currentTheme))currentTheme='nocturne';
+function applyTheme(name){if(!THEMES.some(t=>t.key===name))name='nocturne';currentTheme=name;document.documentElement.setAttribute('data-theme',name);try{localStorage.setItem('patron_theme',name);}catch(e){}render();}
+function themeSegHtml(){return '<div class="themeSeg" role="radiogroup" aria-label="Theme">'+THEMES.map(t=>'<button type="button" class="themeBtn '+(t.key===currentTheme?'themeBtnActive':'')+'" data-act="theme" data-theme="'+t.key+'"><span class="themeSwatch" style="background:'+t.swatch+'"></span>'+t.label+'</button>').join('')+'</div>';}
+function seed(){
+  const now=Date.now();
+  return {
+    name:(function(){try{var p=JSON.parse(localStorage.getItem('patron_profile_v1')||'null');return (p&&p.name)?p.name:'Your Name';}catch(e){return 'Your Name';}})(), emoji:'🎬', archetype:'Creator',
+    blurb:'Social-first. TikTok, Reels, Shorts, YouTube.',
+    schedules:[{id:genId('sch'),platform:'youtube',label:'Youtube',target:1,unit:'videos',period:'weekly',done:0}],
+    accounts:[
+      {id:genId('acc'),platform:'instagram',handle:'@yourhandle',followers:8500,history:[{t:now-2*DAY,count:1},{t:now,count:8500}]},
+      {id:genId('acc'),platform:'tiktok',handle:'yourhandle',followers:3200,lifetimeViews:145000,videoCount:40,history:[{t:now,count:3200,views:145000,videos:40}]},
+      {id:genId('acc'),platform:'youtube',handle:'YourChannel',followers:1200,lifetimeViews:90000,videoCount:25,history:[{t:now,count:1200,views:90000,videos:25}]},
+    ],
+    links:[],
+    setupDismissed:false,
+  };
+}
+function load(){try{const r=localStorage.getItem(LS);if(!r)return seed();return JSON.parse(r);}catch{return seed();}}
+function save(){try{localStorage.setItem(LS,JSON.stringify(state));}catch{}}
+let state=load();
+const ui={editAccounts:false,editSchedule:null,addAccount:false,refreshing:null};
+
+/* YouTube API key — stored per-device so each user (incl. forkers) uses their own.
+ * Never committed, never synced to the cloud — just this browser's localStorage. */
+const YT_KEY_LS='creator_youtube_key_v1';
+function ytKey(){try{return localStorage.getItem(YT_KEY_LS)||'';}catch(e){return '';}}
+function setYtKey(v){try{if(v)localStorage.setItem(YT_KEY_LS,v);else localStorage.removeItem(YT_KEY_LS);}catch(e){}}
+
+/* ============================ Mutations ============================ */
+function refreshErr(j){
+  const e=j&&j.error;
+  if(e==='rate_limited')return 'TikTok rate-limited the request — wait a minute and try again.';
+  if(e==='not_found')return "Couldn't find that profile — double-check the handle.";
+  if(e==='parse_failed')return (j&&j.message)||"Couldn't read the count — TikTok may have changed their page.";
+  if(e==='not_configured')return 'Add your YouTube API key first — tap Edit on Accounts, paste your key, and Save (it’s free; steps are right there). Then refresh.';
+  if(e==='no_handle')return 'Add a handle first, then refresh.';
+  return 'Refresh failed — try again shortly.';
+}
+function pushHist(a){const last=a.history&&a.history[a.history.length-1];const snap={t:Date.now(),count:a.followers};if(typeof a.lifetimeViews==='number')snap.views=a.lifetimeViews;if(typeof a.videoCount==='number')snap.videos=a.videoCount;if(last&&Date.now()-last.t<60000){a.history[a.history.length-1]=snap;}else{a.history=(a.history||[]).concat(snap);if(a.history.length>30)a.history.shift();}}
+const A={
+  logSchedule(id,d){const s=state.schedules.find(x=>x.id===id);if(!s)return;s.done=Math.max(0,(s.done||0)+d);state.setupDismissed=true;save();render();},
+  addSchedule(){state.schedules.push({id:genId('sch'),platform:'youtube',label:'New schedule',target:1,unit:'videos',period:'weekly',done:0});save();render();},
+  updateSchedule(id,patch){const s=state.schedules.find(x=>x.id===id);if(s)Object.assign(s,patch);save();render();},
+  removeSchedule(id){state.schedules=state.schedules.filter(x=>x.id!==id);ui.editSchedule=null;save();render();},
+  addAccount(platform,handle){state.accounts.push({id:genId('acc'),platform,handle:handle.trim(),followers:null,history:[]});save();render();},
+  updateAccount(id,patch){const a=state.accounts.find(x=>x.id===id);if(!a)return;const hadFollowers=a.followers;Object.assign(a,patch);if('followers'in patch&&typeof a.followers==='number'&&a.followers!==hadFollowers)pushHist(a);save();render();},
+  removeAccount(id){state.accounts=state.accounts.filter(x=>x.id!==id);save();render();},
+  async refresh(id){
+    const a=state.accounts.find(x=>x.id===id);if(!a)return;
+    if(!a.handle||!a.handle.trim()){alert('Add a handle first (tap Edit), then refresh.');return;}
+    if(!ON_SERVER){alert('Live auto-refresh runs on the deployed app (Vercel) — locally just tap Edit and type the number. Growth + sparklines build as you update.');return;}
+    let ep;
+    if(a.platform==='tiktok')ep='/api/tiktok?handle='+encodeURIComponent(a.handle);
+    else if(a.platform==='youtube'||a.platform==='youtube_long'){ep='/api/youtube?handle='+encodeURIComponent(a.handle);const k=ytKey();if(k)ep+='&key='+encodeURIComponent(k);}
+    else{alert((PLATFORM_LABELS[a.platform]||a.platform)+' auto-refresh needs that platform’s login (OAuth), which isn’t set up. Enter it manually via Edit.');return;}
+    ui.refreshing=id;render();
+    try{
+      const j=await (await fetch(ep,{cache:'no-store'})).json();
+      if(!j||!j.ok){ui.refreshing=null;render();alert(refreshErr(j));return;}
+      if(typeof j.followers==='number')a.followers=j.followers;
+      if(typeof j.lifetimeViews==='number')a.lifetimeViews=j.lifetimeViews;
+      if(typeof j.videoCount==='number')a.videoCount=j.videoCount;
+      if(j.avatarUrl)a.avatarUrl=j.avatarUrl;
+      if(typeof a.followers==='number')pushHist(a);
+      ui.refreshing=null;save();render();
+    }catch(e){ui.refreshing=null;render();alert('Refresh failed — network error. Try again shortly.');}
+  },
+  addLink(label,url){state.links.push({id:genId('lnk'),label:label.trim()||'Link',url:url.trim()});save();render();},
+  updateLink(id,patch){const l=state.links.find(x=>x.id===id);if(l)Object.assign(l,patch);save();render();},
+  removeLink(id){state.links=state.links.filter(x=>x.id!==id);save();render();},
+};
+
+/* ============================ Views ============================ */
+function headerHtml(){
+  return '<header class="header"><div class="headerLeft">'
+    +'<a class="back" href="index.html"><span class="backArrow">←</span> Liam</a>'
+    +'<div class="detailHero"><span class="detailEmoji">'+esc(state.emoji)+'</span><div class="detailHeroText"><h1 class="title">'+esc(state.name)+'</h1><span class="detailChip">'+esc(state.archetype)+'</span></div></div>'
+    +(state.blurb?'<p class="detailBlurb">'+esc(state.blurb)+'</p>':'')
+    +'</div><div class="headerRight">'+themeSegHtml()+'</div></header>';
+}
+
+function scheduleSection(){
+  const rows=state.schedules.map(s=>{
+    const done=s.done||0,target=s.target||0,hit=target>0&&done>=target,pct=target>0?Math.min(100,done/target*100):0;
+    const period=s.period==='weekly'?'/ wk':'/ day';
+    let cd='';
+    if(s.deadline){const dl=nextDeadline(s,new Date());if(dl){const rem=dl.getTime()-Date.now();const u=deadlineUrgency(rem,s.period);const rgb=urgencyColor(u);cd='<span class="countdownChip" id="cd-'+s.id+'" title="Time left to post" style="color:rgb('+rgb+');border-color:rgba('+rgb+',.4);background:rgba('+rgb+',.08)"><span class="cdDot" style="background:rgb('+rgb+')"></span>'+(rem<=0?'overdue':formatCountdown(rem))+'</span>';}}
+    let editor='';
+    if(ui.editSchedule===s.id){
+      editor='<div class="editor">'
+        +'<div class="field"><span class="fieldLabel">Label</span><input class="input" data-sch="'+s.id+'" data-f="label" value="'+esc(s.label)+'"></div>'
+        +'<div class="field"><span class="fieldLabel">Platform</span><select class="select" data-sch="'+s.id+'" data-f="platform">'+ALL_PLATFORMS.map(p=>'<option value="'+p+'"'+(p===s.platform?' selected':'')+'>'+PLATFORM_LABELS[p]+'</option>').join('')+'</select></div>'
+        +'<div class="field"><span class="fieldLabel">Target</span><input class="input" type="number" min="1" style="width:70px" data-sch="'+s.id+'" data-f="target" value="'+target+'"></div>'
+        +'<div class="field"><span class="fieldLabel">Unit</span><select class="select" data-sch="'+s.id+'" data-f="unit">'+UNITS.map(u=>'<option value="'+u+'"'+(u===s.unit?' selected':'')+'>'+u+'</option>').join('')+'</select></div>'
+        +'<div class="field"><span class="fieldLabel">Period</span><select class="select" data-sch="'+s.id+'" data-f="period"><option value="daily"'+(s.period==='daily'?' selected':'')+'>per day</option><option value="weekly"'+(s.period==='weekly'?' selected':'')+'>per week</option></select></div>'
+        +'<div class="field"><span class="fieldLabel">Posting deadline</span><label class="dlToggle"><input type="checkbox" data-sch="'+s.id+'" data-f="deadlineOn"'+(s.deadline?' checked':'')+'> set a time</label></div>'
+        +(s.deadline?((s.period==='weekly'?'<div class="field"><span class="fieldLabel">Day</span><select class="select" data-sch="'+s.id+'" data-f="deadlineWeekday">'+WEEKDAYS.map((w,i)=>'<option value="'+i+'"'+((s.deadline.weekday||0)===i?' selected':'')+'>'+w+'</option>').join('')+'</select></div>':'')+'<div class="field"><span class="fieldLabel">Time</span><input class="input" type="time" data-sch="'+s.id+'" data-f="deadlineTime" value="'+minutesToTime(s.deadline.minutes||0)+'"></div>'):'')
+        +'<div class="editorActions">'+(state.schedules.length>1?'<button class="btnSm btnDanger" data-act="rmSchedule" data-id="'+s.id+'">Remove</button>':'')+'<button class="btnSm" data-act="closeSchedule">Done</button></div>'
+        +'</div>';
+    }
+    return '<div class="scheduleRow '+(hit?'scheduleRowHit':'')+'">'
+      +'<div class="scheduleInfo"><div class="scheduleTitleRow"><span class="platformBadge">'+PLATFORM_SHORT[s.platform]+'</span><span class="scheduleLabel">'+esc(s.label)+'</span><span class="scheduleSpec">'+target+' '+esc(s.unit)+' '+period+'</span><button class="scheduleGear" data-act="editSchedule" data-id="'+s.id+'">⚙</button></div>'
+      +'<div class="scheduleProgressRow"><span class="scheduleCount"><span class="scheduleCountNum">'+done+'</span><span class="scheduleCountSlash">/</span><span class="scheduleCountTarget">'+target+'</span></span><div class="scheduleBar"><div class="progressFill '+(hit?'progressFillDone':'')+'" style="width:'+pct+'%"></div></div></div></div>'
+      +'<div class="scheduleControls">'+cd+'<div class="scheduleLogGroup"><button class="scheduleMinus" data-act="logMinus" data-id="'+s.id+'"'+(done<=0?' disabled':'')+'>−</button><button class="scheduleLogBtn" data-act="logPlus" data-id="'+s.id+'">+ shipped</button></div></div>'
+      +editor+'</div>';
+  }).join('');
+  const setup=(!state.setupDismissed)?'<button class="setupPill" data-act="editSchedule" data-id="'+state.schedules[0].id+'"><span class="setupDot"></span>Finish setup · <b>1 left</b> →</button>':'';
+  return '<section class="card"><div class="cardHead"><span class="eyebrow"><span class="eyebrowMark">·01</span><span class="eyebrowRule"></span>Schedule</span>'+setup+'</div>'
+    +'<div class="scheduleList">'+rows+'</div><button class="addBtnGhost" data-act="addSchedule">+ Add schedule</button></section>';
+}
+
+function refreshBtnHtml(a){
+  const loading=ui.refreshing===a.id;
+  return '<button class="refreshBtn'+(loading?' refreshing':'')+'" data-act="refresh" data-id="'+a.id+'"'+(loading?' disabled':'')+' title="Refresh from '+esc(PLATFORM_LABELS[a.platform]||a.platform)+'">'+(loading?'…':'↻')+'</button>';
+}
+function accountCardCompact(a){
+  const isYT=a.platform==='youtube'||a.platform==='youtube_long';
+  const delta=deltaSinceDays(a.history,'count',7);
+  const series=(a.history||[]).map(s=>s.count).filter(v=>typeof v==='number');
+  let deltaHtml='';
+  if(delta!==null&&delta!==0)deltaHtml='<span class="delta '+(delta>=0?'deltaUp':'deltaDown')+'">'+(delta>=0?'▲':'▼')+' '+Math.abs(delta).toLocaleString()+'</span>';
+  const av=a.avatarUrl?'<img src="'+esc(a.avatarUrl)+'" alt="">':'<span class="avatarFallback">'+PLATFORM_SHORT[a.platform]+'</span>';
+  return '<article class="accountCard"><div class="accountTop"><span class="avatar">'+av+'</span><span class="accountHandle" title="'+esc(a.handle)+'">'+esc(a.handle||'—')+'</span>'
+    +(LIVE.has(a.platform)?refreshBtnHtml(a):'')+'</div>'
+    +'<div class="accountNumRow"><span class="accountNum">'+(typeof a.followers==='number'?a.followers.toLocaleString():'—')+'</span><span class="accountNumLabel">'+(isYT?'subs':'followers')+'</span>'+deltaHtml+'</div>'
+    +(series.length>=2?sparkSvg(series,30):'')+'</article>';
+}
+function accountEditRow(a){
+  return '<li class="accountEditRow">'
+    +'<select class="select" data-acc="'+a.id+'" data-f="platform">'+ALL_PLATFORMS.map(p=>'<option value="'+p+'"'+(p===a.platform?' selected':'')+'>'+PLATFORM_SHORT[p]+'</option>').join('')+'</select>'
+    +'<input class="input" data-acc="'+a.id+'" data-f="handle" value="'+esc(a.handle)+'" placeholder="@handle">'
+    +'<input class="input" type="number" min="0" data-acc="'+a.id+'" data-f="followers" value="'+(a.followers==null?'':a.followers)+'" placeholder="followers">'
+    +(LIVE.has(a.platform)?refreshBtnHtml(a):'<span class="deltaMuted">manual</span>')
+    +'<button class="delBtn" data-act="rmAccount" data-id="'+a.id+'">×</button></li>';
+}
+function youtubeKeyFieldHtml(){
+  const k=ytKey();
+  return '<div class="ytKeyRow">'
+    +'<div class="field" style="flex:1;min-width:220px"><span class="fieldLabel">YouTube API key — for live subscriber counts</span>'
+    +'<input class="input" id="ytKeyInput" type="password" autocomplete="off" placeholder="AIza… paste your YouTube Data API key" value="'+esc(k)+'"></div>'
+    +'<button class="btnSm" data-act="saveYtKey">'+(k?'Update key':'Save key')+'</button>'
+    +(k?'<button class="btnSm btnDanger" data-act="clearYtKey">Clear</button>':'')
+    +'<p class="noteLine" style="flex-basis:100%;margin-top:6px">'+(k?'Key saved on this device ✓ — tap ↻ on a YouTube account to pull live counts. ':'')
+    +'Free key: <b>console.cloud.google.com</b> → create a project → enable <b>“YouTube Data API v3”</b> → Credentials → <b>Create API key</b>. Stored only on this device, never uploaded.</p>'
+    +'</div>';
+}
+function accountsSection(){
+  const reach=state.accounts.reduce((s,a)=>s+(typeof a.followers==='number'?a.followers:0),0);
+  let body;
+  if(ui.editAccounts){
+    body=(state.accounts.length?'<ul class="accountList">'+state.accounts.map(accountEditRow).join('')+'</ul>':'<p class="emptyText">Add the platforms where this brand lives — pick one and enter your @handle.</p>')
+      +'<form class="addForm" data-act="addAccountForm"><select class="select" id="newPlat">'+ALL_PLATFORMS.map(p=>'<option value="'+p+'">'+PLATFORM_LABELS[p]+'</option>').join('')+'</select><input class="input" id="newHandle" placeholder="@handle or url"><button type="submit" class="primaryBtn">+ Add</button></form>'
+      +youtubeKeyFieldHtml();
+  } else if(state.accounts.length===0){
+    body='<p class="emptyText">No accounts linked yet. Tap <b>+ Add account</b> to add the platforms where this brand lives.</p>';
+  } else body='<div class="accountGrid">'+state.accounts.map(accountCardCompact).join('')+'</div>';
+  return '<section class="card"><div class="cardHead"><span class="eyebrow"><span class="eyebrowMark">·02</span><span class="eyebrowRule"></span>Accounts</span>'
+    +'<div class="headRight">'+(reach>0?'<span class="ccReach">'+reach.toLocaleString()+'<span class="ccReachLabel">reach</span></span>':'')
+    +'<button class="editBtn" data-act="toggleEdit">'+(ui.editAccounts?'Done':(state.accounts.length?'Edit':'+ Add account'))+'</button></div></div>'
+    +body+'</section>';
+}
+
+function platformAnalytics(a){
+  const isYT=a.platform==='youtube'||a.platform==='youtube_long';
+  const followers=a.followers||0;
+  const weekly=deltaSinceDays(a.history,'count',7);
+  const views=latestSnap(a.history,'views')!=null?latestSnap(a.history,'views'):a.lifetimeViews;
+  const videos=latestSnap(a.history,'videos')!=null?latestSnap(a.history,'videos'):a.videoCount;
+  const avg=(typeof views==='number'&&typeof videos==='number'&&videos>0)?Math.round(views/videos):undefined;
+  const series=(a.history||[]).map(s=>s.count).filter(v=>typeof v==='number');
+  const viewsLabel=isYT?'views':'likes';
+  let deltaHtml;
+  if(weekly===null)deltaHtml='<span class="deltaMuted">refresh again later for this week</span>';
+  else if(weekly===0)deltaHtml='<span class="deltaFlat">· flat this week</span>';
+  else deltaHtml='<span class="delta '+(weekly>=0?'deltaUp':'deltaDown')+'">'+(weekly>=0?'↑':'↓')+' '+Math.abs(weekly).toLocaleString()+' this week</span>';
+  let foot='';
+  if(typeof views==='number')foot+='<span class="secondaryStat">'+fmtCount(views)+' '+viewsLabel+'</span>';
+  if(typeof videos==='number')foot+='<span class="secondaryStat">'+videos+' videos</span>';
+  if(typeof avg==='number')foot+='<span class="secondaryStat">'+fmtCount(avg)+' avg '+viewsLabel+'</span>';
+  return '<article class="platformCard"><div class="platformCardHead"><span class="platformBadge">'+PLATFORM_SHORT[a.platform]+'</span><span class="accountHandle">'+esc(a.handle)+'</span></div>'
+    +'<div class="platformCardNumWrap"><span class="platformCardNum">'+followers.toLocaleString()+'</span><span class="accountNumLabel">'+(isYT?'subscribers':'followers')+'</span></div>'
+    +deltaHtml+(series.length>=2?sparkSvg(series,36):'')+'<div class="platformCardFoot">'+foot+'</div></article>';
+}
+function analyticsSection(){
+  const reach=state.accounts.reduce((s,a)=>s+(typeof a.followers==='number'?a.followers:0),0);
+  const weekly=state.accounts.reduce((acc,a)=>{const d=deltaSinceDays(a.history,'count',7);return d===null?acc:(acc===null?0:acc)+d;},null);
+  const monthly=state.accounts.reduce((acc,a)=>{const d=deltaSinceDays(a.history,'count',30);return d===null?acc:(acc===null?0:acc)+d;},null);
+  const series=combinedSeries(state.accounts,'count');
+  const milestone=nextMilestone(reach);
+  const platforms=state.accounts.filter(a=>LIVE.has(a.platform)&&(typeof a.followers==='number'||a.lifetimeViews!=null||a.videoCount!=null));
+  const hasData=reach>0||platforms.length>0;
+  let body;
+  if(!hasData)body='<p class="emptyText">Add a YouTube, TikTok or Instagram account above and your reach, views, uploads and growth trends show up here.</p>';
+  else{
+    function chip(v,suffix){if(v===null)return '<span class="deltaMuted">refresh again later for '+suffix+'</span>';if(v===0)return '<span class="deltaFlat">· flat '+suffix+'</span>';return '<span class="delta '+(v>=0?'deltaUp':'deltaDown')+'">'+(v>=0?'↑':'↓')+' '+Math.abs(v).toLocaleString()+' '+suffix+'</span>';}
+    body='<div class="statsHero"><div><span class="statsHeroLabel">Total reach</span><div class="statsHeroNum">'+reach.toLocaleString()+'</div>'
+      +'<div class="statsHeroMeta">'+chip(weekly,'this week')+chip(monthly,'this month')+(reach<milestone?'<span class="statsHeroMilestone">'+fmtCount(milestone-reach)+' to '+fmtCount(milestone)+'</span>':'')+'</div></div>'
+      +(series.length>=2?'<div class="statsHeroSpark">'+sparkSvg(series,64)+'</div>':'<div></div>')+'</div>'
+      +'<div class="platformGrid">'+platforms.map(platformAnalytics).join('')+'</div>';
+  }
+  return '<section class="card"><div class="cardHead"><span class="eyebrow"><span class="eyebrowMark">·03</span><span class="eyebrowRule"></span>Analytics</span></div>'+body+'</section>';
+}
+
+function linksSection(){
+  let body;
+  if(state.links.length===0)body='<p class="emptyText">Your link-in-bio. Store, latest video, free guide, booking — drop a name and URL and it\'s one tap from here.</p>';
+  else body='<ul class="linkList">'+state.links.map(l=>'<li class="linkRow"><input class="input" data-lnk="'+l.id+'" data-f="label" value="'+esc(l.label)+'" placeholder="Label"><input class="input" data-lnk="'+l.id+'" data-f="url" value="'+esc(l.url)+'" placeholder="https://..."><a class="linkOpen" href="'+esc(l.url||'#')+'" target="_blank" rel="noopener noreferrer">↗</a><button class="delBtn" data-act="rmLink" data-id="'+l.id+'">×</button></li>').join('')+'</ul>';
+  return '<section class="card"><div class="cardHead"><span class="eyebrow"><span class="eyebrowMark">·04</span><span class="eyebrowRule"></span>Links</span></div>'+body
+    +'<form class="addForm" data-act="addLinkForm"><input class="input" id="newLabel" placeholder="Label (e.g. Store)"><input class="input" id="newUrl" placeholder="https://..."><button type="submit" class="primaryBtn">+ Add</button></form>'
+    +'<p class="noteLine">'+(ON_SERVER
+        ?'Hit ↻ on TikTok &amp; YouTube accounts to auto-pull live follower counts. Other platforms: tap Edit and enter numbers — growth + sparklines build as you go.'
+        :'Live auto-refresh (↻) runs on the deployed app. Opened locally, tap Edit on Accounts to enter/update numbers — growth + sparklines build as you go.')
+      +'</p></section>';
+}
+
+let clockTimer=null;
+function tickClocks(){
+  const now=new Date();
+  state.schedules.forEach(s=>{
+    if(!s.deadline)return;
+    const el=document.getElementById('cd-'+s.id);if(!el)return;
+    const dl=nextDeadline(s,now);if(!dl)return;
+    const rem=dl.getTime()-now.getTime();const u=deadlineUrgency(rem,s.period);const rgb=urgencyColor(u);
+    el.style.color='rgb('+rgb+')';el.style.borderColor='rgba('+rgb+',.4)';el.style.background='rgba('+rgb+',.08)';
+    const dot=el.querySelector('.cdDot');if(dot)dot.style.background='rgb('+rgb+')';
+    if(el.lastChild&&el.lastChild.nodeType===3)el.lastChild.textContent=(rem<=0?'overdue':formatCountdown(rem));
+  });
+}
+function startClock(){if(clockTimer)clearInterval(clockTimer);if(state.schedules.some(s=>s.deadline))clockTimer=setInterval(tickClocks,1000);}
+function render(){document.getElementById('app').innerHTML=headerHtml()+scheduleSection()+accountsSection()+analyticsSection()+linksSection();startClock();}
+
+/* ============================ Events ============================ */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');if(!b)return;
+  const act=b.dataset.act,id=b.dataset.id;
+  if(act==='back'){e.preventDefault();return;}
+  if(act==='theme'){applyTheme(b.dataset.theme);return;}
+  if(act==='logPlus')A.logSchedule(id,1);
+  else if(act==='logMinus')A.logSchedule(id,-1);
+  else if(act==='addSchedule')A.addSchedule();
+  else if(act==='editSchedule'){ui.editSchedule=id;state.setupDismissed=true;save();render();}
+  else if(act==='closeSchedule'){ui.editSchedule=null;render();}
+  else if(act==='rmSchedule')A.removeSchedule(id);
+  else if(act==='toggleEdit'){ui.editAccounts=!ui.editAccounts;render();}
+  else if(act==='rmAccount')A.removeAccount(id);
+  else if(act==='rmLink')A.removeLink(id);
+  else if(act==='refresh')A.refresh(id);
+  else if(act==='saveYtKey'){const el=document.getElementById('ytKeyInput');const v=(el&&el.value||'').trim();if(!v){alert('Paste your YouTube API key first.');return;}setYtKey(v);render();alert('YouTube API key saved on this device. Tap ↻ on a YouTube account to pull live counts.');}
+  else if(act==='clearYtKey'){setYtKey('');render();}
+});
+document.addEventListener('submit',e=>{
+  const f=e.target.closest('[data-act]');if(!f)return;e.preventDefault();
+  if(f.dataset.act==='addAccountForm'){const p=document.getElementById('newPlat').value,h=document.getElementById('newHandle').value;if(h.trim())A.addAccount(p,h);}
+  else if(f.dataset.act==='addLinkForm'){const l=document.getElementById('newLabel').value,u=document.getElementById('newUrl').value;if(u.trim()||l.trim())A.addLink(l,u);}
+});
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.dataset.sch){const sid=t.dataset.sch,f=t.dataset.f,s=state.schedules.find(x=>x.id===sid);
+    if(f==='deadlineOn'){A.updateSchedule(sid,{deadline:t.checked?Object.assign({minutes:1140},(s&&s.period==='weekly')?{weekday:0}:{}):null});}
+    else if(f==='deadlineTime'){const dl=Object.assign({minutes:0},s&&s.deadline||{});dl.minutes=timeToMinutes(t.value);A.updateSchedule(sid,{deadline:dl});}
+    else if(f==='deadlineWeekday'){const dl=Object.assign({minutes:1140},s&&s.deadline||{});dl.weekday=parseInt(t.value,10)||0;A.updateSchedule(sid,{deadline:dl});}
+    else{const patch={};let v=t.value;if(f==='target')v=Math.max(1,parseInt(v,10)||1);patch[f]=v;if(f==='period'&&v==='weekly'&&s&&s.deadline&&s.deadline.weekday==null)patch.deadline=Object.assign({},s.deadline,{weekday:0});A.updateSchedule(sid,patch);}
+  }
+  else if(t.dataset.acc){const patch={};if(t.dataset.f==='followers'){const x=t.value.trim();patch.followers=x===''?null:Math.max(0,parseInt(x,10)||0);}else patch[t.dataset.f]=t.value;A.updateAccount(t.dataset.acc,patch);}
+  else if(t.dataset.lnk){const patch={};patch[t.dataset.f]=t.value;A.updateLink(t.dataset.lnk,patch);}
+});
+
+applyTheme(currentTheme);
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="db.js?v=15"></script>
+<script src="brand.js?v=16"></script>
+</body>
+</html>

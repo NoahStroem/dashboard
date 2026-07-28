@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Rowan4 Kit · demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<!-- the kit stylesheet (vk- prefixed, no collisions) -->
+<link rel="stylesheet" href="components/rowan4-kit/rowan4-kit.css" />
+
+<style>
+  /* point the kit's serif token at the loaded font */
+  :root { --vk-font-serif: 'Instrument Serif'; }
+  body { margin: 0; font-family: 'Inter', -apple-system, sans-serif; }
+
+  /* ------------------------------------------------------------------
+     Tile-art styles. The kit ships these as CSS-Module files
+     (tiles/*.module.css) which a bundler scopes per-file. This is a
+     plain HTML page with no bundler, so each module's generic class
+     names (.base, .core, .root...) are namespaced here under the art
+     root (.r4-train, .r4-fuel, ...) to avoid collisions. @keyframes
+     names are already unique per tile, so they stay global.
+     ------------------------------------------------------------------ */
+
+  /* ===== TRAIN — "Ascent" graph ===== */
+  .r4-train { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+  .r4-train .base {
+    position:absolute; inset:-8%;
+    background:
+      radial-gradient(ellipse 52% 50% at 32% 44%, rgba(110,231,183,0.30), transparent 62%),
+      radial-gradient(ellipse 48% 52% at 78% 64%, rgba(40,120,90,0.32), transparent 68%),
+      linear-gradient(155deg,#0b1a14 0%,#060d0a 60%,#040806 100%);
+    transform-origin:50% 50%; animation: trainBase 9s ease-in-out infinite;
+  }
+  @keyframes trainBase { 0%,100%{transform:scale(1.02);opacity:.92} 50%{transform:scale(1.05);opacity:1} }
+  .r4-train .graph { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:86%; aspect-ratio:400/150; max-height:62%; }
+  .r4-train .graph svg { width:100%; height:100%; display:block; overflow:visible; }
+  .r4-train .contour {
+    fill:none; stroke:rgba(110,231,183,0.20); stroke-width:1.3; stroke-linecap:round;
+    filter:drop-shadow(0 0 3px rgba(110,231,183,0.25));
+    stroke-dasharray:100; stroke-dashoffset:100; animation: trainDraw 3s cubic-bezier(0.16,1,0.3,1) forwards;
+  }
+  .r4-train .contourB { stroke-opacity:.7; animation-delay:.25s; }
+  @keyframes trainDraw { to { stroke-dashoffset:0 } }
+  .r4-train .trend {
+    fill:none; stroke:#6EE7B7; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round;
+    stroke-dasharray:100; stroke-dashoffset:100;
+    animation: trainTrend 5s 3.1s cubic-bezier(0.45,0,0.25,1) forwards, trainGlow 10s 8.2s ease-in-out infinite;
+    filter:drop-shadow(0 0 4px rgba(110,231,183,0.7));
+  }
+  @keyframes trainTrend { from{stroke-dashoffset:100} to{stroke-dashoffset:0} }
+  @keyframes trainGlow { 0%,100%{filter:drop-shadow(0 0 3px rgba(110,231,183,.55))} 50%{filter:drop-shadow(0 0 7px rgba(110,231,183,.85))} }
+  .r4-train .dot { fill:rgba(110,231,183,0.6); opacity:0; transform-box:fill-box; transform-origin:center; animation: trainDotIn .6s cubic-bezier(0.16,1,0.3,1) forwards; }
+  .r4-train .dotPeak { fill:#A7F3D0; filter:drop-shadow(0 0 4px rgba(167,243,208,0.8)); animation: trainDotIn .6s cubic-bezier(0.16,1,0.3,1) forwards, trainPeak 7s 8.2s ease-in-out infinite; }
+  @keyframes trainDotIn { from{opacity:0;transform:scale(.4)} to{opacity:.9;transform:scale(1)} }
+  @keyframes trainPeak { 0%,100%{filter:drop-shadow(0 0 3px rgba(167,243,208,.5))} 50%{filter:drop-shadow(0 0 7px rgba(167,243,208,.9))} }
+
+  /* ===== FUEL — "Nutrient Inflow" ===== */
+  .r4-fuel { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+  .r4-fuel .base { position:absolute; inset:0; background: linear-gradient(180deg,#040b07 0%,#030805 55%,#020407 100%); }
+  .r4-fuel .glow { position:absolute; inset:0; background: radial-gradient(circle 40% at 68% 52%, rgba(110,231,183,0.13), transparent 60%); animation: fuelGlow 9s ease-in-out infinite; }
+  @keyframes fuelGlow { 0%,100%{opacity:.8} 50%{opacity:1} }
+  .r4-fuel .core { position:absolute; left:68%; top:52%; width:30px; height:30px; transform:translate(-50%,-50%); }
+  .r4-fuel .orb { position:absolute; inset:0; border-radius:50%; background:radial-gradient(circle at 50% 42%, #f2fff8, #a7f3d0 38%, #6ee7b7 70%); box-shadow:0 0 18px rgba(110,231,183,.75), 0 0 36px rgba(110,231,183,.35); animation:coreBreath 6.5s ease-in-out infinite; }
+  .r4-fuel .halo { position:absolute; inset:-120%; border-radius:50%; background:radial-gradient(circle, rgba(110,231,183,.28), transparent 68%); animation:coreHalo 6.5s ease-in-out infinite; }
+  @keyframes coreBreath { 0%,100%{transform:scale(1);filter:brightness(1)} 50%{transform:scale(1.12);filter:brightness(1.22)} }
+  @keyframes coreHalo { 0%,100%{opacity:.5;transform:scale(.92)} 50%{opacity:.85;transform:scale(1.1)} }
+  .r4-fuel .fed .orb { animation:coreBreath 6.5s ease-in-out infinite, corePop .7s cubic-bezier(0.16,1,0.3,1); }
+  @keyframes corePop { 0%{transform:scale(1)} 40%{transform:scale(1.3);filter:brightness(1.5)} 100%{transform:scale(1)} }
+  .r4-fuel .field { position:absolute; inset:0; }
+  .r4-fuel .p { position:absolute; width:3px; height:3px; border-radius:50%; background:#A7F3D0; box-shadow:0 0 5px rgba(167,243,208,.8); opacity:0; animation:inflow var(--dur,5s) cubic-bezier(0.5,0,0.8,1) infinite; animation-delay:var(--delay,0s); }
+  @keyframes inflow { 0%{opacity:0;transform:translate(0,0) scale(1)} 12%{opacity:.9} 78%{opacity:.85} 96%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(.4)} 100%{opacity:0} }
+  .r4-fuel .burst { position:absolute; inset:0; display:grid; place-items:center; }
+  .r4-fuel .bRing { position:absolute; width:26px; height:26px; border:1px solid #6EE7B7; border-radius:50%; opacity:0; animation:bRing 1.5s ease-out forwards; }
+  .r4-fuel .bRing2 { animation-delay:.15s } .r4-fuel .bRing3 { animation-delay:.3s }
+  @keyframes bRing { 0%{transform:scale(0.6);opacity:0;border-width:1px} 12%{opacity:.7} 100%{transform:scale(2.6);opacity:0;border-width:.3px} }
+  .r4-fuel .bDot { position:absolute; width:2px; height:2px; border-radius:50%; background:#6EE7B7; box-shadow:0 0 4px rgba(110,231,183,.7); opacity:0; animation:bDot 1.3s cubic-bezier(0.16,0.84,0.44,1) forwards; }
+  @keyframes bDot { 0%{transform:rotate(var(--angle,0deg)) translateY(0) scale(.4);opacity:0} 15%{opacity:1} 100%{transform:rotate(var(--angle,0deg)) translateY(-34px) scale(.6);opacity:0} }
+  .r4-fuel .bSpk { position:absolute; width:4px; height:4px; border-radius:50%; background:radial-gradient(circle,#fff 0%,#A7F3D0 50%,transparent 75%); box-shadow:0 0 6px rgba(167,243,208,.8); opacity:0; animation:bSpk 1.6s ease-out forwards; }
+  @keyframes bSpk { 0%{opacity:0;transform:scale(.3)} 25%{opacity:1;transform:scale(1.2)} 55%{opacity:.5;transform:scale(.8)} 100%{opacity:0;transform:scale(.4)} }
+  .r4-fuel .bRay { position:absolute; width:1px; height:14px; background:linear-gradient(to top, transparent, #6EE7B7, transparent); opacity:0; transform-origin:50% 100%; animation:bRay .72s cubic-bezier(0.12,0.9,0.35,1) forwards; }
+  @keyframes bRay { 0%{opacity:0;transform:rotate(var(--angle,0deg)) scaleY(.2) translateY(0)} 30%{opacity:.85} 100%{opacity:0;transform:rotate(var(--angle,0deg)) scaleY(1) translateY(-30px)} }
+  .r4-fuel .bConf { position:absolute; width:2px; height:5px; border-radius:1px; background:#6EE7B7; opacity:0; animation:bConf 1.4s cubic-bezier(0.15,0.75,0.35,1) forwards; }
+  @keyframes bConf { 0%{opacity:0;transform:rotate(var(--angle,0deg)) translateY(0) rotate(0)} 20%{opacity:.9} 100%{opacity:0;transform:rotate(var(--angle,0deg)) translateY(calc(var(--dist,32px)*-1)) rotate(220deg)} }
+  .r4-fuel .bOrb { position:absolute; width:3px; height:3px; border-radius:50%; background:#A7F3D0; box-shadow:0 0 5px rgba(167,243,208,.7); opacity:0; animation:bOrb 1.8s cubic-bezier(0.3,0,0.3,1) forwards; }
+  @keyframes bOrb { 0%{opacity:0;transform:rotate(var(--angle,0deg)) translateX(10px) scale(.5)} 25%{opacity:1} 100%{opacity:0;transform:rotate(calc(var(--angle,0deg) + 200deg)) translateX(24px) scale(.9)} }
+
+  /* ===== PEAK — "Expanding glow" pulse ===== */
+  .r4-peak { position:absolute; inset:0; overflow:hidden; pointer-events:none; background:#070908; }
+  .r4-peak .dots { position:absolute; inset:0; background-image: radial-gradient(rgba(110,231,183,0.22) 1.2px, transparent 1.4px), radial-gradient(ellipse 60% 60% at 50% 50%, rgba(30,60,46,0.4), #070908 78%); background-size:14px 14px, 100% 100%; background-position:center; }
+  .r4-peak .bright {
+    position:absolute; inset:0; background-image: radial-gradient(rgba(167,243,208,0.95) 1.3px, transparent 1.5px); background-size:14px 14px; background-position:center;
+    filter: drop-shadow(0 0 3px rgba(110,231,183,0.7));
+    -webkit-mask-image: radial-gradient(circle at 50% 46%, #000, transparent 70%); mask-image: radial-gradient(circle at 50% 46%, #000, transparent 70%);
+    -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat; -webkit-mask-position:center 46%; mask-position:center 46%;
+    -webkit-mask-size:10% 10%; mask-size:10% 10%; opacity:0; animation: peakGlow 5.5s linear infinite;
+  }
+  @keyframes peakGlow {
+    0%{-webkit-mask-size:8% 8%; mask-size:8% 8%; opacity:0} 10%{opacity:1}
+    40%{-webkit-mask-size:90% 90%; mask-size:90% 90%; opacity:.55} 70%{-webkit-mask-size:150% 150%; mask-size:150% 150%; opacity:.2}
+    100%{-webkit-mask-size:210% 210%; mask-size:210% 210%; opacity:0}
+  }
+  .r4-peak .ring { position:absolute; left:50%; top:46%; width:60px; height:60px; transform:translate(-50%,-50%); border:1px solid rgba(110,231,183,0.45); border-radius:50%; opacity:0; animation: peakRing 5.5s cubic-bezier(0.16,1,0.3,1) infinite; }
+  @keyframes peakRing { 0%{transform:translate(-50%,-50%) scale(.5);opacity:0} 18%{opacity:.7} 100%{transform:translate(-50%,-50%) scale(1.8);opacity:0} }
+  .r4-peak .core { position:absolute; left:50%; top:46%; width:9px; height:9px; transform:translate(-50%,-50%); border-radius:50%; background:#A7F3D0; box-shadow:0 0 12px rgba(167,243,208,1), 0 0 22px rgba(110,231,183,.6); animation: peakCore 5.5s ease-in-out infinite; }
+  @keyframes peakCore { 0%,100%{opacity:.7} 45%{opacity:1} }
+
+  /* ===== MIND — "Sonar radar" ===== */
+  .r4-mind { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+  .r4-mind .base { position:absolute; inset:0; background:radial-gradient(circle 60% at 50% 47%, #0c1813 0%, #081009 60%, #04080a 100%); }
+  .r4-mind .radar { position:absolute; left:50%; top:46%; transform:translate(-50%,-50%); height:68%; width:auto; aspect-ratio:1; max-width:80%; border-radius:50%; overflow:hidden; border:1px solid rgba(110,231,183,.16); box-shadow:0 0 22px rgba(110,231,183,.07) inset; }
+  .r4-mind .radar svg { position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
+  .r4-mind .rings circle { fill:none; stroke:rgba(110,231,183,.22); stroke-width:.6; vector-effect:non-scaling-stroke; }
+  .r4-mind .cross line { stroke:rgba(110,231,183,.14); stroke-width:.6; vector-effect:non-scaling-stroke; }
+  .r4-mind .sweep { position:absolute; inset:0; transform-origin:50% 50%; opacity:0; background:conic-gradient(from 0deg at 50% 50%, rgba(110,231,183,.30) 0deg, rgba(110,231,183,.10) 16deg, rgba(110,231,183,0) 52deg, transparent 360deg); }
+  .r4-mind .arm { position:absolute; left:50%; top:0; width:1px; height:50%; transform-origin:50% 100%; opacity:0; background:linear-gradient(to top, rgba(110,231,183,.7), transparent); }
+  .r4-mind .spinning { animation: mindSweep 2.4s cubic-bezier(0.4,0,0.4,1) forwards; }
+  @keyframes mindSweep { 0%{transform:rotate(0deg);opacity:0} 8%{opacity:1} 92%{opacity:1} 100%{transform:rotate(360deg);opacity:0} }
+  .r4-mind .centerDot { position:absolute; left:50%; top:50%; width:5px; height:5px; transform:translate(-50%,-50%); border-radius:50%; background:#A7F3D0; box-shadow:0 0 8px rgba(167,243,208,.9); }
+
+  /* ===== BRAND — "Identity bloom" ===== */
+  .r4-brand { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+  .r4-brand .base { position:absolute; inset:0; background:linear-gradient(180deg,#080b0c 0%,#050708 100%); }
+  .r4-brand .spokes { position:absolute; left:50%; top:50%; width:120%; aspect-ratio:1; transform:translate(-50%,-50%); }
+  .r4-brand .spokes svg { width:100%; height:100%; }
+  .r4-brand .spokes line { stroke:rgba(110,231,183,.10); stroke-width:1; vector-effect:non-scaling-stroke; }
+  .r4-brand .pulse { position:absolute; left:50%; top:50%; width:80px; height:80px; transform:translate(-50%,-50%); border:1px solid rgba(110,231,183,.4); border-radius:8px; opacity:0; animation: brandPulse 6.5s cubic-bezier(0.16,1,0.3,1) 2.4s infinite; }
+  @keyframes brandPulse { 0%{transform:translate(-50%,-50%) scale(.4);opacity:0} 15%{opacity:.7} 100%{transform:translate(-50%,-50%) scale(3.2);opacity:0} }
+  .r4-brand .vmark { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; }
+  .r4-brand .vmark svg { width:84px; height:84px; }
+  .r4-brand .vmark path { fill:none; stroke:#6EE7B7; stroke-width:5; stroke-linecap:round; stroke-linejoin:round; filter:drop-shadow(0 0 8px rgba(110,231,183,.6)); stroke-dasharray:100; stroke-dashoffset:100; animation: brandDraw 2.2s cubic-bezier(0.16,1,0.3,1) .4s forwards; }
+  @keyframes brandDraw { to { stroke-dashoffset:0 } }
+
+  /* ===== FINANCE — "Candlesticks" ===== */
+  .r4-finance { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+  .r4-finance .base { position:absolute; inset:0; background: radial-gradient(ellipse 80% 75% at 50% 38%, rgba(217,142,60,0.18) 0%, rgba(90,44,24,0.4) 50%, rgba(20,12,9,1) 100%); }
+  .r4-finance .axis { position:absolute; inset:0; background: linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px); background-size: 100% 38px; opacity:.5; }
+  .r4-finance .candles { position:absolute; left:8%; right:8%; top:44px; bottom:84px; display:flex; align-items:center; justify-content:space-between; }
+  .r4-finance .c { position:relative; width:9px; height:100%; display:flex; align-items:center; justify-content:center; opacity:0; animation: finCandle .5s cubic-bezier(0.16,1,0.3,1) forwards; }
+  .r4-finance .up { color:#6EE7B7; }
+  .r4-finance .down { color:#e0795f; }
+  .r4-finance .wick { position:absolute; width:1px; background:currentColor; }
+  .r4-finance .body { width:7px; border-radius:1px; background:currentColor; box-shadow:0 0 6px currentColor; }
+  @keyframes finCandle { to { opacity:.95 } }
+  .r4-finance .last { animation: finCandle .5s cubic-bezier(0.16,1,0.3,1) forwards, finBlink 4.5s 2s ease-in-out infinite; }
+  @keyframes finBlink { 0%,100%{ filter:brightness(1) } 50%{ filter:brightness(1.5) } }
+  @media (max-width: 560px) { .r4-finance .candles { top:38px; bottom:64px; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .r4-train .base, .r4-train .contour, .r4-train .trend, .r4-train .dot, .r4-train .dotPeak { animation:none !important }
+    .r4-train .contour, .r4-train .trend { stroke-dashoffset:0 }
+    .r4-train .dot, .r4-train .dotPeak { opacity:.9; transform:scale(1) }
+    .r4-fuel .p { display:none } .r4-fuel .orb, .r4-fuel .halo, .r4-fuel .base { animation:none }
+    .r4-peak .bright, .r4-peak .ring, .r4-peak .core { animation:none } .r4-peak .bright, .r4-peak .ring { opacity:0 }
+    .r4-mind .sweep, .r4-mind .arm { animation:none; opacity:0 }
+    .r4-brand .pulse, .r4-brand .vmark path { animation:none } .r4-brand .pulse { opacity:0 } .r4-brand .vmark path { stroke-dashoffset:0 }
+    .r4-finance .c, .r4-finance .last { animation:none; opacity:.95 }
+  }
+</style>
+</head>
+<body>
+<main class="vk-page vk-grain">
+  <!-- backdrop -->
+  <div class="vk-atmosphere" aria-hidden></div>
+  <div class="vk-mountains" aria-hidden>
+    <svg viewBox="0 0 1600 420" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="vk-mt-far" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#0d1a17" stop-opacity="0" />
+          <stop offset="55%" stop-color="#0d1a17" stop-opacity=".55" />
+          <stop offset="100%" stop-color="#0d1a17" stop-opacity=".95" />
+        </linearGradient>
+        <linearGradient id="vk-mt-near" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#050a09" stop-opacity=".4" />
+          <stop offset="60%" stop-color="#050a09" stop-opacity=".95" />
+          <stop offset="100%" stop-color="#050a09" stop-opacity="1" />
+        </linearGradient>
+      </defs>
+      <path d="M0,300 L120,230 L210,260 L320,180 L430,220 L560,150 L680,210 L820,170 L960,220 L1100,180 L1240,240 L1380,200 L1500,250 L1600,220 L1600,420 L0,420 Z" fill="url(#vk-mt-far)" />
+      <path d="M0,360 L100,320 L220,340 L340,290 L460,330 L590,300 L720,340 L860,310 L1000,350 L1140,310 L1280,355 L1420,320 L1540,360 L1600,340 L1600,420 L0,420 Z" fill="url(#vk-mt-near)" />
+    </svg>
+  </div>
+  <div class="vk-particles" id="vk-particles" aria-hidden></div>
+
+  <div class="vk-shell">
+    <header class="vk-header">
+      <div class="vk-date">Your dashboard</div>
+      <h1 class="vk-greeting">Welcome back, <span class="vk-greeting-name">Rowan</span></h1>
+    </header>
+    <div class="vk-grid" id="vk-grid"></div>
+  </div>
+</main>
+
+<script>
+/* ---- backdrop particles (port of Rowan4Backdrop.tsx) ---- */
+(function () {
+  var root = document.getElementById('vk-particles');
+  var N = window.innerWidth < 640 ? 14 : 24;
+  for (var i = 0; i < N; i++) {
+    var s = document.createElement('span');
+    s.style.left = Math.random() * 100 + '%';
+    s.style.top = 60 + Math.random() * 40 + '%';
+    var size = 1.2 + Math.random() * 1.2;
+    s.style.width = s.style.height = size + 'px';
+    var dur = 22 + Math.random() * 28;
+    s.style.animationDuration = dur + 's';
+    s.style.animationDelay = -Math.random() * dur + 's';
+    s.style.setProperty('--dx', (Math.random() * 30 - 15) + 'px');
+    s.style.setProperty('--dy', -(60 + Math.random() * 50) + 'vh');
+    root.appendChild(s);
+  }
+})();
+
+/* ---- tile art builders (vanilla ports of the tiles/*TileArt.tsx) ---- */
+var ART = {
+  train: function () {
+    var PTS = [[10,118],[56,110],[102,114],[148,96],[196,100],[244,78],[292,82],[340,60],[390,46]];
+    var DELAYS = [3.0,3.16,3.32,3.48,3.64,3.8,3.96,4.12,4.28];
+    var lineD = 'M' + PTS.map(function (p) { return p[0] + ',' + p[1]; }).join(' L');
+    var dots = PTS.map(function (p, i) {
+      var peak = i === PTS.length - 1;
+      return '<circle class="dot' + (peak ? ' dotPeak' : '') + '" cx="' + p[0] + '" cy="' + p[1] +
+             '" r="' + (peak ? 4 : 3) + '" style="animation-delay:' + DELAYS[i] + 's" />';
+    }).join('');
+    return '<div class="r4-train">' +
+      '<div class="base"></div>' +
+      '<div class="graph"><svg viewBox="0 0 400 150" preserveAspectRatio="xMidYMid meet">' +
+        '<path class="contour" d="M-10,40 C100,35 180,32 230,27 S360,18 410,15" pathlength="100" />' +
+        '<path class="contour contourB" d="M-10,140 C100,137 180,134 230,129 S360,121 410,118" pathlength="100" />' +
+        '<path class="trend" d="' + lineD + '" pathlength="100" />' + dots +
+      '</svg></div></div>';
+  },
+  fuel: function () {
+    return '<div class="r4-fuel">' +
+      '<div class="base"></div><div class="glow"></div><div class="field"></div>' +
+      '<div class="core"><div class="halo"></div><div class="orb"></div><div class="burst"></div></div></div>';
+  },
+  peak: function () {
+    return '<div class="r4-peak"><div class="dots"></div><div class="bright"></div><div class="ring"></div><div class="core"></div></div>';
+  },
+  mind: function () {
+    return '<div class="r4-mind"><div class="base"></div>' +
+      '<div class="radar"><svg viewBox="-100 -100 200 200">' +
+        '<g class="rings"><circle r="32" /><circle r="60" /><circle r="88" /></g>' +
+        '<g class="cross"><line x1="-100" y1="0" x2="100" y2="0" /><line x1="0" y1="-100" x2="0" y2="100" /></g>' +
+      '</svg><div class="sweep"></div><div class="arm"></div><div class="centerDot"></div></div></div>';
+  },
+  brand: function () {
+    return '<div class="r4-brand"><div class="base"></div>' +
+      '<div class="spokes"><svg viewBox="-100 -100 200 200"><g>' +
+        '<line x1="0" y1="0" x2="0" y2="-100"/><line x1="0" y1="0" x2="71" y2="-71"/>' +
+        '<line x1="0" y1="0" x2="100" y2="0"/><line x1="0" y1="0" x2="71" y2="71"/>' +
+        '<line x1="0" y1="0" x2="0" y2="100"/><line x1="0" y1="0" x2="-71" y2="71"/>' +
+        '<line x1="0" y1="0" x2="-100" y2="0"/><line x1="0" y1="0" x2="-71" y2="-71"/>' +
+      '</g></svg></div>' +
+      '<div class="pulse"></div>' +
+      '<div class="vmark"><svg viewBox="-50 -50 100 100"><path d="M-28 -20 L0 28 L28 -20" pathlength="100" /></svg></div></div>';
+  },
+  finance: function () {
+    var C = [
+      [0.5,0.7,'up'],[0.55,0.4,'down'],[0.4,0.66,'up'],[0.62,0.5,'down'],[0.5,0.78,'up'],
+      [0.7,0.6,'down'],[0.58,0.86,'up'],[0.78,0.7,'up'],[0.66,0.95,'up']
+    ];
+    var cells = C.map(function (c, i) {
+      var last = i === C.length - 1;
+      var cls = 'c ' + c[2] + (last ? ' last' : '');
+      return '<div class="' + cls + '" style="animation-delay:' + (0.3 + i * 0.12) + 's">' +
+        '<span class="wick" style="height:' + (c[1] * 100) + '%"></span>' +
+        '<span class="body" style="height:' + (c[0] * 60) + '%"></span></div>';
+    }).join('');
+    return '<div class="r4-finance"><div class="base"></div><div class="axis"></div><div class="candles">' + cells + '</div></div>';
+  }
+};
+
+/* ---- build the bento grid (port of Rowan4Dashboard.tsx TILES) ---- */
+var TILES = [
+  { area:'a', art:'train',   label:'Train',   summary:'Workouts, splits, sessions' },
+  { area:'b', art:'fuel',    label:'Fuel',    summary:'Macros, weight, water, supplements' },
+  { area:'c', art:'peak',    label:'Peak',    summary:'Daily readiness' },
+  { area:'d', art:'mind',    label:'Mind',    summary:'Mentor, goals' },
+  { area:'e', art:'brand',   label:'Brand',   summary:'Archetype, clipping, socials' },
+  { area:'f', art:'finance', label:'Finance', summary:'Net worth, subscriptions' }
+];
+var grid = document.getElementById('vk-grid');
+TILES.forEach(function (t, i) {
+  var a = document.createElement('a');
+  a.href = '#';
+  a.className = 'vk-tile vk-area-' + t.area;
+  a.innerHTML =
+    '<div class="vk-tile-art">' + ART[t.art]() + '</div>' +
+    '<span class="vk-tile-index">·' + String(i + 1).padStart(2, '0') + '</span>' +
+    '<span class="vk-tile-label">' + t.label + '</span>' +
+    '<span class="vk-tile-summary">' + t.summary + '</span>' +
+    '<span class="vk-tile-arrow">→</span>';
+  // cursor parallax on the art layer
+  var art = a.querySelector('.vk-tile-art');
+  a.addEventListener('mousemove', function (e) {
+    var r = a.getBoundingClientRect();
+    var dx = (e.clientX - r.left - r.width / 2) / (r.width / 2);
+    var dy = (e.clientY - r.top - r.height / 2) / (r.height / 2);
+    art.style.transform = 'translate3d(' + (dx * 8) + 'px,' + (dy * 8) + 'px,0)';
+  });
+  a.addEventListener('mouseleave', function () { art.style.transform = 'translate3d(0,0,0)'; });
+  grid.appendChild(a);
+});
+
+/* ---- FUEL behaviour (port of FuelTileArt.tsx) ---- */
+(function () {
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce) return;
+  var root = document.querySelector('.r4-fuel');
+  if (!root) return;
+  var field = root.querySelector('.field');
+  var core = root.querySelector('.core');
+  var burst = root.querySelector('.burst');
+  var hostRect = root.getBoundingClientRect();
+  var w = root.clientWidth || 560, h = root.clientHeight || 200;
+  var cx = w * 0.68, cy = h * 0.52;
+  for (var i = 0; i < 10; i++) {
+    var p = document.createElement('span');
+    p.className = 'p';
+    var ang = Math.random() * Math.PI * 2;
+    var dist = 60 + Math.random() * 50;
+    var sx = cx + Math.cos(ang) * dist, sy = cy + Math.sin(ang) * dist;
+    p.style.left = sx + 'px'; p.style.top = sy + 'px';
+    p.style.setProperty('--tx', (cx - sx) * 0.96 + 'px');
+    p.style.setProperty('--ty', (cy - sy) * 0.96 + 'px');
+    var dur = 6.5 + Math.random() * 4;
+    p.style.setProperty('--dur', dur + 's');
+    p.style.setProperty('--delay', -Math.random() * dur + 's');
+    field.appendChild(p);
+  }
+  var KINDS = ['rings','particles','sparkles','rays','confetti','orbit'];
+  function add(cls, n, setup) {
+    for (var i = 0; i < n; i++) {
+      var el = document.createElement('span');
+      el.className = cls;
+      if (setup) setup(el, i, n);
+      burst.appendChild(el);
+      (function (e) { setTimeout(function () { e.remove(); }, 2000); })(el);
+    }
+  }
+  function deg(i, n) { return (360 / n) * i + 'deg'; }
+  function fire(kind) {
+    if (kind === 'rings') { add('bRing', 1); add('bRing bRing2', 1); add('bRing bRing3', 1); }
+    else if (kind === 'particles') { add('bDot', 12, function (el, i, n) { el.style.setProperty('--angle', deg(i, n)); }); }
+    else if (kind === 'sparkles') { add('bSpk', 10, function (el) { var a = Math.random()*Math.PI*2, r = 12+Math.random()*8; el.style.transform = 'translate(' + Math.cos(a)*r + 'px,' + Math.sin(a)*r + 'px)'; el.style.animationDelay = Math.random()*0.4 + 's'; }); }
+    else if (kind === 'rays') { add('bRay', 12, function (el, i, n) { el.style.setProperty('--angle', deg(i, n)); }); }
+    else if (kind === 'confetti') { add('bConf', 14, function (el, i, n) { el.style.setProperty('--angle', (360/n)*i + Math.random()*16 + 'deg'); el.style.setProperty('--dist', (26+Math.random()*14) + 'px'); }); }
+    else if (kind === 'orbit') { add('bOrb', 8, function (el, i, n) { el.style.setProperty('--angle', deg(i, n)); }); }
+    core.classList.add('fed');
+    setTimeout(function () { core.classList.remove('fed'); }, 700);
+  }
+  var lastKind = null;
+  function scheduleFeed() {
+    var next = 5000 + Math.random() * 10000;
+    setTimeout(function () {
+      var k = KINDS[Math.floor(Math.random() * KINDS.length)];
+      if (k === lastKind) k = KINDS[(KINDS.indexOf(k) + 1) % KINDS.length];
+      lastKind = k; fire(k); scheduleFeed();
+    }, next);
+  }
+  setTimeout(function () { fire(KINDS[Math.floor(Math.random() * KINDS.length)]); }, 1500 + Math.random() * 1500);
+  scheduleFeed();
+})();
+
+/* ---- MIND behaviour (port of MindTileArt.tsx) ---- */
+(function () {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var radar = document.querySelector('.r4-mind .radar');
+  if (!radar) return;
+  var sweep = radar.querySelector('.sweep'), arm = radar.querySelector('.arm');
+  function doSweep() {
+    [sweep, arm].forEach(function (el) {
+      el.classList.remove('spinning'); void el.offsetWidth; el.classList.add('spinning');
+    });
+    schedule();
+  }
+  function schedule() { setTimeout(doSweep, 25000 + Math.random() * 20000); }
+  setTimeout(doSweep, 3000 + Math.random() * 3000);
+})();
+</script>
+</body>
+</html>

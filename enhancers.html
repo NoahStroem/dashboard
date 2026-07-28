@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#000000" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Liam" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="icon" type="image/svg+xml" href="icon.svg" />
+<title>Enhancers · Liam</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<!-- The Rowan4 kit: tokens, grain, canvas, tile/entrance + the atmospheric backdrop -->
+<link rel="stylesheet" href="components/rowan4-kit/rowan4-kit.css" />
+
+<style>
+/* ---- Bind the kit's serif + a clean UI sans, then layer minimal components on
+       top of the vk- tokens. Everything below reads the kit's variables so one
+       --vk-mint change reskins the whole page. ---- */
+:root{ --vk-font-serif:'Instrument Serif'; --en-mono:'JetBrains Mono',ui-monospace,monospace; }
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; }
+body{ background:var(--vk-bg); color:var(--vk-fg); font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; -webkit-font-smoothing:antialiased; }
+
+.en-shell{ max-width:720px; gap:var(--vk-space-6); }
+.en-header{ flex-direction:row; align-items:flex-end; justify-content:space-between; gap:var(--vk-space-4); flex-wrap:wrap; }
+.en-header .vk-date{ margin-top:6px; }
+.en-back{ font-family:var(--en-mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--vk-mint); text-decoration:none; border:1px solid var(--vk-border-strong); border-radius:var(--vk-radius-pill); padding:8px 15px; transition:background var(--vk-duration) var(--vk-ease), border-color var(--vk-duration) var(--vk-ease); white-space:nowrap; }
+.en-back:hover{ background:rgba(110,231,183,.08); border-color:rgba(110,231,183,.4); }
+
+/* segmented tabs */
+.en-tabs{ display:inline-flex; gap:4px; padding:4px; border:1px solid var(--vk-border); border-radius:var(--vk-radius-pill); background:var(--vk-card); align-self:flex-start; opacity:0; animation:vk-fade-up 700ms var(--vk-ease-premium) .1s forwards; }
+.en-tab{ appearance:none; background:transparent; border:0; cursor:pointer; color:var(--vk-muted); font-family:var(--en-mono); font-size:11.5px; letter-spacing:.12em; text-transform:uppercase; padding:9px 16px; border-radius:var(--vk-radius-pill); transition:color var(--vk-duration) var(--vk-ease), background var(--vk-duration) var(--vk-ease); }
+.en-tab:hover{ color:var(--vk-muted-strong); }
+.en-tab.on{ background:var(--vk-mint); color:#04130c; font-weight:600; }
+
+#panel{ display:flex; flex-direction:column; }
+
+/* cards + shared primitives */
+.en-card{ border:1px solid var(--vk-border); border-radius:18px; background:var(--vk-card); padding:20px; margin-bottom:14px; opacity:0; transform:translateY(10px); animation:vk-tile-in 600ms var(--vk-ease-premium) forwards; }
+.en-card:nth-child(1){ animation-delay:60ms; } .en-card:nth-child(2){ animation-delay:130ms; }
+.en-card:nth-child(3){ animation-delay:200ms; } .en-card:nth-child(4){ animation-delay:270ms; } .en-card:nth-child(5){ animation-delay:340ms; }
+.en-eyebrow{ font-family:var(--en-mono); font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--vk-mint); margin:0 0 14px; display:flex; align-items:center; gap:8px; }
+.en-eyebrow::before{ content:''; width:20px; height:1px; background:linear-gradient(90deg,var(--vk-mint),transparent); }
+
+.en-hero{ display:flex; align-items:baseline; justify-content:space-between; gap:14px; flex-wrap:wrap; }
+.en-heroNum{ font-family:var(--vk-font-serif),Georgia,serif; font-style:italic; font-size:46px; line-height:1; font-variant-numeric:tabular-nums; }
+.en-heroNum small{ font-family:'Inter',sans-serif; font-style:normal; font-size:14px; color:var(--vk-muted); margin-left:6px; }
+.en-chipStat{ display:inline-flex; align-items:center; gap:8px; font-family:var(--en-mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase; padding:8px 13px; border-radius:var(--vk-radius-pill); border:1px solid var(--vk-border-strong); background:rgba(110,231,183,.08); color:var(--vk-mint); }
+.en-chipStat .dot{ width:7px; height:7px; border-radius:50%; background:currentColor; box-shadow:0 0 9px currentColor; }
+.en-chipStat[data-tone="warn"]{ color:var(--vk-amber); border-color:rgba(245,158,11,.4); background:rgba(245,158,11,.1); }
+.en-chipStat[data-tone="danger"]{ color:var(--vk-red); border-color:rgba(239,68,68,.45); background:rgba(239,68,68,.12); }
+.en-chipStat[data-tone="muted"]{ color:var(--vk-muted-strong); border-color:var(--vk-border); background:var(--vk-card); }
+
+.en-insights{ display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; }
+.en-insight{ flex:1; min-width:110px; background:var(--vk-card-elevated); border:1px solid var(--vk-border); border-radius:13px; padding:11px 13px; }
+.en-insLabel{ font-family:var(--en-mono); font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:var(--vk-muted); }
+.en-insVal{ font-family:var(--vk-font-serif),serif; font-style:italic; font-size:20px; margin-top:3px; font-variant-numeric:tabular-nums; }
+.en-insSub{ font-size:11px; color:var(--vk-muted-strong); margin-top:1px; }
+.en-mint{ color:var(--vk-mint); } .en-amber{ color:var(--vk-amber); }
+
+.en-note{ margin-top:16px; font-size:13px; line-height:1.5; padding:12px 14px; border-radius:12px; border-left:3px solid var(--vk-border-strong); background:rgba(110,231,183,.06); color:var(--vk-muted-strong); }
+.en-note.warn{ border-color:var(--vk-amber); background:rgba(245,158,11,.08); }
+.en-note.danger{ border-color:var(--vk-red); background:rgba(239,68,68,.1); color:#ffd9de; }
+.en-note b{ color:var(--vk-fg); font-weight:600; }
+
+/* chart */
+.en-chartWrap{ margin-top:18px; }
+.en-chart{ width:100%; height:118px; display:block; overflow:visible; }
+.en-axis{ display:flex; justify-content:space-between; font-family:var(--en-mono); font-size:9px; color:var(--vk-muted); margin-top:6px; letter-spacing:.06em; }
+
+/* daily bar */
+.en-barHead{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:10px; }
+.en-barNum{ font-family:var(--vk-font-serif),serif; font-style:italic; font-size:22px; font-variant-numeric:tabular-nums; }
+.en-barTarget{ color:var(--vk-muted); font-size:13px; }
+.en-bar{ height:9px; border-radius:var(--vk-radius-pill); background:rgba(255,255,255,.06); overflow:hidden; }
+.en-barFill{ height:100%; border-radius:var(--vk-radius-pill); background:linear-gradient(90deg,var(--vk-mint-deep),var(--vk-mint)); box-shadow:0 0 12px var(--vk-mint-glow); transition:width .5s var(--vk-ease-premium); }
+.en-barFill.over{ background:linear-gradient(90deg,var(--vk-amber),var(--vk-red)); box-shadow:0 0 12px rgba(239,68,68,.5); }
+
+/* inputs / chips / buttons */
+.en-search{ position:relative; margin-bottom:12px; }
+.en-search .ic{ position:absolute; left:13px; top:50%; transform:translateY(-50%); color:var(--vk-muted); display:flex; pointer-events:none; }
+.en-input{ width:100%; appearance:none; background:rgba(255,255,255,.04); border:1px solid var(--vk-border-strong); border-radius:13px; color:var(--vk-fg); font-family:inherit; font-size:15px; padding:12px 14px; outline:none; transition:border-color var(--vk-duration) var(--vk-ease); }
+.en-input.pad{ padding-left:38px; }
+.en-input:focus{ border-color:var(--vk-mint); box-shadow:0 0 0 3px rgba(110,231,183,.1); }
+.en-row2{ display:flex; gap:8px; flex-wrap:wrap; }
+.en-row2 .en-input{ flex:1; min-width:120px; }
+.en-row2 .mg{ flex:0 0 96px; min-width:0; }
+.en-time{ background:rgba(255,255,255,.04); border:1px solid var(--vk-border); border-radius:10px; padding:9px 12px; color:var(--vk-fg); font-family:inherit; font-size:14px; }
+.en-time:focus{ outline:none; border-color:var(--vk-mint); }
+
+.en-btn{ appearance:none; cursor:pointer; border:0; border-radius:13px; padding:0 18px; font-family:var(--en-mono); font-size:12px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:#04130c; background:var(--vk-mint); transition:filter var(--vk-duration) var(--vk-ease); }
+.en-btn:hover{ filter:brightness(1.08); }
+.en-btn.block{ width:100%; padding:15px; font-size:13px; }
+.en-ghost{ appearance:none; cursor:pointer; background:rgba(110,231,183,.06); border:1px solid var(--vk-border-strong); border-radius:var(--vk-radius-pill); color:var(--vk-mint); font-family:var(--en-mono); font-size:11px; letter-spacing:.06em; padding:8px 14px; transition:background var(--vk-duration) var(--vk-ease); }
+.en-ghost:hover{ background:rgba(110,231,183,.13); }
+.en-ghost.on{ background:var(--vk-mint); color:#04130c; border-color:transparent; font-weight:600; }
+
+.en-chips{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+.en-chip{ appearance:none; cursor:pointer; font-family:inherit; font-size:13px; font-weight:500; color:var(--vk-mint); background:rgba(110,231,183,.06); border:1px solid var(--vk-border-strong); border-radius:var(--vk-radius-pill); padding:8px 14px; transition:background var(--vk-duration) var(--vk-ease), border-color var(--vk-duration) var(--vk-ease); }
+.en-chip:hover{ background:rgba(110,231,183,.14); border-color:var(--vk-mint); }
+
+.en-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:7px; max-height:360px; overflow-y:auto; }
+.en-itemRow{ display:flex; align-items:center; gap:12px; padding:11px 13px; background:var(--vk-card-elevated); border:1px solid var(--vk-border); border-radius:12px; cursor:pointer; transition:border-color var(--vk-duration) var(--vk-ease), background var(--vk-duration) var(--vk-ease); }
+.en-itemRow:hover{ border-color:rgba(110,231,183,.35); background:rgba(110,231,183,.05); }
+.en-itemMain{ flex:1; min-width:0; }
+.en-itemName{ font-size:14px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.en-itemMeta{ font-family:var(--en-mono); font-size:9px; letter-spacing:.08em; text-transform:uppercase; color:var(--vk-muted); margin-top:2px; }
+.en-itemVal{ font-family:var(--en-mono); font-weight:600; color:var(--vk-mint); white-space:nowrap; }
+.en-itemVal small{ color:var(--vk-muted); font-weight:400; }
+.en-muted{ font-size:13px; color:var(--vk-muted); padding:8px 2px; line-height:1.5; }
+.en-del{ appearance:none; background:transparent; border:1px solid var(--vk-border); color:var(--vk-muted); width:28px; height:28px; border-radius:8px; cursor:pointer; flex-shrink:0; font-size:15px; line-height:1; }
+.en-del:hover{ color:var(--vk-red); border-color:var(--vk-red); }
+
+/* supplement stack */
+.en-stack{ display:flex; flex-direction:column; gap:8px; }
+.en-stackRow{ display:flex; align-items:center; gap:12px; padding:12px 13px; border:1px solid var(--vk-border); border-radius:12px; background:var(--vk-card-elevated); }
+.en-stackRow.taken{ border-color:rgba(110,231,183,.3); background:rgba(110,231,183,.06); }
+.en-check{ appearance:none; cursor:pointer; flex-shrink:0; width:26px; height:26px; border-radius:50%; border:1.5px solid var(--vk-border-strong); background:transparent; color:#04130c; display:grid; place-items:center; font-size:14px; transition:all var(--vk-duration) var(--vk-ease); }
+.en-stackRow.taken .en-check{ background:var(--vk-mint); border-color:transparent; }
+.en-stackName{ flex:1; min-width:0; }
+.en-stackName b{ font-weight:600; font-size:14px; }
+.en-stackName span{ display:block; font-family:var(--en-mono); font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--vk-muted); margin-top:2px; }
+
+/* recommendations */
+.en-rec{ border:1px solid var(--vk-border); border-radius:12px; background:var(--vk-card-elevated); padding:13px 14px; margin-bottom:8px; }
+.en-rec.dim{ opacity:.5; }
+.en-recTop{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
+.en-recName{ font-weight:600; font-size:14px; }
+.en-recName small{ font-family:var(--en-mono); font-weight:400; color:var(--vk-muted); font-size:11px; margin-left:6px; }
+.en-recPrice{ font-family:var(--en-mono); font-size:12px; color:var(--vk-mint); white-space:nowrap; }
+.en-recHelp{ font-size:12.5px; color:var(--vk-muted-strong); line-height:1.5; margin-top:6px; }
+.en-recWhy{ display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+.en-tag{ font-family:var(--en-mono); font-size:9px; letter-spacing:.06em; text-transform:uppercase; color:var(--vk-mint); background:rgba(110,231,183,.08); border:1px solid var(--vk-border); border-radius:var(--vk-radius-pill); padding:3px 9px; }
+.en-score{ display:inline-flex; align-items:center; justify-content:center; min-width:34px; height:20px; margin-right:7px; padding:0 6px; font-family:var(--en-mono); font-size:11.5px; font-weight:700; color:var(--sc); background:color-mix(in srgb, var(--sc) 14%, transparent); border:1px solid color-mix(in srgb, var(--sc) 40%, transparent); border-radius:7px; vertical-align:middle; }
+.en-recActions{ display:flex; gap:8px; margin-top:11px; align-items:center; }
+.en-recAdd{ appearance:none; cursor:pointer; border:0; border-radius:9px; padding:7px 14px; font-family:var(--en-mono); font-size:11px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:#04130c; background:var(--vk-mint); }
+.en-recAdd:hover{ filter:brightness(1.08); }
+.en-recBuy{ font-family:var(--en-mono); font-size:11px; color:var(--vk-muted-strong); text-decoration:none; border-bottom:1px solid var(--vk-border-strong); }
+.en-recBuy:hover{ color:var(--vk-mint); }
+.en-budget{ display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
+.en-budget label{ font-family:var(--en-mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--vk-muted); }
+.en-budget input{ width:90px; background:rgba(255,255,255,.04); border:1px solid var(--vk-border); border-radius:10px; padding:9px 12px; color:var(--vk-fg); font-family:inherit; font-size:14px; }
+.en-budget input:focus{ outline:none; border-color:var(--vk-mint); }
+.en-budgetSum{ font-size:12.5px; color:var(--vk-muted-strong); margin-top:10px; }
+.en-budgetSum strong{ color:var(--vk-mint); }
+
+/* meds dose timeline */
+.en-phase{ display:inline-block; font-family:var(--en-mono); font-size:9px; letter-spacing:.1em; text-transform:uppercase; padding:3px 9px; border-radius:var(--vk-radius-pill); margin:8px 0; }
+.en-phase.up{ color:#04130c; background:#a7f3d0; }
+.en-phase.peak{ color:#04130c; background:var(--vk-mint); }
+.en-phase.fade{ color:#1a1206; background:var(--vk-amber); }
+.en-phase.off{ color:var(--vk-muted); border:1px solid var(--vk-border); }
+.en-tl{ position:relative; height:24px; margin-top:6px; }
+.en-tlBar{ position:absolute; top:10px; left:0; right:0; height:4px; border-radius:99px; background:rgba(255,255,255,.07); overflow:hidden; }
+.en-tlFill{ position:absolute; top:0; left:0; bottom:0; border-radius:99px; background:linear-gradient(90deg,var(--vk-mint),var(--vk-amber)); }
+.en-tlMark{ position:absolute; top:4px; width:2px; height:16px; background:var(--vk-fg); opacity:.45; }
+.en-tlNow{ position:absolute; top:1px; width:11px; height:11px; border-radius:50%; background:var(--vk-amber); box-shadow:0 0 9px var(--vk-amber); transform:translateX(-50%); }
+.en-tlLabels{ display:flex; justify-content:space-between; font-family:var(--en-mono); font-size:9px; color:var(--vk-muted); margin-top:6px; }
+.en-dose{ border:1px solid var(--vk-border); border-radius:12px; background:var(--vk-card-elevated); padding:14px 15px; margin-bottom:9px; }
+.en-doseTop{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
+.en-doseName{ font-family:var(--vk-font-serif),serif; font-style:italic; font-size:18px; }
+.en-doseName small{ font-family:var(--en-mono); font-style:normal; font-size:11px; color:var(--vk-muted); margin-left:6px; }
+.en-doseInfo{ font-family:var(--en-mono); font-size:11px; color:var(--vk-muted-strong); margin-top:8px; line-height:1.6; }
+.en-doseInfo b{ color:var(--vk-fg); }
+.en-results{ display:flex; flex-direction:column; gap:6px; }
+.en-results:not(:empty){ margin-bottom:12px; }
+.en-timeRow{ display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
+.en-timeRow .lab{ font-family:var(--en-mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--vk-muted); }
+
+.en-foot{ text-align:center; font-family:var(--en-mono); font-size:10px; color:var(--vk-muted); margin-top:8px; opacity:.7; line-height:1.6; }
+
+.en-toast{ position:fixed; left:50%; bottom:28px; transform:translate(-50%,18px); background:var(--vk-bg-elevated); border:1px solid var(--vk-border-strong); color:var(--vk-mint); font-family:var(--en-mono); font-size:12.5px; letter-spacing:.03em; padding:12px 18px; border-radius:12px; opacity:0; pointer-events:none; transition:.28s var(--vk-ease-premium); box-shadow:0 12px 40px rgba(110,231,183,.16); max-width:90vw; z-index:50; }
+.en-toast.show{ opacity:1; transform:translate(-50%,0); }
+
+@media (max-width:560px){
+  .en-heroNum{ font-size:38px; }
+  .en-card{ padding:16px; }
+}
+@media (prefers-reduced-motion:reduce){
+  .en-card,.en-tabs{ animation:none !important; opacity:1 !important; transform:none !important; }
+  .en-barFill,.en-tlFill{ transition:none; }
+}
+</style>
+</head>
+<body class="vk-grain">
+
+<!-- ===== Rowan4 kit backdrop: aurora wash + mountains + drifting particles ===== -->
+<div class="vk-atmosphere" aria-hidden="true"></div>
+<div class="vk-mountains" aria-hidden="true">
+  <svg viewBox="0 0 1600 420" preserveAspectRatio="none">
+    <defs>
+      <linearGradient id="vk-mt-far" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#0d1a17" stop-opacity="0" />
+        <stop offset="55%" stop-color="#0d1a17" stop-opacity=".55" />
+        <stop offset="100%" stop-color="#0d1a17" stop-opacity=".95" />
+      </linearGradient>
+      <linearGradient id="vk-mt-near" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#050a09" stop-opacity=".4" />
+        <stop offset="60%" stop-color="#050a09" stop-opacity=".95" />
+        <stop offset="100%" stop-color="#050a09" stop-opacity="1" />
+      </linearGradient>
+    </defs>
+    <path d="M0,300 L120,230 L210,260 L320,180 L430,220 L560,150 L680,210 L820,170 L960,220 L1100,180 L1240,240 L1380,200 L1500,250 L1600,220 L1600,420 L0,420 Z" fill="url(#vk-mt-far)" />
+    <path d="M0,360 L100,320 L220,340 L340,290 L460,330 L590,300 L720,340 L860,310 L1000,350 L1140,310 L1280,355 L1420,320 L1540,360 L1600,340 L1600,420 L0,420 Z" fill="url(#vk-mt-near)" />
+  </svg>
+</div>
+<div class="vk-particles" id="enParticles" aria-hidden="true"></div>
+
+<main class="vk-page">
+  <div class="vk-shell en-shell">
+    <header class="vk-header en-header">
+      <div>
+        <h1 class="vk-greeting">Your <span class="vk-greeting-name">enhancers</span></h1>
+        <p class="vk-date">supplements · stimulants · meds — one stack</p>
+      </div>
+      <a class="en-back" href="index.html">← Liam</a>
+    </header>
+
+    <nav class="en-tabs" id="enTabs" role="tablist">
+      <button class="en-tab" data-tab="sup"  role="tab">Supplements</button>
+      <button class="en-tab" data-tab="stim" role="tab">Stimulants</button>
+      <button class="en-tab" data-tab="med"  role="tab">Meds</button>
+    </nav>
+
+    <div id="panel"></div>
+  </div>
+</main>
+
+<div class="en-toast" id="enToast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="db.js?v=15"></script>
+<script>
+/* =====================================================================
+ * ENHANCERS — Supplements + Stimulants + Meds unified into one page,
+ * styled with the Rowan4 kit. Each tab reads/writes the SAME localStorage
+ * keys as the original standalone pages, so data carries over both ways:
+ *   supplements_standalone_v1 · stimulant_standalone_v1 · peak_meds_v1
+ * The tabs also cross-feed: today's caffeine + logged meds become live
+ * signals for the supplement recommender.
+ * ===================================================================== */
+(function(){
+'use strict';
+
+/* ---------- shared helpers ---------- */
+function readLS(k){ try{ const r=localStorage.getItem(k); return r?JSON.parse(r):null; }catch(e){ return null; } }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function clamp(x,a,b){ return Math.max(a,Math.min(b,x)); }
+function fmtClock(ms){ const d=new Date(ms); let h=d.getHours(); const m=d.getMinutes(); const ap=h<12?'am':'pm'; h=h%12===0?12:h%12; return h+':'+String(m).padStart(2,'0')+ap; }
+function mins(ms){ const m=Math.round(ms/60000); if(m<60)return m+' min'; const h=Math.floor(m/60),mm=m%60; return h+'h'+(mm?' '+mm+'m':''); }
+function localDateKey(d){ d=d||new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function activeDateKey(){ const d=new Date(); if(d.getHours()<6)d.setDate(d.getDate()-1); return localDateKey(d); }
+function profile(){ return readLS('patron_profile_v1'); }
+function loadHealth(){ try{ let r=readLS('patron_health_v1'); if(r&&r.connected)return r; r=readLS('patron_whoop_data_v1'); if(r&&r.connected)return Object.assign({source:'whoop'},r); }catch(e){} return null; }
+function sleepQuality(d){ if(!d)return''; if(d.sleepPerf!=null)return d.sleepPerf>=85?'good':d.sleepPerf>=70?'fair':'poor'; if(d.sleepHours!=null&&d.sleepTargetHours){ const r=d.sleepHours/d.sleepTargetHours; return r>=0.95?'good':r>=0.85?'fair':'poor'; } return''; }
+
+let toastTimer;
+function toast(msg){ const t=document.getElementById('enToast'); if(!t)return; t.textContent=msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2600); }
+
+const searchIcon='<span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span>';
+
+/* shell state */
+let activeTab = 'sup';
+const panel = document.getElementById('panel');
+function renderPanel(){
+  const active = document.activeElement; const aid=active?active.id:null;
+  const caret=(active&&typeof active.selectionStart==='number')?active.selectionStart:null;
+  panel.innerHTML = MODULES[activeTab].html();
+  if(MODULES[activeTab].after) MODULES[activeTab].after();
+  if(aid){ const el=document.getElementById(aid); if(el){ try{ el.focus(); if(caret!=null&&el.setSelectionRange)el.setSelectionRange(caret,caret);}catch(e){} } }
+}
+
+/* =====================================================================
+ * MODULE: STIMULANTS  (key: stimulant_standalone_v1)
+ * One-compartment caffeine PK — predicts peak / comedown / clearance.
+ * ===================================================================== */
+const STIM = (function(){
+  const LS='stimulant_standalone_v1';
+  let state = (function(){ const r=readLS(LS); return { logs:(r&&Array.isArray(r.logs))?r.logs:[], custom:(r&&Array.isArray(r.custom))?r.custom:[] }; })();
+  function save(){ try{ localStorage.setItem(LS,JSON.stringify(state)); }catch(e){} if(window.PatronDB&&PatronDB.isCloud())PatronDB.set('stimulant',state); }
+  const NOW=()=>Date.now();
+  let query='';
+
+  const KA=4.0;
+  function halfLifeH(){ let hl=5; const p=profile(); if(p){ if(p.sex==='F')hl*=1.05; if(typeof p.age==='number'){ if(p.age>=60)hl*=1.12; else if(p.age>0&&p.age<18)hl*=1.05; } } return hl; }
+  function ke(){ return Math.LN2/halfLifeH(); }
+  function tmaxH(){ const ka=KA,k=ke(); return Math.log(ka/k)/(ka-k); }
+  function doseAmount(mg,h){ if(h<0)return 0; const ka=KA,k=ke(); if(Math.abs(ka-k)<1e-9)return 0; const a=mg*ka/(ka-k)*(Math.exp(-k*h)-Math.exp(-ka*h)); return Math.max(0,a); }
+  function bodyAt(t){ return state.logs.reduce((s,l)=>s+doseAmount(l.mg,(t-l.t)/3600000),0); }
+  function dailyLimit(){ const p=profile(); const wt=(p&&p.weightKg)?p.weightKg:75; return Math.max(250,Math.min(400,Math.round(6*wt/10)*10)); }
+
+  const DB=[
+    ['Espresso (single)',63,'coffee'],['Double espresso',126,'coffee'],['Brewed coffee (8 oz)',95,'coffee'],
+    ['Brewed coffee (12 oz)',140,'coffee'],['Drip coffee (16 oz)',190,'coffee'],['Cold brew (16 oz)',205,'coffee'],
+    ['Nitro cold brew (16 oz)',280,'coffee'],['Americano',154,'coffee'],['Latte',126,'coffee'],['Cappuccino',126,'coffee'],
+    ['Flat white',130,'coffee'],['Mocha',152,'coffee'],['Instant coffee (8 oz)',62,'coffee'],['Decaf coffee (8 oz)',3,'coffee'],
+    ['Black tea',47,'tea'],['Green tea',28,'tea'],['Matcha (1 tsp)',70,'tea'],['White tea',15,'tea'],['Oolong tea',38,'tea'],
+    ['Chai latte',50,'tea'],['Bottled iced tea',25,'tea'],['Yerba mate',85,'tea'],
+    ['Red Bull (8.4 oz)',80,'energy'],['Red Bull (12 oz)',114,'energy'],['Monster (16 oz)',160,'energy'],
+    ['Monster Ultra (16 oz)',140,'energy'],['Bang (16 oz)',300,'energy'],['Celsius (12 oz)',200,'energy'],
+    ['Rockstar (16 oz)',160,'energy'],['Reign (16 oz)',300,'energy'],['Prime Energy (12 oz)',200,'energy'],
+    ['5-Hour Energy',200,'energy'],['G Fuel (1 scoop)',150,'energy'],
+    ['Coca-Cola (12 oz)',34,'soda'],['Diet Coke (12 oz)',46,'soda'],['Pepsi (12 oz)',38,'soda'],
+    ['Mountain Dew (12 oz)',54,'soda'],['Dr Pepper (12 oz)',41,'soda'],
+    ['Pre-workout (1 scoop)',200,'other'],['Caffeine pill (100 mg)',100,'other'],['Caffeine pill (200 mg)',200,'other'],
+    ['Dark chocolate (1 oz)',24,'other'],['Hot chocolate',5,'other'],['Espresso martini',100,'other'],
+  ].map(d=>({name:d[0],mg:d[1],cat:d[2]}));
+
+  function logsToday(){ const k=localDateKey(); return state.logs.filter(l=>localDateKey(new Date(l.t))===k); }
+  function mgToday(){ return logsToday().reduce((s,l)=>s+l.mg,0); }
+  function allDrinks(){ return state.custom.map(c=>({name:c.name,mg:c.mg,cat:'custom'})).concat(DB); }
+  function nextBedtime(){ const h=loadHealth(); if(!h||!h.bedtime)return null; const [hh,mm]=String(h.bedtime).split(':').map(Number); if(!isFinite(hh))return null; const d=new Date(); d.setHours(hh,mm||0,0,0); if(d.getTime()<=NOW())d.setDate(d.getDate()+1); return d.getTime(); }
+  function timing(){ if(!state.logs.length)return null; const last=state.logs.reduce((a,b)=>a.t>b.t?a:b); const peakMs=last.t+tmaxH()*3600000; const peakTotal=bodyAt(peakMs); let comedown=null,clear=null; for(let m=0;m<=20*60;m+=5){ const t=peakMs+m*60000; const amt=bodyAt(t); if(comedown===null&&amt<=peakTotal*0.5)comedown=t; if(clear===null&&amt<=25){clear=t;break;} } return {last,peakMs,peakTotal,comedown,clear}; }
+  function status(){ const now=NOW(),cur=bodyAt(now); const lim=dailyLimit(),today=mgToday(); if(today>lim)return{word:'Over limit',tone:'danger'}; if(cur<10)return{word:'Clear',tone:'muted'}; const soon=bodyAt(now+10*60000); if(soon>cur+1){ const t=timing(); if(t&&now<t.peakMs-3*60000)return{word:'Kicking in',tone:''}; return{word:'Peaking',tone:''}; } if(cur>180)return{word:'Wired',tone:'warn'}; if(cur>60)return{word:'Dialed in',tone:''}; return{word:'Comedown',tone:'warn'}; }
+
+  function logDrink(name,mg){ mg=Math.round(Number(mg)); if(!isFinite(mg)||mg<0)return; state.logs.push({id:'c_'+NOW().toString(36)+Math.random().toString(36).slice(2,5),name:String(name),mg,t:NOW()}); save(); renderPanel(); const t=timing(); if(t){ let msg='Logged · peak '+fmtClock(t.peakMs); if(t.comedown)msg+=' · dip '+fmtClock(t.comedown); toast(msg); } }
+  function removeLog(id){ state.logs=state.logs.filter(l=>l.id!==id); save(); renderPanel(); }
+  function addCustom(name,mg){ name=(name||'').trim(); mg=Math.round(Number(mg)); if(!name){toast('Name your drink first');return;} if(!isFinite(mg)||mg<0){toast('Enter the caffeine in mg');return;} if(!state.custom.some(c=>c.name.toLowerCase()===name.toLowerCase()))state.custom.unshift({name,mg}); save(); logDrink(name,mg); }
+
+  function curveSvg(){
+    const now=NOW(); const start=now-3600000; const end=now+11*3600000; const W=320,H=110,padY=8;
+    const pts=[]; let max=1;
+    for(let t=start;t<=end;t+=15*60000){ const a=bodyAt(t); if(a>max)max=a; pts.push([t,a]); }
+    const xOf=t=>((t-start)/(end-start))*W, yOf=a=>H-padY-(a/max)*(H-padY*2);
+    const line=pts.map((p,i)=>(i?'L':'M')+xOf(p[0]).toFixed(1)+' '+yOf(p[1]).toFixed(1)).join(' ');
+    const area=line+' L '+W+' '+(H-padY)+' L 0 '+(H-padY)+' Z';
+    const nowX=xOf(now).toFixed(1); const t=timing(); let marks='';
+    if(t){ const px=xOf(t.peakMs); if(px>=0&&px<=W)marks+='<line x1="'+px.toFixed(1)+'" y1="0" x2="'+px.toFixed(1)+'" y2="'+H+'" stroke="#6EE7B7" stroke-width="1" stroke-dasharray="2 3" opacity=".6"/>';
+      if(t.comedown){ const cx=xOf(t.comedown); if(cx>=0&&cx<=W)marks+='<line x1="'+cx.toFixed(1)+'" y1="0" x2="'+cx.toFixed(1)+'" y2="'+H+'" stroke="#F59E0B" stroke-width="1" stroke-dasharray="2 3" opacity=".5"/>'; } }
+    return '<div class="en-chartWrap"><svg class="en-chart" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" aria-hidden="true">'
+      +'<defs><linearGradient id="enCf" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6EE7B7" stop-opacity=".34"/><stop offset="100%" stop-color="#6EE7B7" stop-opacity="0"/></linearGradient></defs>'
+      +marks+'<path d="'+area+'" fill="url(#enCf)"/>'
+      +'<path d="'+line+'" fill="none" stroke="#6EE7B7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 5px rgba(110,231,183,.7))"/>'
+      +'<line x1="'+nowX+'" y1="0" x2="'+nowX+'" y2="'+H+'" stroke="#fff" stroke-width="1" opacity=".5"/>'
+      +'</svg><div class="en-axis"><span>now</span><span>+4h</span><span>+8h</span><span>+11h</span></div></div>';
+  }
+  function chip(name,mg){ return '<button class="en-chip" data-stim="log" data-name="'+esc(name)+'" data-mg="'+mg+'">'+esc(name)+' · '+mg+'</button>'; }
+
+  function html(){
+    const now=NOW(), cur=Math.round(bodyAt(now)); const st=status(); const t=timing();
+    const lim=dailyLimit(), today=Math.round(mgToday()); const pct=Math.min(100,today/lim*100); const bed=nextBedtime();
+    let peakStr='—',comeStr='—',clearStr='—',peakSub='',comeSub='',clearSub='';
+    if(t){ peakStr=fmtClock(t.peakMs); peakSub=now<t.peakMs?'in '+mins(t.peakMs-now):'reached';
+      comeStr=t.comedown?fmtClock(t.comedown):'—'; comeSub=t.comedown&&now<t.comedown?'in '+mins(t.comedown-now):'';
+      clearStr=t.clear?fmtClock(t.clear):'—'; clearSub=t.clear?'~back to baseline':''; }
+    let notes='';
+    if(today>lim) notes+='<div class="en-note danger">⚠ You\'ve had <b>'+today+' mg</b> today — over your <b>'+lim+' mg</b> ceiling. Expect jitters and poor sleep. Ease off.</div>';
+    else if(today>lim*0.8) notes+='<div class="en-note warn">You\'re at <b>'+today+' mg</b> of your <b>'+lim+' mg</b> daily limit — one more strong drink pushes you over.</div>';
+    if(bed){ const atBed=Math.round(bodyAt(bed)); if(atBed>=50)notes+='<div class="en-note warn">≈<b>'+atBed+' mg</b> still in your system at bedtime ('+fmtClock(bed)+'). Consider switching to decaf now.</div>'; }
+    if(!state.logs.length) notes='<div class="en-note">Log your first drink and I\'ll predict exactly when you\'ll <b>peak</b> and <b>crash</b> — personalised to your weight, age and sex.</div>';
+    const q=query.trim().toLowerCase();
+    const results=(q?allDrinks().filter(d=>d.name.toLowerCase().includes(q)):allDrinks()).slice(0,40);
+    const tl=logsToday().slice().sort((a,b)=>b.t-a.t);
+    return ''
+      +'<section class="en-card"><div class="en-hero"><div class="en-heroNum">'+cur+'<small>mg in system</small></div>'
+      +'<span class="en-chipStat"'+(st.tone?' data-tone="'+st.tone+'"':'')+'><span class="dot"></span>'+st.word+'</span></div>'
+      +'<div class="en-insights">'
+      +'<div class="en-insight"><div class="en-insLabel en-mint">⚡ Peak</div><div class="en-insVal en-mint">'+peakStr+'</div><div class="en-insSub">'+peakSub+'</div></div>'
+      +'<div class="en-insight"><div class="en-insLabel en-amber">📉 Comedown</div><div class="en-insVal en-amber">'+comeStr+'</div><div class="en-insSub">'+comeSub+'</div></div>'
+      +'<div class="en-insight"><div class="en-insLabel">🌙 Cleared</div><div class="en-insVal">'+clearStr+'</div><div class="en-insSub">'+clearSub+'</div></div>'
+      +'</div>'+curveSvg()+notes+'</section>'
+      +'<section class="en-card"><div class="en-barHead"><span class="en-eyebrow" style="margin:0">Today</span>'
+      +'<span><span class="en-barNum"'+(today>lim?' style="color:var(--vk-red)"':'')+'>'+today+'</span><span class="en-barTarget"> / '+lim+' mg</span></span></div>'
+      +'<div class="en-bar"><div class="en-barFill'+(today>lim?' over':'')+'" style="width:'+pct+'%"></div></div></section>'
+      +'<section class="en-card"><p class="en-eyebrow">Log a drink</p>'
+      +'<div class="en-chips">'+chip('Coffee',95)+chip('Espresso',63)+chip('Energy drink',160)+chip('Tea',47)+chip('Pre-workout',200)+'</div>'
+      +'<div class="en-search">'+searchIcon+'<input class="en-input pad" id="stimSearch" placeholder="Search 40+ caffeinated drinks…" value="'+esc(query)+'" autocomplete="off"></div>'
+      +'<ul class="en-list">'+(results.length?results.map(d=>{ let sb=''; try{ sb=SUP.badge(SUP.caffeineScore(d.mg)); }catch(e){} return '<li class="en-itemRow" data-stim="log" data-name="'+esc(d.name)+'" data-mg="'+d.mg+'"><div class="en-itemMain"><div class="en-itemName">'+sb+esc(d.name)+'</div><div class="en-itemMeta">'+esc(d.cat)+'</div></div><div class="en-itemVal">'+d.mg+'<small> mg</small></div></li>'; }).join(''):'<li class="en-muted">No match — add it as a custom drink below.</li>')+'</ul></section>'
+      +'<section class="en-card"><p class="en-eyebrow">Add a custom drink</p>'
+      +'<form class="en-row2" data-stim="addForm"><input class="en-input" id="stimCName" placeholder="Drink name" autocomplete="off"><input class="en-input mg" id="stimCMg" type="number" inputmode="numeric" min="0" max="1000" placeholder="mg"><button type="submit" class="en-btn">Add</button></form>'
+      +'<p class="en-muted" style="margin-top:8px">Not on the list? Enter its caffeine in mg — saved for next time and logged now.</p></section>'
+      +(tl.length?'<section class="en-card"><p class="en-eyebrow">Today\'s intake</p><ul class="en-list">'+tl.map(l=>'<li class="en-itemRow" style="cursor:default"><span class="en-itemVal" style="color:var(--vk-mint)">'+fmtClock(l.t)+'</span><span class="en-itemName" style="flex:1">'+esc(l.name)+'</span><span class="en-itemVal">'+l.mg+' mg</span><button class="en-del" data-stim="del" data-id="'+l.id+'" aria-label="Remove">×</button></li>').join('')+'</ul></section>':'');
+  }
+  function after(){ const si=document.getElementById('stimSearch'); if(si&&query){ si.focus(); si.setSelectionRange(query.length,query.length); } }
+
+  // events
+  document.addEventListener('click',e=>{ if(activeTab!=='stim')return; const b=e.target.closest('[data-stim]'); if(!b)return; const a=b.dataset.stim; if(a==='log')logDrink(b.dataset.name,b.dataset.mg); else if(a==='del')removeLog(b.dataset.id); });
+  document.addEventListener('submit',e=>{ if(activeTab!=='stim')return; const f=e.target.closest('[data-stim="addForm"]'); if(!f)return; e.preventDefault(); addCustom(document.getElementById('stimCName').value,document.getElementById('stimCMg').value); });
+  document.addEventListener('input',e=>{ if(activeTab!=='stim')return; if(e.target.id==='stimSearch'){ query=e.target.value; renderPanel(); } });
+
+  function hydrate(){ if(!window.PatronDB||!PatronDB.isCloud())return; PatronDB.get('stimulant').then(cs=>{ if(cs&&Array.isArray(cs.logs)){ state={logs:cs.logs,custom:Array.isArray(cs.custom)?cs.custom:[]}; try{localStorage.setItem(LS,JSON.stringify(state));}catch(e){} if(activeTab==='stim')renderPanel(); } else { PatronDB.set('stimulant',state); } }).catch(()=>{}); }
+  function hasLogs(){ return state.logs.length>0; }
+  function mgTodayPub(){ return mgToday(); }
+  return { html, after, hydrate, hasLogs, mgTodayPub };
+})();
+
+/* =====================================================================
+ * MODULE: MEDS  (key: peak_meds_v1)
+ * Population PK for rx stimulants / nicotine / nootropics: onset → peak →
+ * comedown → wear-off. Shared with the Peak tracker.
+ * ===================================================================== */
+const MED = (function(){
+  const SUB_DB=[
+    {name:'Concerta',mg:36,ref:36,onset:1,tPeak:7,dur:12,lift:30,cat:'rx'},
+    {name:'Ritalin IR',mg:10,ref:10,onset:0.4,tPeak:1.5,dur:4,lift:24,cat:'rx'},
+    {name:'Ritalin LA',mg:20,ref:20,onset:0.7,tPeak:5,dur:8,lift:28,cat:'rx'},
+    {name:'Focalin',mg:10,ref:10,onset:0.4,tPeak:1.5,dur:5,lift:25,cat:'rx'},
+    {name:'Focalin XR',mg:20,ref:20,onset:0.7,tPeak:5,dur:10,lift:28,cat:'rx'},
+    {name:'Adderall IR',mg:10,ref:10,onset:0.5,tPeak:2,dur:5,lift:26,cat:'rx'},
+    {name:'Adderall XR',mg:20,ref:20,onset:0.8,tPeak:5,dur:10,lift:30,cat:'rx'},
+    {name:'Vyvanse',mg:40,ref:40,onset:1.5,tPeak:5,dur:12,lift:30,cat:'rx'},
+    {name:'Modafinil',mg:200,ref:200,onset:1,tPeak:3,dur:12,lift:24,cat:'rx'},
+    {name:'Armodafinil',mg:150,ref:150,onset:1.2,tPeak:4,dur:14,lift:24,cat:'rx'},
+    {name:'Strattera',mg:40,ref:40,onset:1,tPeak:3,dur:10,lift:9,cat:'rx'},
+    {name:'Zyn (3mg)',mg:3,ref:3,onset:0.1,tPeak:0.4,dur:1.2,lift:9,cat:'nic'},
+    {name:'Zyn (6mg)',mg:6,ref:6,onset:0.1,tPeak:0.4,dur:1.4,lift:13,cat:'nic'},
+    {name:'Velo (4mg)',mg:4,ref:4,onset:0.1,tPeak:0.4,dur:1.3,lift:11,cat:'nic'},
+    {name:'Nicotine pouch',mg:4,ref:4,onset:0.1,tPeak:0.45,dur:1.3,lift:11,cat:'nic'},
+    {name:'Vape',mg:1,ref:1,onset:0.05,tPeak:0.15,dur:0.8,lift:8,cat:'nic'},
+    {name:'Cigarette',mg:1,ref:1,onset:0.05,tPeak:0.15,dur:0.9,lift:8,cat:'nic'},
+    {name:'L-Tyrosine',mg:500,ref:500,onset:0.5,tPeak:1.5,dur:4,lift:8,cat:'noot'},
+    {name:'L-Theanine',mg:200,ref:200,onset:0.4,tPeak:1,dur:4,lift:5,cat:'noot'},
+    {name:'Rhodiola',mg:200,ref:200,onset:0.5,tPeak:1.5,dur:5,lift:7,cat:'noot'},
+  ];
+  const LS='peak_meds_v1';
+  function store(){ const r=readLS(LS); return {logs:(r&&Array.isArray(r.logs))?r.logs:[], custom:(r&&Array.isArray(r.custom))?r.custom:[]}; }
+  let state=store();
+  function save(){ try{ localStorage.setItem(LS,JSON.stringify(state)); }catch(e){} if(window.PatronDB&&PatronDB.isCloud())PatronDB.set('peakmeds',state); renderPanel(); }
+  let query=''; let logTime=null;
+
+  function customs(){ return state.custom; }
+  function allSubs(){ return customs().concat(SUB_DB); }
+  function subNorm(tau,tPeak,dur){ if(tau<0)return 0; tPeak=tPeak||1; dur=dur||4; if(tau<=tPeak)return 0.5-0.5*Math.cos(Math.PI*tau/tPeak); const decay=Math.max(0.3,(dur-tPeak)/2.2); return Math.exp(-(tau-tPeak)/decay); }
+  function effectOf(l,nowMs){ const tau=(nowMs-l.t)/3600000; const dose=Math.min(2.2,(l.mg||l.ref||1)/(l.ref||l.mg||1)); return (l.lift||15)*dose*subNorm(tau,l.tPeak,l.dur); }
+  function boardNow(){ const n=Date.now(); return state.logs.reduce((s,l)=>s+effectOf(l,n),0); }
+  function phaseOf(l){ const tau=(Date.now()-l.t)/3600000; const onset=l.onset||Math.max(0.15,(l.tPeak||1)*0.3); const tPeak=l.tPeak||1,dur=l.dur||4;
+    if(tau<onset)return{k:'up',t:'Kicking in'}; if(tau<tPeak-0.4)return{k:'up',t:'Ramping up'}; if(tau<tPeak+0.5)return{k:'peak',t:'At peak'}; if(tau<dur)return{k:'fade',t:'Fading / comedown'}; return{k:'off',t:'Worn off'}; }
+
+  function logSub(sub,mgOverride){ const t=logTime!=null?logTime:Date.now(); const mg=(mgOverride!=null?mgOverride:sub.mg); state.logs.push({id:'m_'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),name:sub.name,mg:mg,t:t,onset:sub.onset,tPeak:sub.tPeak,dur:sub.dur,lift:sub.lift,ref:sub.ref||sub.mg,cat:sub.cat||'rx'}); query=''; logTime=null; save(); }
+  function lastMg(name){ const ls=state.logs.filter(l=>l.name===name); return ls.length?ls[ls.length-1].mg:null; }
+  function logByName(name){ let sub=allSubs().find(s=>s.name===name); if(!sub){ const ls=state.logs.filter(l=>l.name===name); sub=ls[ls.length-1]; } if(!sub)return; const def=lastMg(name)||sub.mg; const v=prompt('Your dose for '+name+' (mg):',def); if(v==null)return; const mg=Math.max(0,Math.round(+v)); if(!mg)return; logSub(sub,mg); }
+  function removeLog(id){ state.logs=state.logs.filter(l=>String(l.id)!==String(id)); save(); }
+  function addCustom(name,mg){ name=String(name).trim()||'Custom'; mg=Math.max(0,Math.round(+mg||0)); const sub={name:name,mg:mg,onset:0.5,tPeak:2,dur:5,lift:Math.min(30,12+mg*0.05),ref:mg||1,cat:'custom'}; if(!state.custom.some(c=>String(c.name).toLowerCase()===name.toLowerCase()))state.custom.push(sub); logSub(sub); }
+  function mostUsed(n){ const f={},last={}; state.logs.forEach(l=>{ f[l.name]=(f[l.name]||0)+1; last[l.name]=l; }); return Object.keys(f).sort((a,b)=>f[b]-f[a]).slice(0,n).map(nm=>last[nm]); }
+  function quickList(){ const out=[],seen={}; const add=d=>{ const k=String(d.name).toLowerCase(); if(!seen[k]){seen[k]=1;out.push(d);} }; customs().forEach(add); mostUsed(5).forEach(add); if(out.length<6)SUB_DB.slice(0,6).forEach(add); return out.slice(0,8); }
+  function todayLogs(){ const k=localDateKey(); return state.logs.filter(l=>localDateKey(new Date(l.t))===k).sort((a,b)=>b.t-a.t); }
+
+  function timelineHtml(l){ const dur=l.dur||4,tPeak=l.tPeak||1; const tau=(Date.now()-l.t)/3600000; const span=Math.max(dur,tau)+0.5;
+    const peakX=(tPeak/span)*100, nowX=clamp((tau/span)*100,0,100), offX=(dur/span)*100, fillX=clamp((tau/span)*100,0,100);
+    return '<div class="en-tl"><div class="en-tlBar"><div class="en-tlFill" style="width:'+fillX.toFixed(1)+'%"></div></div>'
+      +'<div class="en-tlMark" style="left:'+peakX.toFixed(1)+'%"></div><div class="en-tlMark" style="left:'+offX.toFixed(1)+'%"></div>'
+      +'<div class="en-tlNow" style="left:'+nowX.toFixed(1)+'%"></div></div>'
+      +'<div class="en-tlLabels"><span>'+fmtClock(l.t)+' taken</span><span>peak '+fmtClock(l.t+tPeak*3600000)+'</span><span>off '+fmtClock(l.t+dur*3600000)+'</span></div>'; }
+  function doseHtml(l){ const ph=phaseOf(l); const eff=Math.round(effectOf(l,Date.now())); const tau=(Date.now()-l.t)/3600000; const dur=l.dur||4; const leftH=Math.max(0,dur-tau); const leftTxt=leftH>=1?Math.round(leftH)+'h':Math.round(leftH*60)+'m';
+    const info=ph.k==='off'?'Worn off — logged '+fmtClock(l.t)+'.':'Now <b>+'+eff+'</b> focus · '+(ph.k==='fade'?'comedown, ':'')+'~<b>'+leftTxt+'</b> of effect left.';
+    return '<div class="en-dose"><div class="en-doseTop"><div class="en-doseName">'+esc(l.name)+'<small>'+Math.round(l.mg)+'mg</small></div><button class="en-del" data-med="rm" data-id="'+esc(l.id||'')+'" title="Cancel">×</button></div>'
+      +'<span class="en-phase '+ph.k+'">'+ph.t+'</span>'+timelineHtml(l)+'<div class="en-doseInfo">'+info+'</div></div>'; }
+  function resultsHtml(q){ q=(q||'').trim().toLowerCase(); if(!q)return''; const m=allSubs().filter(d=>String(d.name).toLowerCase().includes(q)).slice(0,8); if(!m.length)return '<div class="en-muted">No match — add it as a custom below ↓</div>'; return m.map(d=>{ let sb=''; try{ sb=SUP.badge(SUP.medScore(d)); }catch(e){} return '<div class="en-itemRow" data-med="name" data-medname="'+esc(d.name)+'"><span class="en-itemName" style="flex:1">'+sb+esc(d.name)+'</span><span class="en-itemVal">'+d.mg+'mg <small>peak +'+Math.round(d.lift)+'</small></span></div>'; }).join(''); }
+
+  function html(){
+    const board=Math.round(boardNow()); const logs=todayLogs();
+    const chips=quickList().map(d=>{ let sb=''; try{ sb=SUP.badge(SUP.medScore(d)); }catch(e){} return '<button class="en-chip" data-med="name" data-medname="'+esc(d.name)+'">'+sb+esc(d.name)+' · +'+Math.round(d.lift)+'</button>'; }).join('');
+    const nowSel=logTime==null;
+    const timeVal=(function(){ const d=new Date(logTime!=null?logTime:Date.now()); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); })();
+    const logCard='<section class="en-card"><p class="en-eyebrow">Log a dose</p>'
+      +'<div class="en-timeRow"><span class="lab">Taken</span><button class="en-ghost'+(nowSel?' on':'')+'" id="medNowBtn">Just now</button><span class="lab">or at</span><input class="en-time" id="medTime" type="time" value="'+timeVal+'"></div>'
+      +'<div class="en-search">'+searchIcon+'<input class="en-input pad" id="medSearch" placeholder="Search any med, pouch, nootropic…" value="'+esc(query)+'" autocomplete="off"></div>'
+      +'<div class="en-results" id="medResults">'+resultsHtml(query)+'</div>'
+      +'<div class="en-chips" style="margin-bottom:0">'+chips+'</div>'
+      +'<div class="en-row2" style="margin-top:12px"><input class="en-input" id="medCustName" placeholder="Add a custom med/substance…"><input class="en-input mg" id="medCustMg" type="number" inputmode="numeric" placeholder="mg"><button class="en-btn" data-med="addcust">Add</button></div></section>';
+    const doseCard=logs.length?'<section class="en-card"><p class="en-eyebrow">Today\'s doses</p>'+logs.map(doseHtml).join('')+'</section>':'<section class="en-card"><div class="en-muted">No doses logged today. Tap a med above (now or back-dated) and you\'ll see exactly when it peaks, comes down, and wears off.</div></section>';
+    return ''
+      +'<section class="en-card"><div class="en-hero"><div class="en-heroNum">'+(board>0?'+'+board:'0')+'<small>focus on board</small></div>'
+      +'<span class="en-chipStat'+(board>0?'':'')+'"'+(board>0?'':' data-tone="muted"')+'><span class="dot"></span>'+logs.length+' dose'+(logs.length===1?'':'s')+' today</span></div></section>'
+      +logCard+doseCard
+      +'<p class="en-foot">The <b>score /10</b> is the healthy-adult cognitive benefit (meta-analysis effect size at your dose) net of the sleep it costs — so a long-acting stimulant scores lower when your sleep is already short. If you have ADHD the real benefit is larger than shown. Estimated from population pharmacokinetics + your profile — informational only, never dosing advice. Shares data with your Peak tracker.</p>';
+  }
+  function after(){ const s=document.getElementById('medSearch'); if(s&&query){ s.focus(); s.setSelectionRange(query.length,query.length); } }
+
+  // events
+  document.addEventListener('click',e=>{ if(activeTab!=='med')return;
+    const md=e.target.closest('[data-medname]'); if(md){ logByName(md.dataset.medname); return; }
+    const b=e.target.closest('[data-med]'); if(!b)return; const a=b.dataset.med;
+    if(a==='rm')removeLog(b.dataset.id);
+    else if(a==='addcust'){ const n=document.getElementById('medCustName'),m=document.getElementById('medCustMg'); const mg=Math.round(+((m&&m.value)||0)); if(!mg){toast('Enter the dose in mg.');return;} addCustom((n&&n.value)||'Custom',mg); }
+    if(b.id==='medNowBtn'){ logTime=null; renderPanel(); }
+  });
+  document.addEventListener('input',e=>{ if(activeTab!=='med')return; if(e.target.id==='medSearch'){ query=e.target.value; const r=document.getElementById('medResults'); if(r)r.innerHTML=resultsHtml(query); } });
+  document.addEventListener('change',e=>{ if(activeTab!=='med')return; if(e.target.id==='medTime'){ const [h,m]=e.target.value.split(':').map(Number); if(isFinite(h)){ const d=new Date(); d.setHours(h,m||0,0,0); if(d.getTime()>Date.now())d.setDate(d.getDate()-1); logTime=d.getTime(); renderPanel(); } } });
+
+  function hydrate(){ if(!window.PatronDB||!PatronDB.isCloud())return; PatronDB.get('peakmeds').then(cs=>{ if(cs&&Array.isArray(cs.logs)){ const seen={}; const all=cs.logs.concat(state.logs); const merged=[]; all.forEach(l=>{ const k=l.id||(l.t+'_'+l.name); if(!seen[k]){seen[k]=1;merged.push(l);} }); merged.sort((a,b)=>a.t-b.t); state={logs:merged,custom:(state.custom.length?state.custom:(cs.custom||[]))}; try{localStorage.setItem(LS,JSON.stringify(state));}catch(e){} if(activeTab==='med')renderPanel(); } else { PatronDB.set('peakmeds',state); } }).catch(()=>{}); }
+  function todayCats(){ const t=todayLogs(); return { hasStims:t.some(l=>l.cat==='rx'||l.cat==='noot'), hasNicotine:t.some(l=>l.cat==='nic') }; }
+  function hasLogs(){ return state.logs.length>0; }
+  return { html, after, hydrate, todayCats, hasLogs };
+})();
+
+/* =====================================================================
+ * MODULE: SUPPLEMENTS  (key: supplements_standalone_v1)
+ * Your daily stack + a signal-driven recommender. The recommender reads
+ * live cross-tab signals: today's caffeine (Stimulants) and logged meds
+ * (Meds) feed the "on stimulants / high caffeine / nicotine" signals.
+ * ===================================================================== */
+const SUP = (function(){
+  const SUPPLEMENT_DB = [
+    { id: 'creatine', name: 'Creatine monohydrate', icon: '🏋️', dose: '5 g', window: 'anytime', note: 'Daily. Consistency matters more than timing.', helps: 'Increases strength, power, and short-term work capacity. Mild cognitive benefit.', bestTime: 'Any time of day, every day. Skip the loading phase.', aliases: ['creatine'], brand: 'Bulk Supplements (micronised) or Thorne', priceUsdMonthly: 10, baseScore: 8, signalBoosts: { 'heavy-training': 2, 'bulk-goal': 2, 'recomp-goal': 1, 'aging': 1, 'beginner-training': -1 } },
+    { id: 'beta-alanine', name: 'Beta-alanine', icon: '🏋️', dose: '2-5 g', window: 'morning', note: 'Split doses if the tingles bother you.', helps: 'Buffers muscle acidity. Improves endurance on sets in the 1-4 min range.', bestTime: 'Daily. Effect is from saturation.', aliases: ['beta alanine'], brand: 'Bulk Supplements CarnoSyn', priceUsdMonthly: 20, baseScore: 5, signalBoosts: { 'heavy-training': 2, 'bulk-goal': 1 } },
+    { id: 'l-citrulline', name: 'L-citrulline', icon: '🏋️', dose: '6-8 g', window: 'morning', note: 'Empty stomach for absorption.', helps: 'Boosts nitric oxide → better pumps and endurance.', bestTime: '30-45 min before training.', aliases: ['citrulline', 'citrulline malate'], brand: 'Bulk Supplements', priceUsdMonthly: 25, baseScore: 5, signalBoosts: { 'heavy-training': 2, 'bulk-goal': 1 } },
+    { id: 'whey', name: 'Whey protein', icon: '🥤', dose: '25-40 g', window: 'anytime', note: 'Use to hit daily protein target.', helps: 'Fast-digesting protein for muscle repair + daily protein hitting.', bestTime: 'Post-workout or any meal short on protein.', aliases: ['whey', 'protein powder'], brand: 'Optimum Nutrition Gold Standard or Transparent Labs', priceUsdMonthly: 50, baseScore: 7, signalBoosts: { 'bulk-goal': 2, 'recomp-goal': 1, 'heavy-training': 1 } },
+    { id: 'casein', name: 'Casein protein', icon: '🥤', dose: '25-40 g', window: 'evening', note: 'Slow-release. Good before bed.', helps: 'Slow-digesting protein. Sustained amino release overnight.', bestTime: '30-60 min before bed.', aliases: ['casein'], brand: 'Optimum Nutrition Gold Standard Casein', priceUsdMonthly: 45, baseScore: 5, signalBoosts: { 'bulk-goal': 2, 'heavy-training': 1 } },
+    { id: 'l-carnitine', name: 'L-carnitine', icon: '🏋️', dose: '1-2 g', window: 'morning', note: 'Take with carbs for uptake.', helps: 'Helps shuttle fat into mitochondria. Modest endurance + recovery effect.', bestTime: 'With a carb meal, ideally pre-workout.', aliases: ['carnitine'], brand: 'NOW Foods L-Carnitine', priceUsdMonthly: 20, baseScore: 4, signalBoosts: { 'cut-goal': 1, 'heavy-training': 1 } },
+    { id: 'alcar', name: 'Acetyl-L-carnitine', icon: '🧠', dose: '500 mg - 2 g', window: 'morning', note: 'Crosses blood-brain barrier. Cognitive variant.', helps: 'Cognitive + mood support; may sharpen focus.', bestTime: 'AM, empty stomach if tolerated.', aliases: ['alcar', 'acetyl carnitine'], brand: 'Doctor’s Best Acetyl-L-Carnitine', priceUsdMonthly: 25, baseScore: 5, signalBoosts: { 'aging': 1, 'general-health-goal': 1, 'has-stims': 1 } },
+    { id: 'vit-d3', name: 'Vitamin D3', icon: '☀️', dose: '2,000-5,000 IU', window: 'lunch', note: 'Fat-soluble. Pair with your biggest meal.', helps: 'Immune, bone, and mood support. Most people are deficient.', bestTime: 'Daily, with the fattiest meal.', aliases: ['vit d', 'vitamin d', 'd3', 'cholecalciferol'], brand: 'Thorne Vitamin D-5,000 or NOW Foods', priceUsdMonthly: 10, baseScore: 8, signalBoosts: { 'general-health-goal': 1, 'aging': 1, 'senior': 2 } },
+    { id: 'vit-k2', name: 'Vitamin K2 (MK-7)', icon: '💊', dose: '100-200 mcg', window: 'lunch', note: 'Pair with D3 for calcium routing.', helps: 'Directs calcium to bones, away from arteries. Synergistic with D3.', bestTime: 'Same meal as your D3.', aliases: ['vit k', 'vitamin k', 'k2', 'mk7'], brand: 'Life Extension Super K with MK-7', priceUsdMonthly: 20, baseScore: 5, signalBoosts: { 'aging': 1, 'senior': 2 } },
+    { id: 'vit-c', name: 'Vitamin C', icon: '🍊', dose: '500-1,000 mg', window: 'morning', note: 'Water-soluble. Split doses if above 500 mg.', helps: 'Antioxidant + collagen synthesis cofactor. Mild immune support.', bestTime: 'AM, with food.', aliases: ['vit c', 'ascorbic acid'], brand: 'NOW Foods Vitamin C', priceUsdMonthly: 12, baseScore: 5, signalBoosts: { 'has-nicotine': 1, 'general-health-goal': 1 } },
+    { id: 'b12', name: 'Vitamin B12', icon: '⚡', dose: '500-1,000 mcg', window: 'morning', note: 'Methylcobalamin form is best absorbed.', helps: 'Energy, nerve function, red blood cell production.', bestTime: 'AM. Can be stimulating.', aliases: ['b12', 'methylcobalamin'], brand: 'Jarrow Methyl-B12 (sublingual)', priceUsdMonthly: 12, baseScore: 5, signalBoosts: { 'aging': 1, 'senior': 1 } },
+    { id: 'b-complex', name: 'B-complex', icon: '⚡', dose: '1 cap', window: 'morning', note: 'All B vitamins together. Energy support.', helps: 'Broad energy + nervous system cofactors. Useful if diet is thin.', bestTime: 'AM with food.', aliases: ['b complex', 'b vitamins'], brand: 'Thorne Basic B Complex', priceUsdMonthly: 18, baseScore: 5, signalBoosts: { 'general-health-goal': 1, 'has-stims': 1 } },
+    { id: 'multivitamin', name: 'Multivitamin', icon: '💊', dose: '1 serving', window: 'lunch', note: 'Take with food for absorption.', helps: 'Backstop for the micronutrients your diet misses.', bestTime: 'With the biggest meal.', aliases: ['multi', 'multivitamin'], brand: 'Thorne Basic Nutrients 2/Day', priceUsdMonthly: 30, baseScore: 6, signalBoosts: { 'general-health-goal': 2, 'beginner-training': 1 } },
+    { id: 'mag-glycinate', name: 'Magnesium glycinate', icon: '🌙', dose: '200-400 mg', window: 'evening', note: 'Sleep helper. 30-60 min before bed.', helps: 'Relaxes muscles + nervous system. Improves sleep quality.', bestTime: '30-60 min before bed.', aliases: ['magnesium', 'mag glycinate', 'bisglycinate'], brand: 'Doctor’s Best High Absorption or Thorne', priceUsdMonthly: 20, baseScore: 8, signalBoosts: { 'has-stims': 2, 'poor-sleep': 2, 'low-recovery': 2, 'high-caffeine': 1, 'aging': 1 } },
+    { id: 'mag-threonate', name: 'Magnesium L-threonate', icon: '🧠', dose: '144 mg elemental', window: 'evening', note: 'Crosses the blood-brain barrier.', helps: 'Cognitive variant of magnesium. Sleep + memory support.', bestTime: '60-90 min before bed.', aliases: ['magtein', 'threonate'], brand: 'Magtein (Life Extension Neuro-Mag)', priceUsdMonthly: 35, baseScore: 6, signalBoosts: { 'aging': 1, 'poor-sleep': 1, 'has-stims': 1 } },
+    { id: 'zinc', name: 'Zinc', icon: '💊', dose: '15-30 mg', window: 'evening', note: 'Don’t pair with calcium or iron.', helps: 'Immune + hormonal support. Don’t megadose long-term.', bestTime: 'With dinner, away from calcium/iron.', aliases: ['zinc'], brand: 'Thorne Zinc Picolinate', priceUsdMonthly: 10, baseScore: 5, signalBoosts: { 'male': 1, 'heavy-training': 1 } },
+    { id: 'iron', name: 'Iron', icon: '💊', dose: '18-65 mg', window: 'morning', note: 'Only supplement if labs confirm deficiency.', helps: 'Treats iron-deficiency anemia. Only supplement if labs confirm low.', bestTime: 'AM, empty stomach with vit C.', aliases: ['iron'], brand: 'Thorne Iron Bisglycinate', priceUsdMonthly: 15, baseScore: 3, signalBoosts: { 'female': 2 } },
+    { id: 'omega-3', name: 'Omega-3 (Fish oil)', icon: '🐟', dose: '2-3 g EPA + DHA', window: 'lunch', note: 'Take with the fattiest meal of the day.', helps: 'Anti-inflammatory, brain + cardiovascular support.', bestTime: 'With the meal that has the most fat.', aliases: ['omega 3', 'omega3', 'fish oil', 'epa', 'dha'], brand: 'Nordic Naturals Ultimate Omega or Carlson', priceUsdMonthly: 30, baseScore: 7, signalBoosts: { 'aging': 2, 'senior': 2, 'general-health-goal': 1, 'heavy-training': 1 } },
+    { id: 'l-theanine', name: 'L-theanine', icon: '🧠', dose: '100-200 mg', window: 'morning', note: 'Stack with caffeine 2:1 for cleaner focus.', helps: 'Calm, focused alertness. Takes the edge off caffeine.', bestTime: 'With your morning coffee.', aliases: ['theanine'], brand: 'NOW Foods Suntheanine', priceUsdMonthly: 15, baseScore: 5, signalBoosts: { 'high-caffeine': 3, 'very-high-caffeine': 4, 'has-stims': 2 } },
+    { id: 'rhodiola', name: 'Rhodiola rosea', icon: '🌿', dose: '200-400 mg', window: 'morning', note: 'Adaptogen. Stress + energy.', helps: 'Reduces stress-related fatigue. Mild stimulant feel.', bestTime: 'AM on empty stomach.', aliases: ['rhodiola'], brand: 'NOW Foods Rhodiola', priceUsdMonthly: 22, baseScore: 4, signalBoosts: { 'cut-goal': 1, 'general-health-goal': 1 } },
+    { id: 'lions-mane', name: 'Lion’s mane', icon: '🍄', dose: '500-1,000 mg', window: 'morning', note: 'Daily for cognitive support.', helps: 'Supports nerve growth factor. Long-term cognitive benefit.', bestTime: 'AM with breakfast.', aliases: ['lions mane', 'hericium'], brand: 'Host Defense or Real Mushrooms', priceUsdMonthly: 30, baseScore: 5, signalBoosts: { 'general-health-goal': 1, 'aging': 1 } },
+    { id: 'alpha-gpc', name: 'Alpha-GPC', icon: '🧠', dose: '300-600 mg', window: 'morning', note: 'Choline source. Focus.', helps: 'Boosts acetylcholine. Sharper focus and learning.', bestTime: '30 min before deep work or training.', aliases: ['alpha gpc'], brand: 'Double Wood Alpha-GPC', priceUsdMonthly: 25, baseScore: 5, signalBoosts: { 'heavy-training': 1, 'has-stims': 1 } },
+    { id: 'nac', name: 'NAC', icon: '💊', dose: '600-1,800 mg', window: 'morning', note: 'Glutathione precursor. Split doses.', helps: 'Antioxidant + liver support. Useful for heavy training loads.', bestTime: 'AM on empty stomach.', aliases: ['nac', 'n-acetyl cysteine'], brand: 'NOW Foods NAC or Jarrow', priceUsdMonthly: 20, baseScore: 5, signalBoosts: { 'has-stims': 1, 'has-nicotine': 2, 'has-alcohol': 2, 'heavy-training': 1 } },
+    { id: 'melatonin', name: 'Melatonin', icon: '🌙', dose: '0.3-3 mg', window: 'evening', note: 'Lowest effective dose. More isn’t better.', helps: 'Shifts circadian rhythm. Useful for jet lag or chronotype shifts.', bestTime: '30-60 min before target bedtime.', aliases: ['melatonin'], brand: 'NOW Foods (0.5-1 mg tabs)', priceUsdMonthly: 8, baseScore: 5, signalBoosts: { 'poor-sleep': 2 } },
+    { id: 'glycine', name: 'Glycine', icon: '🌙', dose: '3 g', window: 'evening', note: 'Sleep onset. Drops body temp slightly.', helps: 'Lowers core body temperature → faster sleep onset.', bestTime: 'Right before bed.', aliases: ['glycine'], brand: 'NOW Foods Glycine Powder', priceUsdMonthly: 12, baseScore: 5, signalBoosts: { 'poor-sleep': 2 } },
+    { id: 'ashwagandha', name: 'Ashwagandha', icon: '🌿', dose: '300-600 mg', window: 'evening', note: 'KSM-66 is the most-studied form.', helps: 'Lowers cortisol + stress. Modest sleep + recovery benefit.', bestTime: 'With dinner. Calming.', aliases: ['ashwagandha', 'ksm-66'], brand: 'NutriRise KSM-66', priceUsdMonthly: 25, baseScore: 5, signalBoosts: { 'low-recovery': 3, 'poor-sleep': 2, 'has-stims': 1, 'heavy-training': 1 } },
+    { id: 'tryptophan', name: 'L-tryptophan', icon: '🌙', dose: '500 mg - 1 g', window: 'evening', note: 'Serotonin precursor.', helps: 'Supports serotonin → melatonin pathway for sleep onset.', bestTime: '60 min before bed.', aliases: ['tryptophan'], brand: 'NOW Foods L-Tryptophan', priceUsdMonthly: 18, baseScore: 4, signalBoosts: { 'poor-sleep': 1 } },
+    { id: 'apigenin', name: 'Apigenin', icon: '🌙', dose: '50 mg', window: 'evening', note: 'Chamomile-derived calming compound.', helps: 'Mild GABA-ergic relaxation. Pairs with magnesium.', bestTime: '30 min before bed.', aliases: ['apigenin'], brand: 'Double Wood Apigenin', priceUsdMonthly: 25, baseScore: 4, signalBoosts: { 'poor-sleep': 1, 'has-stims': 1 } },
+    { id: 'caffeine', name: 'Caffeine', icon: '☕', dose: '100-200 mg', window: 'morning', note: 'Stack with L-theanine for cleaner focus.', helps: 'Wakefulness + endurance. Half-life ~5 h, so careful past noon.', bestTime: '90 min after waking.', aliases: ['caffeine'], brand: 'Nutricost Caffeine 100 mg', priceUsdMonthly: 5, baseScore: 3, signalBoosts: { 'cut-goal': 1 } },
+    { id: 'probiotics', name: 'Probiotics', icon: '🦠', dose: '10-50 billion CFU', window: 'morning', note: 'Empty stomach or with light meal.', helps: 'Gut flora support. Quality + strain matter more than CFU count.', bestTime: 'AM on empty stomach.', aliases: ['probiotic'], brand: 'Seed DS-01 or Garden of Life Raw', priceUsdMonthly: 35, baseScore: 5, signalBoosts: { 'general-health-goal': 1 } },
+    { id: 'curcumin', name: 'Curcumin', icon: '🌿', dose: '500-1,000 mg', window: 'lunch', note: 'With black pepper + fat for absorption.', helps: 'Anti-inflammatory. Joint + recovery support.', bestTime: 'With a fatty meal.', aliases: ['curcumin', 'turmeric'], brand: 'Thorne Curcumin Phytosome (Meriva)', priceUsdMonthly: 25, baseScore: 5, signalBoosts: { 'heavy-training': 1, 'aging': 1, 'low-recovery': 1 } },
+    { id: 'coq10', name: 'CoQ10 / Ubiquinol', icon: '💊', dose: '100-200 mg', window: 'lunch', note: 'Fat-soluble. With biggest meal.', helps: 'Mitochondrial support. Worth it if you’re on a statin.', bestTime: 'With the fattiest meal.', aliases: ['coq10', 'ubiquinol'], brand: 'Qunol Mega CoQ10 or Thorne Q-Best 100', priceUsdMonthly: 35, baseScore: 5, signalBoosts: { 'senior': 2, 'aging': 1 } },
+    { id: 'berberine', name: 'Berberine', icon: '💊', dose: '500 mg', window: 'lunch', note: 'Take just before carb-heavy meals.', helps: 'Improves glucose handling. Comparable to metformin in some studies.', bestTime: '15 min before meals.', aliases: ['berberine'], brand: 'Thorne Berberine-500', priceUsdMonthly: 25, baseScore: 5, signalBoosts: { 'cut-goal': 1, 'aging': 1 } },
+    { id: 'collagen', name: 'Collagen peptides', icon: '💅', dose: '10-20 g', window: 'anytime', note: 'With vitamin C for synthesis.', helps: 'Connective tissue + skin support. Useful pre-load.', bestTime: 'Anytime. Many take it pre-workout.', aliases: ['collagen'], brand: 'Vital Proteins Collagen Peptides', priceUsdMonthly: 30, baseScore: 5, signalBoosts: { 'aging': 1, 'senior': 1, 'heavy-training': 1 } },
+    { id: 'tongkat', name: 'Tongkat ali', icon: '🌿', dose: '200-400 mg', window: 'morning', note: 'Cycle 8 weeks on, 2-4 off.', helps: 'May support endogenous testosterone. Mild energy + libido lift.', bestTime: 'AM on empty stomach.', aliases: ['tongkat', 'longjack'], brand: 'Nutricost Tongkat Ali 200 mg', priceUsdMonthly: 40, baseScore: 4, signalBoosts: { 'male': 1, 'aging': 1 } },
+    { id: 'fadogia', name: 'Fadogia agrestis', icon: '🌿', dose: '600 mg', window: 'morning', note: 'Cycle 8 weeks on / off.', helps: 'Often stacked with tongkat for hormonal support.', bestTime: 'AM, alongside tongkat.', aliases: ['fadogia'], brand: 'Double Wood Fadogia Agrestis', priceUsdMonthly: 30, baseScore: 3, signalBoosts: { 'male': 1 } },
+    { id: 'reishi', name: 'Reishi', icon: '🍄', dose: '1-2 g', window: 'evening', note: 'Calming adaptogen.', helps: 'Immune + sleep support. Subtle calming effect.', bestTime: 'With dinner or before bed.', aliases: ['reishi', 'ganoderma'], brand: 'Host Defense Reishi', priceUsdMonthly: 25, baseScore: 4, signalBoosts: { 'poor-sleep': 1, 'low-recovery': 1 } },
+    { id: 'cordyceps', name: 'Cordyceps', icon: '🍄', dose: '1-3 g', window: 'morning', note: 'Energy + endurance support.', helps: 'Modest endurance + oxygen utilization boost.', bestTime: 'AM, pre-workout if morning training.', aliases: ['cordyceps'], brand: 'Real Mushrooms Cordyceps-M', priceUsdMonthly: 25, baseScore: 4, signalBoosts: { 'heavy-training': 1, 'cut-goal': 1 } },
+  ];
+
+  /* =====================================================================
+   * RESEARCH-GROUNDED SCORING ENGINE  (replaces the hand-set baseScore)
+   * ---------------------------------------------------------------------
+   * Every number below is an effect size (Cohen's d / SMD) or a dose taken
+   * from meta-analyses — see SOURCES at the bottom of this block. The score
+   * is "personal benefit /10": how much THIS substance, at the dose given,
+   * is expected to help THIS user right now, given body size, age, sex,
+   * training status, goals, and — weighted by its own measured effect size —
+   * sleep. No taste-based weighting: the relative importance of each lever
+   * is the published statistic, nothing else.
+   *
+   *   d (per domain)  → how big the effect is, in standard deviations
+   *   ev             → evidence grade A/B/C/D → confidence the d is real
+   *   defDep         → benefit is gated on being deficient (vit D, iron…)
+   *   dose {thr,opt,ceil[,hard]}  in the item's display unit; bw = mg/kg
+   *   sleepD         → effect on SLEEP itself (+improves / −disrupts), in d
+   *   mods           → responder multipliers on d, keyed to profile signals
+   * ===================================================================== */
+
+  // Effect size of one night's good-vs-bad sleep on next-day cognitive +
+  // physical performance. Lim & Dinges 2010 / Lowe 2017: lapses g≈0.78,
+  // working memory d≈0.6–0.9, executive d≈0.5–0.8 → anchor ≈ 1.0.
+  // This is the "leverage" that makes sleep the dominant lever: it is simply
+  // larger than any supplement's own d, so fixing sleep (or not wrecking it)
+  // outweighs a pill's direct effect whenever sleep is at stake.
+  const SLEEP_PERF_D = 1.0;
+
+  // Map a (possibly user-weighted) effect size d to a 0–10 benefit score.
+  // 10·(1−e^(−1.4d)): d 0.2→2.4, 0.3→3.4, 0.5→5.0, 0.8→6.7, 1.0→7.5, 1.5→8.8.
+  // Deliberately honest — most isolated supplements land 2–6; only large,
+  // well-evidenced, well-matched effects (deficiency correction, sleep repair
+  // in a poor sleeper, caffeine for endurance) reach the top of the scale.
+  function scoreFromD(d){ if(d<=0)return 0; return 10*(1-Math.exp(-1.4*d)); }
+  const EV_CONF = { A:1.0, B:0.85, C:0.68, D:0.45 };
+
+  // domain → effect size d (from meta-analyses). Secondary/again-discounted
+  // numbers reflect heterogeneity flagged by the source reviews.
+  const RX = {
+    creatine:   { ev:'A', defDep:false, dose:{thr:2,opt:5,ceil:10}, d:{strength:.30,power:.26,hypertrophy:.20,endurance:.35,memory:.25,recovery:.15}, mods:{senior:1.3,female:1.1,'beginner-training':.85} },
+    'beta-alanine':{ ev:'A', defDep:false, dose:{thr:1.6,opt:4.8,ceil:6.4}, d:{endurance:.25,power:.05}, mods:{'heavy-training':1.2,female:1.15} },
+    'l-citrulline':{ ev:'C', defDep:false, dose:{thr:3,opt:8,ceil:10}, d:{endurance:.20,recovery:.12,power:.05}, mods:{'heavy-training':1.25} },
+    whey:       { ev:'A', defDep:false, dose:{thr:0.27,opt:0.4,ceil:0.55,bw:true}, d:{hypertrophy:.27,strength:.20,recovery:.15}, mods:{'bulk-goal':1.2,senior:1.2,'beginner-training':1.1} },
+    casein:     { ev:'B', defDep:false, dose:{thr:0.27,opt:0.5,ceil:0.6,bw:true}, d:{hypertrophy:.25,recovery:.15}, mods:{'bulk-goal':1.2,senior:1.15} },
+    'l-carnitine':{ ev:'C', defDep:false, dose:{thr:1,opt:2,ceil:4}, d:{recovery:.15,endurance:.10}, mods:{senior:1.3} },
+    alcar:      { ev:'C', defDep:false, dose:{thr:.5,opt:2,ceil:3}, d:{mood:.40,memory:.30,focus:.20}, mods:{senior:1.5,aging:1.3,'has-stims':1.1} },
+    'alpha-gpc':{ ev:'C', defDep:false, dose:{thr:300,opt:600,ceil:1200}, d:{focus:.25,power:.20,strength:.15}, mods:{senior:1.3,'heavy-training':1.15} },
+    'vit-d3':   { ev:'B', defDep:true,  dose:{thr:600,opt:3500,ceil:4000}, d:{mood:.36,bone:.30,immune:.25,longevity:.15}, mods:{senior:1.4,aging:1.2} },
+    'vit-k2':   { ev:'C', defDep:true,  dose:{thr:90,opt:180,ceil:360}, d:{bone:.25,cardio:.20,longevity:.12}, mods:{senior:1.5,female:1.2} },
+    'vit-c':    { ev:'B', defDep:false, dose:{thr:200,opt:1000,ceil:2000}, d:{immune:.20,recovery:.10}, mods:{'has-nicotine':1.3,'heavy-training':1.15} },
+    b12:        { ev:'B', defDep:true,  dose:{thr:2.4,opt:1000,ceil:5000}, d:{energy:.25,memory:.20,mood:.15}, mods:{senior:1.4,aging:1.2} },
+    'b-complex':{ ev:'C', defDep:true,  dose:{thr:1,opt:1,ceil:1}, d:{mood:.23,energy:.15,cardio:.10}, mods:{'has-stims':1.15} },
+    multivitamin:{ ev:'D', defDep:true, dose:{thr:1,opt:1,ceil:1}, d:{immune:.10,longevity:.05}, mods:{'general-health-goal':1.2,'beginner-training':1.1} },
+    'mag-glycinate':{ ev:'B', defDep:true, dose:{thr:200,opt:350,ceil:400}, d:{sleep:.35,cardio:.25,stress:.20,metabolic:.15}, sleepD:.40, mods:{senior:1.3,'has-stims':1.3,'poor-sleep':1.3,'high-caffeine':1.2} },
+    'mag-threonate':{ ev:'C', defDep:false, dose:{thr:1000,opt:2000,ceil:2400}, d:{memory:.30,sleep:.18}, sleepD:.18, mods:{senior:1.2,aging:1.2} },
+    zinc:       { ev:'B', defDep:true,  dose:{thr:8,opt:30,ceil:40}, d:{immune:.35,hormonal:.15}, mods:{male:1.1,'heavy-training':1.1} },
+    iron:       { ev:'B', defDep:true,  dose:{thr:8,opt:50,ceil:65}, d:{energy:.35,recovery:.20,memory:.15}, mods:{female:1.8,male:0.2,senior:1.1} },
+    'omega-3':  { ev:'A', defDep:false, dose:{thr:.007,opt:.02,ceil:.05,bw:true}, d:{mood:.40,cardio:.25,recovery:.20,longevity:.20,joint:.20}, mods:{senior:1.3,aging:1.2,'heavy-training':1.1} },
+    'l-theanine':{ ev:'B', defDep:false, dose:{thr:100,opt:200,ceil:400}, d:{stress:.30,focus:.25,sleep:.25,mood:.15}, sleepD:.25, mods:{'high-caffeine':1.5,'very-high-caffeine':1.7,'has-stims':1.4} },
+    rhodiola:   { ev:'C', defDep:false, dose:{thr:200,opt:400,ceil:600}, d:{stress:.35,energy:.30,mood:.20}, mods:{'cut-goal':1.1} },
+    'lions-mane':{ ev:'C', defDep:false, dose:{thr:500,opt:1000,ceil:3000}, d:{memory:.20,mood:.20,focus:.15}, mods:{senior:1.3,aging:1.2} },
+    nac:        { ev:'C', defDep:false, dose:{thr:1000,opt:1800,ceil:2400}, d:{mood:.30,recovery:.20,immune:.15}, mods:{'has-nicotine':1.6,'has-alcohol':1.5,'has-stims':1.2} },
+    melatonin:  { ev:'A', defDep:false, dose:{thr:.1,opt:.5,ceil:1,hard:3,inverted:true}, d:{sleep:.30}, sleepD:.45, mods:{senior:1.4,aging:1.2} },
+    glycine:    { ev:'B', defDep:false, dose:{thr:1,opt:3,ceil:5}, d:{sleep:.30,memory:.15}, sleepD:.35, mods:{'poor-sleep':1.2} },
+    ashwagandha:{ ev:'B', defDep:false, dose:{thr:250,opt:600,ceil:1000}, d:{stress:.55,mood:.50,sleep:.50,recovery:.20,hormonal:.20}, sleepD:.45, mods:{'poor-sleep':1.3,'low-recovery':1.3,'has-stims':1.1,'heavy-training':1.1,male:1.1} },
+    tryptophan: { ev:'B', defDep:false, dose:{thr:1,opt:1,ceil:5}, d:{sleep:.30,mood:.15}, sleepD:.30, mods:{'poor-sleep':1.2} },
+    apigenin:   { ev:'D', defDep:false, dose:{thr:25,opt:50,ceil:100}, d:{sleep:.20,stress:.20}, sleepD:.20, mods:{'poor-sleep':1.2} },
+    caffeine:   { ev:'A', defDep:false, dose:{thr:0.5,opt:4,ceil:6,hard:8,bw:true}, d:{endurance:.41,focus:.40,power:.23,mood:.20}, sleepD:-.50, stim:true, mods:{'cut-goal':1.05} },
+    probiotics: { ev:'B', defDep:false, dose:{thr:1,opt:25,ceil:50}, d:{immune:.20,mood:.10,metabolic:.10}, mods:{'general-health-goal':1.1} },
+    curcumin:   { ev:'B', defDep:false, dose:{thr:500,opt:1000,ceil:2000}, d:{recovery:.45,mood:.40,joint:.35}, mods:{'heavy-training':1.2,aging:1.2,'low-recovery':1.2} },
+    coq10:      { ev:'C', defDep:false, dose:{thr:100,opt:200,ceil:600}, d:{cardio:.20,energy:.15}, mods:{senior:1.5,aging:1.2} },
+    berberine:  { ev:'B', defDep:true,  dose:{thr:500,opt:1200,ceil:2000}, d:{metabolic:.55,cardio:.25}, mods:{'cut-goal':1.2,aging:1.2,senior:1.2} },
+    collagen:   { ev:'C', defDep:false, dose:{thr:5,opt:15,ceil:20}, d:{joint:.20,recovery:.10}, mods:{aging:1.3,senior:1.3,'heavy-training':1.1} },
+    tongkat:    { ev:'C', defDep:false, dose:{thr:100,opt:300,ceil:600}, d:{hormonal:.30,mood:.20,stress:.20,strength:.10}, mods:{male:1.2,aging:1.4,senior:1.4} },
+    fadogia:    { ev:'D', defDep:false, dose:{thr:200,opt:600,ceil:1000}, d:{hormonal:.15}, mods:{male:1.1} },
+    reishi:     { ev:'D', defDep:false, dose:{thr:1000,opt:1500,ceil:6000}, d:{stress:.20,sleep:.15,recovery:.15}, sleepD:.15, mods:{'poor-sleep':1.1,'low-recovery':1.1} },
+    cordyceps:  { ev:'C', defDep:false, dose:{thr:1,opt:3,ceil:12}, d:{endurance:.25,recovery:.15}, mods:{'heavy-training':1.2,'cut-goal':1.1,'beginner-training':1.1} },
+  };
+
+  // How much the user NEEDS each performance domain right now (0 ≈ irrelevant,
+  // 1 ≈ a top priority). Driven only by their goal + training + recovery state.
+  // A domain the user doesn't need contributes ~0 to a substance's score, so the
+  // same pill scores differently for a bulker vs. someone chasing sleep.
+  function domainNeeds(u){
+    // Low baselines so a substance is judged mainly on the domains the user
+    // actually prioritises (a goal/state "bumps" the relevant domain up). This
+    // keeps the score honest about effect size without diluting a focused
+    // substance across outcomes the user doesn't care about.
+    const n = { strength:.08,power:.08,hypertrophy:.08,endurance:.08,recovery:.1,focus:.1,memory:.08,mood:.1,stress:.1,sleep:.12,immune:.1,cardio:.1,metabolic:.08,longevity:.1,hormonal:.06,joint:.08,energy:.1,bone:.06 };
+    const bump=(k,v)=>{ if(v>n[k])n[k]=v; };
+    if(u.goal==='bulk'){ bump('hypertrophy',1);bump('strength',.7);bump('recovery',.4); }
+    else if(u.goal==='cut'){ bump('metabolic',.8);bump('endurance',.5);bump('energy',.4);bump('recovery',.3); }
+    else if(u.goal==='recomp'){ bump('strength',.7);bump('hypertrophy',.7);bump('recovery',.4); }
+    else if(u.goal==='general_health'){ bump('longevity',.7);bump('cardio',.7);bump('immune',.6);bump('mood',.5);bump('metabolic',.4); }
+    if(u.gymLevel==='intermediate'||u.gymLevel==='advanced'){ bump('strength',.6);bump('power',.5);bump('recovery',.7);bump('endurance',.5);bump('hypertrophy',.5);bump('joint',.4); }
+    if(u.age!=null&&u.age>=50){ bump('longevity',.6);bump('cardio',.5);bump('joint',.5);bump('memory',.5);bump('bone',.5);bump('hormonal',.3);bump('immune',.4); }
+    else if(u.age!=null&&u.age>=40){ bump('longevity',.45);bump('cardio',.4);bump('joint',.4);bump('memory',.4); }
+    // Sleep / recovery state — these set the dominant levers when they fire.
+    const sd=sleepDeficit(u);
+    if(sd>0){ bump('sleep',Math.max(n.sleep,sd));bump('stress',.4+.4*sd);bump('recovery',.4+.4*sd);bump('mood',.4*sd); }
+    if(u.recovery!=null&&u.recovery<50){ const r=(50-u.recovery)/50; bump('recovery',.6+.4*r);bump('sleep',.5+.4*r);bump('stress',.4+.3*r); }
+    if(u.caffeineMgPerDay>200){ bump('sleep',Math.max(n.sleep,.55));bump('stress',.35); }
+    if(u.hasStims||u.hasNicotine){ bump('sleep',Math.max(n.sleep,.6));bump('recovery',.4); }
+    return n;
+  }
+
+  // 0 (slept great) → ~1 (badly under-slept). Uses sleep performance / hours /
+  // subjective band / recovery as available. This is the gate on every sleep term.
+  function sleepDeficit(u){
+    if(typeof u.sleepPerf==='number') return clamp((85-u.sleepPerf)/45,0,1);     // 85+ = no deficit, 40 = full
+    if(typeof u.sleepHours==='number'&&u.sleepTargetHours) return clamp((u.sleepTargetHours-u.sleepHours)/3,0,1);
+    if(u.sleep==='poor')return .85; if(u.sleep==='fair')return .45; if(u.sleep==='good')return .05;
+    if(u.recovery!=null)return clamp((60-u.recovery)/50,0,1);
+    return .35; // unknown → assume a typical mild deficit
+  }
+
+  // Per-mg dose-response: 0 below threshold, rises to 1.0 at the optimal dose,
+  // holds across the effective range, then declines past the ceiling (and turns
+  // counter-productive past a `hard` cap — e.g. caffeine jitter, melatonin
+  // grogginess). `bw` doses are taken as mg/kg and scaled to bodyweight.
+  // When dose.bw is set, thr/opt/ceil/hard are PER-KG and scale to bodyweight
+  // (caffeine 3–6 mg/kg, whey ~0.4 g/kg, omega-3 ~0.02 g/kg, etc).
+  function effDose(r,weightKg){ const D=r.dose||{}; const w=weightKg||75; const s=D.bw?w:1;
+    return { thr:D.thr!=null?D.thr*s:null, opt:D.opt!=null?D.opt*s:null, ceil:D.ceil!=null?D.ceil*s:null, hard:D.hard!=null?D.hard*s:null }; }
+  function doseFactor(r,dose,weightKg){
+    const e=effDose(r,weightKg); const thr=e.thr,opt=e.opt,ceil=e.ceil,hard=e.hard;
+    if(opt==null)return 1;
+    if(dose==null||!isFinite(dose))dose=opt;            // assume optimal if unknown
+    if(dose<=0)return 0;
+    let f;
+    if(thr!=null&&dose<thr) f=0.45*(dose/Math.max(thr,1e-6));   // sub-threshold: partial
+    else if(dose<opt) f=0.45+0.55*((dose-(thr||0))/Math.max(opt-(thr||0),1e-6));
+    else if(ceil==null||dose<=ceil) f=1;
+    else { const over=(dose-ceil)/Math.max(ceil,1e-6); f=1-Math.min(0.6,over*0.8); }
+    if(hard&&dose>hard){ const o=(dose-hard)/Math.max(hard,1e-6); f=Math.min(f,0.7-Math.min(0.9,o*0.7)); } // counter-productive
+    return clamp(f,0,1.0);
+  }
+
+  // Parse the leading number from a dose string ("2,000-5,000 IU" → 3500,
+  // "5 g" → 5) in the SAME unit the research thresholds use for that item.
+  function parseDose(str){ if(!str)return null; const m=String(str).replace(/,/g,'').match(/(\d+(?:\.\d+)?)(?:\s*[-–]\s*(\d+(?:\.\d+)?))?/); if(!m)return null; const a=parseFloat(m[1]); const b=m[2]!=null?parseFloat(m[2]):null; return b!=null?(a+b)/2:a; }
+
+  // Likelihood (0..1) that a deficiency-dependent nutrient will actually help —
+  // we have no labs, so we infer from profile risk factors. Replete-by-default
+  // users get a discounted score for these (honest: most aren't deficient).
+  function deficiencyLikelihood(id,u){
+    let p=0.45; // population base rate of meaningful low status / room to benefit
+    if(id==='iron'){ p=(u.sex==='F')?0.55:0.12; }
+    else if(id==='vit-d3'){ p=0.6; if(u.age>=50)p+=0.15; }
+    else if(id==='b12'){ p=0.35; if(u.age>=50)p+=0.2; }
+    else if(id==='zinc'||id==='vit-k2'){ p=0.4; if(u.age>=50)p+=0.1; }
+    else if(id==='mag-glycinate'){ p=0.5; if(u.caffeineMgPerDay>200||u.hasStims)p+=0.15; }
+    else if(id==='berberine'){ p=0.3; if(u.goal==='cut')p+=0.2; if(u.age>=50)p+=0.15; } // metabolic room-to-benefit
+    return clamp(p,0.05,0.95);
+  }
+
+  // THE SCORE. Returns { score (0–10, decimals), dUser, dose, doseF, factors[] }.
+  function evaluate(id,u,doseOverride){
+    const r=RX[id]; if(!r) return { score:0, dUser:0, factors:[] };
+    const sigs=u._sigs||extractSignals(u);
+    const needs=u._needs||domainNeeds(u);
+    const sd=u._sd!=null?u._sd:sleepDeficit(u);
+    const defDose=effDose(r,u.weightKg).opt;            // optimal dose in absolute units
+    const dose=(doseOverride!=null)?doseOverride:defDose;
+    const doseF=doseFactor(r,dose,u.weightKg);
+
+    // 1) user-weighted effect size: judge the substance on ITS domains,
+    //    prioritising the ones the user needs. The sleep domain's need carries
+    //    the big SLEEP_PERF_D leverage, so sleep work floats up exactly as far
+    //    as the statistics say it should.
+    let num=0,den=0; const hits=[];
+    for(const dom in r.d){ const dval=r.d[dom];
+      let w=(needs[dom]||0.15);
+      if(dom==='sleep') w*=SLEEP_PERF_D;            // fixing sleep pays off at sleep's own (large) effect size
+      num+=dval*w; den+=w;
+      if(needs[dom]>=0.4 && dval>=0.15) hits.push(dom);
+    }
+    let dUser=den>0?num/den:0;
+
+    // 2) confidence the effect is real
+    dUser*=EV_CONF[r.ev]||0.6;
+
+    // 3) dose-response (per mg)
+    dUser*=doseF;
+
+    // 4) responder multipliers (age/sex/training/use) — only those that fire
+    const fired=[];
+    if(r.mods){ for(const g of sigs){ if(r.mods[g]!=null){ dUser*=r.mods[g]; if(r.mods[g]>1)fired.push(g); } } }
+
+    // 5) deficiency gating — replete users get little from corrective nutrients
+    if(r.defDep){ dUser*=deficiencyLikelihood(id,u); }
+
+    // 6) SLEEP as the top layer, weighted by its own measured effect size:
+    //    a) a stimulant's sleep COST (its sleepD, ×SLEEP_PERF_D) is subtracted,
+    //       scaled by how poor sleep already is and by stimulant load;
+    //    b) when the user is sleep-deprived, non-sleep benefits are compressed,
+    //       because nothing performs on no sleep (again, sleep's own d).
+    if(r.stim){
+      // Wake-promoters give MORE acute benefit the more sleep-deprived you are
+      // (caffeine/modafinil rescue tired cognition) — but that is separate from
+      // the sleep they cost tonight, handled next.
+      dUser*=(1+0.35*sd);
+    }
+    if(r.sleepD!=null && r.sleepD<0){
+      // Penalty only grows once intake is meaningful (<~100 mg ≈ no measured
+      // sleep cost; 400 mg ≈ full effect — Drake 2013), and scales with how
+      // poor sleep already is. Timing is unknown, so this is the daily average.
+      const load=clamp((u.caffeineMgPerDay-100)/300,0,1);
+      const cost=(-r.sleepD)*SLEEP_PERF_D*load*(0.4+0.6*sd);
+      dUser-=cost;
+    }
+    if(!(r.sleepD>0) && id!=='caffeine'){ dUser*=(1-0.18*sd*SLEEP_PERF_D*0.6); } // mild global compression under sleep debt
+
+    const score=clamp(scoreFromD(dUser),0,10);
+    return { score, dUser, dose, doseF, hits:hits.slice(0,3), fired:fired.slice(0,3), defDep:!!r.defDep };
+  }
+
+  function scoreSupplement(s,sigs,u){ // back-compat signature; routes to engine
+    const r=evaluate(s.id, u||{_sigs:sigs}, parseDose(s.dose)); return r.score; }
+  const WINDOWS = [
+    { key: 'morning', icon: '🌅', title: 'Morning', time: '7-10 AM' },
+    { key: 'lunch',   icon: '🍽️', title: 'Lunch',   time: '12-2 PM' },
+    { key: 'evening', icon: '🌙', title: 'Evening', time: '9-11 PM' },
+    { key: 'anytime', icon: '⏱️', title: 'Anytime', time: 'No fixed window' },
+  ];
+  const SIGNAL_LABELS = { 'high-caffeine':'high caffeine','very-high-caffeine':'very high caffeine','has-stims':'on stimulants','has-nicotine':'nicotine','has-alcohol':'alcohol','beginner-training':'new to training','heavy-training':'heavy training','bulk-goal':'goal: bulk','cut-goal':'goal: cut','recomp-goal':'goal: recomp','general-health-goal':'general health','male':'male','female':'female','aging':'age 40+','senior':'age 50+','poor-sleep':'poor sleep','low-recovery':'low recovery' };
+
+  function extractSignals(u){ const sig=[];
+    if(u.caffeineMgPerDay>400)sig.push('very-high-caffeine'); else if(u.caffeineMgPerDay>200)sig.push('high-caffeine');
+    if(u.hasStims)sig.push('has-stims'); if(u.hasNicotine)sig.push('has-nicotine'); if(u.hasAlcohol)sig.push('has-alcohol');
+    if(u.gymLevel==='beginner')sig.push('beginner-training'); else if(u.gymLevel==='intermediate'||u.gymLevel==='advanced')sig.push('heavy-training');
+    if(u.goal==='bulk')sig.push('bulk-goal'); else if(u.goal==='cut')sig.push('cut-goal'); else if(u.goal==='recomp')sig.push('recomp-goal'); else if(u.goal==='general_health')sig.push('general-health-goal');
+    if(u.sex==='M')sig.push('male'); else if(u.sex==='F')sig.push('female');
+    if(u.age!=null){ if(u.age>=50)sig.push('senior'); else if(u.age>=40)sig.push('aging'); }
+    if(u.recovery!=null&&u.recovery<50)sig.push('low-recovery'); if(u.sleep==='poor')sig.push('poor-sleep');
+    return sig; }
+  // Translate the engine's domain hits + fired modifiers into plain-English chips.
+  const DOMAIN_LABELS={ strength:'strength',power:'power',hypertrophy:'muscle',endurance:'endurance',recovery:'recovery',focus:'focus',memory:'memory',mood:'mood',stress:'stress',sleep:'sleep',immune:'immune',cardio:'heart',metabolic:'blood sugar',longevity:'longevity',hormonal:'hormones',joint:'joints',energy:'energy',bone:'bone' };
+  function reasonsFor(ev){ const out=[]; (ev.hits||[]).forEach(h=>out.push(DOMAIN_LABELS[h]||h)); (ev.fired||[]).forEach(g=>{ const l=SIGNAL_LABELS[g]; if(l&&out.indexOf(l)<0)out.push(l); }); return out.slice(0,4); }
+  // Prep the user once: cache signals, domain needs, and sleep deficit so every
+  // evaluate() call shares them.
+  function primeUser(u){ u._sigs=extractSignals(u); u._needs=domainNeeds(u); u._sd=sleepDeficit(u); return u; }
+  // Coloured decimal-score chip (red <4, amber 4–6.5, mint >6.5).
+  function scoreColor(v){ return v>=6.5?'#6EE7B7':v>=4?'#F5C451':'#FF7A90'; }
+  function scoreBadge(v){ const c=scoreColor(v); return '<span class="en-score" style="--sc:'+c+'" title="Personal benefit score, 0–10 — research effect size × your dose, body & sleep">'+v.toFixed(1)+'</span>'; }
+  // Score a stack/search item at its actual labelled dose (per-mg).
+  function scoreFor(item,u){ const id=item.sourceId||item.id; if(!RX[id])return null; primeUser(u); return evaluate(id,u,parseDose(item.dose)); }
+  function recommend(user,opts){ opts=opts||{}; const limit=opts.limit||8,minScore=opts.minScore!=null?opts.minScore:2.5; primeUser(user); const sigs=user._sigs;
+    const scored=SUPPLEMENT_DB.filter(s=>!user.alreadyTakingIds.has(s.id)).map(s=>{ const ev=evaluate(s.id,user); return {supplement:s,score:ev.score,ev:ev,reasons:reasonsFor(ev)}; }).filter(r=>r.score>=minScore)
+      .sort((a,b)=>{ if(Math.abs(b.score-a.score)>0.001)return b.score-a.score; return a.supplement.priceUsdMonthly-b.supplement.priceUsdMonthly; }).slice(0,limit);
+    return { signals:sigs, recommendations:scored }; }
+  function packToBudget(recs,budget){ let running=0; const inBudget=[]; const all=recs.map(rec=>{ const next=running+rec.supplement.priceUsdMonthly; const fits=next<=budget; if(fits){ running=next; inBudget.push(rec); } return {rec,fits}; }); return {all,inBudget}; }
+  function buyUrlFor(s){ const primary=(s.brand||'').split(/\s+or\s+/i)[0].trim(); return 'https://www.amazon.com/s?k='+encodeURIComponent((primary+' '+s.name).trim()); }
+
+  const LS_KEY='supplements_standalone_v1';
+  const DEFAULT_STATE={ version:1, items:[], taken:{}, low:[] };
+  function loadState(){ try{ const p=readLS(LS_KEY); if(!p)return JSON.parse(JSON.stringify(DEFAULT_STATE)); return { version:1, items:Array.isArray(p.items)?p.items:[], taken:(p.taken&&typeof p.taken==='object')?p.taken:{}, low:Array.isArray(p.low)?p.low:[] }; }catch(e){ return JSON.parse(JSON.stringify(DEFAULT_STATE)); } }
+  let state=loadState();
+  function saveState(){ try{ localStorage.setItem(LS_KEY,JSON.stringify(state)); }catch(e){} }
+  let budget=75;
+
+  function search(raw){ const q=(raw||'').toLowerCase().trim(); if(!q)return[]; const starts=[],contains=[]; for(const s of SUPPLEMENT_DB){ const hay=[s.name.toLowerCase()].concat(s.aliases.map(a=>a.toLowerCase())); if(hay.some(h=>h.startsWith(q)))starts.push(s); else if(hay.some(h=>h.includes(q)))contains.push(s); } return starts.concat(contains).slice(0,6); }
+  function lookupDb(id){ return id?SUPPLEMENT_DB.find(s=>s.id===id)||null:null; }
+  function windowMeta(k){ return WINDOWS.find(w=>w.key===k); }
+  function windowLabel(k){ const w=windowMeta(k); return w?(w.icon+' '+w.title.toLowerCase()):k; }
+
+  function dateKey(){ return activeDateKey(); }
+  function todayTaken(){ return state.taken[dateKey()]||{}; }
+  function takenCount(){ const tt=todayTaken(); return state.items.filter(i=>!!tt[i.id]).length; }
+
+  function addItem(input){ const id='s_'+Date.now()+'_'+Math.random().toString(36).slice(2,6); const name=(input.name||'').trim(); if(!name)return; state.items.push({ id, name, icon:input.icon||'💊', dose:(input.dose||'').trim(), window:input.window, note:(input.note||'').trim(), sourceId:input.sourceId!=null?input.sourceId:null }); saveState(); renderPanel(); }
+  function removeItem(id){ state.items=state.items.filter(i=>i.id!==id); state.low=state.low.filter(x=>x!==id); for(const k of Object.keys(state.taken)){ if(state.taken[k][id])delete state.taken[k][id]; } saveState(); renderPanel(); }
+  function toggleTaken(id){ const key=dateKey(); const day=Object.assign({},state.taken[key]||{}); if(day[id])delete day[id]; else day[id]=Date.now(); state.taken[key]=day; saveState(); renderPanel(); }
+  function addFromDb(id){ const s=lookupDb(id); if(!s)return; if(state.items.some(i=>i.sourceId===id)){ toast(s.name+' is already in your stack'); return; } addItem({ name:s.name, icon:s.icon, dose:s.dose, window:s.window, note:s.note, sourceId:s.id }); toast('Added '+s.name); }
+
+  /* live user model — pulls cross-tab signals from Stimulants + Meds */
+  function buildUser(){ const sp=readLS('supplements_standalone_profile_v1')||{}; const p=profile()||{}; const h=loadHealth(); const cats=MED.todayCats();
+    const age=(sp.age!=null&&sp.age!=='')?Number(sp.age):(p.age!=null?Number(p.age):null);
+    const wt=(sp.weightKg!=null&&sp.weightKg!=='')?Number(sp.weightKg):(p.weightKg!=null?Number(p.weightKg):null);
+    const ht=(p.heightCm!=null)?Number(p.heightCm):null;
+    return { caffeineMgPerDay:Math.round(STIM.mgTodayPub()), hasStims:cats.hasStims, hasNicotine:cats.hasNicotine, hasAlcohol:false,
+      gymLevel:sp.gymLevel||p.gymLevel||'', goal:sp.goal||p.goal||'', sex:sp.sex||p.sex||'', age:isFinite(age)?age:null,
+      weightKg:isFinite(wt)?wt:null, heightCm:isFinite(ht)?ht:null,
+      recovery:(h&&h.recovery!=null)?h.recovery:null, sleep:h?sleepQuality(h):'',
+      sleepPerf:(h&&typeof h.sleepPerf==='number')?h.sleepPerf:null,
+      sleepHours:(h&&typeof h.sleepHours==='number')?h.sleepHours:null,
+      sleepTargetHours:(h&&h.sleepTargetHours)||8,
+      alreadyTakingIds:new Set(state.items.map(i=>i.sourceId).filter(Boolean)) }; }
+
+  let query='', searchOpen=false;
+
+  function searchDropdown(){ if(!searchOpen)return ''; const matches=search(query); if(!query.trim())return ''; if(!matches.length)return '<div class="en-results" style="margin-top:8px"><div class="en-muted">No match — type a name + dose and hit Add to log it anyway.</div></div>'; const u=buildUser(); return '<div class="en-results" style="margin-top:8px">'+matches.map(s=>{ const ev=evaluate(s.id,primeUser(u),parseDose(s.dose)); return '<div class="en-itemRow" data-sup="pick" data-id="'+esc(s.id)+'"><div class="en-itemMain"><div class="en-itemName">'+scoreBadge(ev.score)+esc(s.icon)+' '+esc(s.name)+'</div><div class="en-itemMeta">'+esc(s.dose)+' · '+windowLabel(s.window)+'</div></div><span class="en-itemVal">+ add</span></div>'; }).join('')+'</div>'; }
+
+  function html(){
+    const tt=todayTaken(); const taken=takenCount(), total=state.items.length;
+    const user=buildUser(); const res=recommend(user,{limit:8}); const recs=res.recommendations; const sigs=res.signals;
+    const sigChips=sigs.length?'<div class="en-recWhy" style="margin-top:14px">'+sigs.map(s=>'<span class="en-tag">'+esc(SIGNAL_LABELS[s]||s)+'</span>').join('')+'</div>':'';
+
+    // stack grouped by window
+    let stackBody;
+    if(!total){ stackBody='<div class="en-muted">Your stack is empty. Search below to add what you take — then tick each off as you take it through the day.</div>'; }
+    else { let out=''; for(const w of WINDOWS){ const items=state.items.filter(i=>i.window===w.key); if(!items.length)continue;
+        out+='<div style="margin-bottom:6px"><div class="en-itemMeta" style="margin:10px 0 7px">'+w.icon+' '+esc(w.title)+' · '+esc(w.time)+'</div><div class="en-stack">'
+          +items.map(i=>{ const on=!!tt[i.id]; const ev=scoreFor(i,user); const sb=ev?scoreBadge(ev.score):''; return '<div class="en-stackRow'+(on?' taken':'')+'"><button class="en-check" data-sup="toggle" data-id="'+esc(i.id)+'" aria-label="Taken">'+(on?'✓':'')+'</button><div class="en-stackName"><b>'+sb+esc(i.icon)+' '+esc(i.name)+'</b><span>'+esc(i.dose||'—')+'</span></div><button class="en-del" data-sup="remove" data-id="'+esc(i.id)+'" aria-label="Remove">×</button></div>'; }).join('')
+          +'</div></div>'; }
+      stackBody=out; }
+
+    // recommendations
+    let recBody;
+    if(!recs.length){ recBody='<p class="en-muted">Nothing strongly indicated yet. Add more stack items and fill in your profile — recommendations tune as signals come in.</p>'; }
+    else { const packed=packToBudget(recs,budget); const totalIn=packed.inBudget.reduce((s,r)=>s+r.supplement.priceUsdMonthly,0);
+      recBody='<div class="en-budget"><label for="supBudget">Budget / mo</label><input id="supBudget" type="number" inputmode="numeric" min="0" value="'+budget+'"></div>'
+        +packed.all.map(({rec,fits})=>{ const s=rec.supplement; const why=rec.reasons.map(r=>'<span class="en-tag">'+esc(SIGNAL_LABELS[r]||r)+'</span>').join('');
+          return '<div class="en-rec'+(fits?'':' dim')+'"><div class="en-recTop"><div class="en-recName">'+scoreBadge(rec.score)+esc(s.icon)+' '+esc(s.name)+'<small>'+esc(s.dose)+'</small></div><div class="en-recPrice">$'+s.priceUsdMonthly+'/mo</div></div>'
+            +'<div class="en-recHelp">'+esc(s.helps)+'</div>'+(why?'<div class="en-recWhy">'+why+'</div>':'')
+            +'<div class="en-recActions"><button class="en-recAdd" data-sup="addrec" data-id="'+esc(s.id)+'">Add to stack</button><a class="en-recBuy" href="'+buyUrlFor(s)+'" target="_blank" rel="noopener">find it ↗</a></div></div>'; }).join('')
+        +'<div class="en-budgetSum"><strong>$'+totalIn+'</strong>/mo for the top '+packed.inBudget.length+' of '+recs.length+' picks within budget.</div>'; }
+
+    return ''
+      +'<section class="en-card"><div class="en-hero"><div class="en-heroNum">'+taken+'<small>/ '+total+' taken today</small></div>'
+      +'<span class="en-chipStat'+(total&&taken>=total?'':' ')+'"'+(total&&taken>=total?'':' data-tone="muted"')+'><span class="dot"></span>'+(total&&taken>=total?'stack complete':(total?(total-taken)+' left':'empty stack'))+'</span></div>'
+      +sigChips+'</section>'
+      +'<section class="en-card"><p class="en-eyebrow">Your stack</p>'+stackBody+'</section>'
+      +'<section class="en-card"><p class="en-eyebrow">Add to stack</p>'
+      +'<div class="en-search">'+searchIcon+'<input class="en-input pad" id="supSearch" placeholder="Search 35+ supplements…" value="'+esc(query)+'" autocomplete="off"></div>'
+      +searchDropdown()+'</section>'
+      +'<section class="en-card"><p class="en-eyebrow">Smart recommendations</p>'+recBody+'</section>'
+      +'<p class="en-foot">The <b>score /10</b> is research-grounded: each substance\'s meta-analysis effect size, scaled by your dose (per mg), body size, age, sex, training and goals — and weighted by sleep, which the data shows is the biggest lever. Honest by design: most isolated supplements land 2–6; only large, well-evidenced, well-matched effects go higher. Informational, not medical advice.</p>';
+  }
+  function after(){ const si=document.getElementById('supSearch'); if(si&&query){ si.focus(); si.setSelectionRange(query.length,query.length); } }
+
+  // events
+  document.addEventListener('click',e=>{ if(activeTab!=='sup')return; const b=e.target.closest('[data-sup]'); if(!b)return; const a=b.dataset.sup;
+    if(a==='toggle')toggleTaken(b.dataset.id);
+    else if(a==='remove')removeItem(b.dataset.id);
+    else if(a==='addrec')addFromDb(b.dataset.id);
+    else if(a==='pick'){ const s=lookupDb(b.dataset.id); if(s){ addFromDb(s.id); query=''; searchOpen=false; renderPanel(); } }
+  });
+  document.addEventListener('input',e=>{ if(activeTab!=='sup')return;
+    if(e.target.id==='supSearch'){ query=e.target.value; searchOpen=true; renderPanel(); }
+    else if(e.target.id==='supBudget'){ budget=parseInt(e.target.value,10)||0; renderPanel(); }
+  });
+  document.addEventListener('keydown',e=>{ if(activeTab!=='sup')return; if(e.target&&e.target.id==='supSearch'){ if(e.key==='Enter'){ e.preventDefault(); const m=search(query); if(m.length){ addFromDb(m[0].id); query=''; searchOpen=false; renderPanel(); } } else if(e.key==='Escape'){ searchOpen=false; renderPanel(); } } });
+
+  function reload(){ state=loadState(); }
+
+  /* ---- cross-tab scorers (used by the Stimulants + Meds tabs) ----
+   * Same engine, same statistics. Caffeine drinks reuse the caffeine model;
+   * meds use a healthy-adult cognitive effect size (honest: smaller than the
+   * ADHD benefit) net of the sleep cost their duration implies. */
+  function caffeineScore(mg){ const u=buildUser(); u.caffeineMgPerDay=(u.caffeineMgPerDay||0)+mg; primeUser(u); return evaluate('caffeine',u,mg).score; }
+
+  // Healthy-adult cognitive SMD per substance (Repantis/Ilieva 2020 meta-analyses,
+  // Heishman 2010 for nicotine) and the sleep-cost weight its half-life implies
+  // if used as a daytime enhancer. ADHD users get a larger benefit than this.
+  const MEDRX={
+    'Concerta':{d:.21,ev:'B',sleep:.18}, 'Ritalin IR':{d:.21,ev:'B',sleep:.12}, 'Ritalin LA':{d:.21,ev:'B',sleep:.15},
+    'Focalin':{d:.21,ev:'B',sleep:.12}, 'Focalin XR':{d:.21,ev:'B',sleep:.16},
+    'Adderall IR':{d:.30,ev:'B',sleep:.18}, 'Adderall XR':{d:.30,ev:'B',sleep:.28}, 'Vyvanse':{d:.30,ev:'B',sleep:.28},
+    'Modafinil':{d:.12,ev:'B',sleep:.30}, 'Armodafinil':{d:.12,ev:'B',sleep:.35}, 'Strattera':{d:.04,ev:'C',sleep:.08},
+    'L-Tyrosine':{d:.12,ev:'B',sleep:.04,stress:true}, 'L-Theanine':{d:.10,ev:'B',sleep:-.10}, 'Rhodiola':{d:.15,ev:'C',sleep:.04},
+  };
+  function medScore(sub){ const u=buildUser(); primeUser(u); const sd=u._sd;
+    let r=MEDRX[sub.name]; if(!r){ r=(sub.cat==='nic')?{d:.25,ev:'B',sleep:.22}:(sub.cat==='noot')?{d:.10,ev:'C',sleep:.05}:{d:.20,ev:'C',sleep:.20}; }
+    // dose-response vs the reference dose: ramps to 1 at ref, mild over-dose penalty
+    const ratio=(sub.mg||sub.ref||1)/(sub.ref||sub.mg||1); let df=ratio<1?(.4+.6*ratio):(ratio<=1.5?1:Math.max(.55,1-(ratio-1.5)*.6));
+    let benefit=r.d*(EV_CONF[r.ev]||.6)*df;
+    if(r.stress) benefit*=(0.6+0.8*sd);                 // tyrosine only helps when taxed/sleep-deprived
+    else if(r.sleep>0) benefit*=(1+0.3*sd);             // wake-promoters rescue tired cognition
+    if(u.hasStims) benefit*=0.8;                        // habitual cognitive tolerance
+    let cost=Math.max(0,r.sleep)*SLEEP_PERF_D*(0.4+0.6*sd);
+    if(r.sleep<0) benefit+=(-r.sleep)*0.4;              // L-theanine: mild pro-sleep credit
+    return clamp(scoreFromD(benefit-cost),0,10);
+  }
+
+  return { html, after, reload, caffeineScore, medScore, badge:scoreBadge };
+})();
+
+/* =====================================================================
+ * SHELL WIRING
+ * ===================================================================== */
+const MODULES = { sup:SUP, stim:STIM, med:MED };
+function setTab(tab){ if(!MODULES[tab])return; activeTab=tab; document.querySelectorAll('.en-tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab)); if(tab==='sup')SUP.reload(); renderPanel(); }
+document.getElementById('enTabs').addEventListener('click',e=>{ const b=e.target.closest('[data-tab]'); if(b)setTab(b.dataset.tab); });
+
+/* drifting mint particles (port of Rowan4Backdrop) */
+(function(){ const root=document.getElementById('enParticles'); if(!root)return; const N=window.innerWidth<640?14:24; for(let i=0;i<N;i++){ const s=document.createElement('span'); s.style.left=Math.random()*100+'%'; s.style.top=(60+Math.random()*40)+'%'; const size=1.2+Math.random()*1.2; s.style.width=s.style.height=size+'px'; const dur=22+Math.random()*28; s.style.animationDuration=dur+'s'; s.style.animationDelay=(-Math.random()*dur)+'s'; s.style.setProperty('--dx',(Math.random()*30-15)+'px'); s.style.setProperty('--dy',-(60+Math.random()*50)+'vh'); root.appendChild(s); } })();
+
+/* live ticking — keep PK phases / levels current on the active tab */
+setInterval(()=>{ if(activeTab==='stim'&&STIM.hasLogs())renderPanel(); else if(activeTab==='med'&&MED.hasLogs())renderPanel(); }, 60000);
+
+/* initial paint + cloud hydrate */
+setTab('sup');
+STIM.hydrate(); MED.hydrate();
+})();
+</script>
+<script src="brand.js?v=16"></script>
+</body>
+</html>

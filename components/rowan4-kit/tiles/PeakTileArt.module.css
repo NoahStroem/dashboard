@@ -1,0 +1,74 @@
+/*
+ * Peak tile background — "Expanding glow" pulse. Over a DARKER copy of the dot
+ * grid, a brighter copy of the same grid is revealed by a soft radial mask
+ * centred on the pulse: dots brighten most near the centre and less further
+ * out. The mask grows and the light DECAYS as it spreads (light physics —
+ * brightest at birth, fading to nothing as the wave expands). A ring expands
+ * with it and a core breathes at the centre.
+ *
+ * Geometry note: the dot grid here is the SAME 14px spacing / dot size as the
+ * live .artDots — only dimmer. The bright layer is the identical grid lit up.
+ */
+
+.root { position:absolute; inset:0; overflow:hidden; pointer-events:none; background:#070908; }
+
+/* darker baseline dot grid (resting/dark state) */
+.dots {
+  position:absolute; inset:0;
+  background-image:
+    radial-gradient(rgba(110,231,183,0.22) 1.2px, transparent 1.4px),
+    radial-gradient(ellipse 60% 60% at 50% 50%, rgba(30,60,46,0.4), #070908 78%);
+  background-size:14px 14px, 100% 100%;
+  background-position:center;
+}
+
+/* bright copy of the SAME grid, revealed by a growing centre-weighted mask
+   that flares then decays — pulse lights the dots near it brightest. */
+.bright {
+  position:absolute; inset:0;
+  background-image: radial-gradient(rgba(167,243,208,0.95) 1.3px, transparent 1.5px);
+  background-size:14px 14px;
+  background-position:center;
+  filter: drop-shadow(0 0 3px rgba(110,231,183,0.7));
+  -webkit-mask-image: radial-gradient(circle at 50% 46%, #000, transparent 70%);
+          mask-image: radial-gradient(circle at 50% 46%, #000, transparent 70%);
+  -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat;
+  -webkit-mask-position:center 46%; mask-position:center 46%;
+  -webkit-mask-size:10% 10%; mask-size:10% 10%;
+  opacity:0;
+  animation: peakGlow 5.5s linear infinite;
+}
+@keyframes peakGlow {
+  0%   { -webkit-mask-size:8% 8%;     mask-size:8% 8%;     opacity:0 }
+  10%  { opacity:1 }                                                  /* flares bright at birth */
+  40%  { -webkit-mask-size:90% 90%;   mask-size:90% 90%;   opacity:.55 }
+  70%  { -webkit-mask-size:150% 150%; mask-size:150% 150%; opacity:.2 }
+  100% { -webkit-mask-size:210% 210%; mask-size:210% 210%; opacity:0 }  /* decays as it spreads */
+}
+
+/* soft expanding ring out of the centre, same cadence */
+.ring {
+  position:absolute; left:50%; top:46%; width:60px; height:60px;
+  transform:translate(-50%,-50%);
+  border:1px solid rgba(110,231,183,0.45); border-radius:50%;
+  opacity:0; animation: peakRing 5.5s cubic-bezier(0.16,1,0.3,1) infinite;
+}
+@keyframes peakRing {
+  0%   { transform:translate(-50%,-50%) scale(.5); opacity:0 }
+  18%  { opacity:.7 }
+  100% { transform:translate(-50%,-50%) scale(1.8); opacity:0 }
+}
+
+/* breathing core at the centre */
+.core {
+  position:absolute; left:50%; top:46%; width:9px; height:9px;
+  transform:translate(-50%,-50%); border-radius:50%;
+  background:#A7F3D0; box-shadow:0 0 12px rgba(167,243,208,1), 0 0 22px rgba(110,231,183,.6);
+  animation: peakCore 5.5s ease-in-out infinite;
+}
+@keyframes peakCore { 0%,100%{opacity:.7} 45%{opacity:1} }
+
+@media (prefers-reduced-motion: reduce) {
+  .bright, .ring, .core { animation:none }
+  .bright, .ring { opacity:0 }
+}

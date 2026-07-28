@@ -1,0 +1,52 @@
+/*
+ * Finance tile background — "Candlesticks". A market candle chart draws in
+ * (mint-green up / soft-red down), the last candle blinks live, over a faint
+ * price axis and the warm amber base. Net worth · Subs. The warm/amber tile.
+ * Its opaque base covers any default duotone art behind it.
+ */
+
+.root { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+.base {
+  position:absolute; inset:0;
+  background: radial-gradient(ellipse 80% 75% at 50% 38%, rgba(217,142,60,0.18) 0%, rgba(90,44,24,0.4) 50%, rgba(20,12,9,1) 100%);
+}
+.axis {
+  position:absolute; inset:0;
+  background: linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px);
+  background-size: 100% 38px;
+  opacity:.5;
+}
+
+/* Confine the candle chart to a clean band between the index (top) and the
+   name + summary footer (bottom), so the ticker fits the widget instead of
+   running through the "Finance" title. Bottom is a fixed px to always clear
+   the footer (name sits at bottom:46px, summary at bottom:22px); the phone
+   override below uses a tighter footer. */
+.candles {
+  position:absolute; left:8%; right:8%; top:44px; bottom:84px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+
+/* Phone footer is shorter (name bottom:38px, summary bottom:16px), so the
+   candles can drop a little lower. */
+@media (max-width: 560px) {
+  .candles { top:38px; bottom:64px; }
+}
+.c {
+  position:relative; width:9px; height:100%;
+  display:flex; align-items:center; justify-content:center;
+  opacity:0; animation: finCandle .5s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+.up { color:#6EE7B7; }
+.down { color:#e0795f; }
+.wick { position:absolute; width:1px; background:currentColor; }
+.body { width:7px; border-radius:1px; background:currentColor; box-shadow:0 0 6px currentColor; }
+@keyframes finCandle { to { opacity:.95 } }
+
+/* last candle blinks live */
+.last { animation: finCandle .5s cubic-bezier(0.16,1,0.3,1) forwards, finBlink 4.5s 2s ease-in-out infinite; }
+@keyframes finBlink { 0%,100%{ filter:brightness(1) } 50%{ filter:brightness(1.5) } }
+
+@media (prefers-reduced-motion: reduce) {
+  .c, .last { animation:none; opacity:.95 }
+}

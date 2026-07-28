@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#0C0C12" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Patron" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="icon" type="image/svg+xml" href="icon.svg" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<style id="pwa-mobile">
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+img{max-width:100%;height:auto}
+@media (max-width:480px){input,select,textarea{font-size:16px !important}}
+@supports (padding:max(0px)){body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}}
+</style>
+<title>Fitness Band · standalone</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script>try{document.documentElement.setAttribute("data-theme",localStorage.getItem("patron_theme")||"nocturne");}catch(e){document.documentElement.setAttribute("data-theme","nocturne");}</script>
+<style>
+
+/* ============================================================
+ * Whoop — restyled to "Patron": soft-dark electric-violet
+ * modern-fintech skin. Same token system + 3 themes as the suite.
+ * Violet = brand/UI chrome + headline numbers; good=green,
+ * watch=amber, low=red for health-signal tones. Logic untouched.
+ * ============================================================ */
+
+:root {
+  color-scheme: dark;
+  --bg: #0C0C12; --bg-elevated: #15151F;
+  --surface: rgba(255,255,255,0.028); --surface-2: rgba(255,255,255,0.055);
+  --fg: #F3F2F8; --muted: rgba(243,242,248,0.50); --muted-strong: rgba(243,242,248,0.74);
+  --border: rgba(255,255,255,0.08); --border-strong: rgba(255,255,255,0.17);
+  --brand: #8B7CFF; --brand-2: #C7BBFF; --brand-ink: #130E2E;
+  --brand-soft: rgba(139,124,255,0.12); --brand-line: rgba(139,124,255,0.28); --brand-glow: rgba(139,124,255,0.42);
+  --pos: #46E0A8; --pos-soft: rgba(70,224,168,0.12); --pos-line: rgba(70,224,168,0.26);
+  --neg: #FB7185; --neg-soft: rgba(251,113,133,0.12); --neg-line: rgba(251,113,133,0.26);
+  --warn: #FBBF24; --warn-soft: rgba(251,191,36,0.10); --warn-line: rgba(251,191,36,0.26);
+  --track: rgba(255,255,255,0.06);
+  --card-shadow: 0 1px 0 rgba(255,255,255,0.04) inset, 0 18px 44px -30px rgba(0,0,0,0.85);
+  --glow-1: rgba(139,124,255,0.12); --glow-2: rgba(70,224,168,0.05);
+  --grain-opacity: 0.05; --overlay: rgba(6,6,12,0.66);
+  --space-1:.25rem; --space-2:.5rem; --space-3:.75rem; --space-4:1rem;
+  --space-5:1.25rem; --space-6:1.5rem; --space-8:2rem; --space-10:2.5rem; --space-12:3rem; --space-16:4rem;
+  --radius-sm: 8px; --radius-md: 11px; --radius-lg: 18px; --radius-pill: 999px;
+  --text-xs:.75rem; --text-sm:.875rem; --text-base:1rem; --text-lg:1.125rem;
+  --text-xl:1.375rem; --text-2xl:1.75rem; --text-3xl:2.5rem;
+  --ease: cubic-bezier(0.2,0.8,0.2,1); --ease-premium: cubic-bezier(0.16,1,0.3,1);
+  --duration-fast:120ms; --duration:200ms;
+  --font-display:'Space Grotesk'; --font-ui:'Hanken Grotesk'; --font-mono:'JetBrains Mono'; --font-sans:'Hanken Grotesk';
+}
+[data-theme="aurora"] {
+  color-scheme: dark;
+  --bg: #080913; --bg-elevated: #12131F;
+  --surface: rgba(150,160,255,0.045); --surface-2: rgba(150,160,255,0.08);
+  --fg: #EEF0FF; --muted: rgba(220,225,255,0.52); --muted-strong: rgba(220,225,255,0.76);
+  --border: rgba(150,160,255,0.11); --border-strong: rgba(150,160,255,0.22);
+  --brand: #8B7BFF; --brand-2: #B9ABFF; --brand-ink: #0A0922;
+  --brand-soft: rgba(139,123,255,0.15); --brand-line: rgba(139,123,255,0.32); --brand-glow: rgba(124,107,255,0.6);
+  --pos: #4FE3D0; --pos-soft: rgba(79,227,208,0.13); --pos-line: rgba(79,227,208,0.28);
+  --neg: #FF6FA5; --neg-soft: rgba(255,111,165,0.13); --neg-line: rgba(255,111,165,0.28);
+  --warn: #FFC65C; --warn-soft: rgba(255,198,92,0.11); --warn-line: rgba(255,198,92,0.28);
+  --track: rgba(160,170,255,0.09);
+  --card-shadow: 0 0 0 1px rgba(140,130,255,0.05) inset, 0 22px 56px -28px rgba(78,60,210,0.55);
+  --glow-1: rgba(124,107,255,0.20); --glow-2: rgba(79,227,208,0.13);
+  --grain-opacity: 0.05; --overlay: rgba(5,6,16,0.7);
+}
+[data-theme="daylight"] {
+  color-scheme: light;
+  --bg: #F3F2FA; --bg-elevated: #FFFFFF;
+  --surface: #FFFFFF; --surface-2: #FAF9FF;
+  --fg: #171622; --muted: rgba(23,22,34,0.52); --muted-strong: rgba(23,22,34,0.72);
+  --border: rgba(23,22,60,0.10); --border-strong: rgba(23,22,60,0.18);
+  --brand: #6A45FF; --brand-2: #8E6BFF; --brand-ink: #FFFFFF;
+  --brand-soft: rgba(106,69,255,0.08); --brand-line: rgba(106,69,255,0.24); --brand-glow: rgba(106,69,255,0.28);
+  --pos: #0E9E64; --pos-soft: rgba(14,158,100,0.10); --pos-line: rgba(14,158,100,0.26);
+  --neg: #E11D63; --neg-soft: rgba(225,29,99,0.08); --neg-line: rgba(225,29,99,0.24);
+  --warn: #B4690E; --warn-soft: rgba(180,105,14,0.10); --warn-line: rgba(180,105,14,0.24);
+  --track: rgba(23,22,60,0.08);
+  --card-shadow: 0 1px 2px rgba(23,22,60,0.05), 0 16px 34px -24px rgba(23,22,60,0.24);
+  --glow-1: rgba(106,69,255,0.07); --glow-2: rgba(14,158,100,0.04);
+  --grain-opacity: 0.02; --overlay: rgba(28,26,52,0.4);
+}
+
+* { box-sizing: border-box; }
+html, body { margin:0; padding:0; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-ui), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: var(--text-base); -webkit-font-smoothing: antialiased; transition: background var(--duration) var(--ease); }
+
+.grain-overlay { position: relative; }
+.grain-overlay::after { content:''; position: fixed; inset:0; pointer-events:none; z-index:1; opacity: var(--grain-opacity); mix-blend-mode: overlay; background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"); background-size: 200px 200px; }
+
+.page { position: relative; min-height: 100dvh; background: var(--bg); color: var(--fg); padding: var(--space-8) var(--space-5) var(--space-16); isolation: isolate; }
+.page::before { content:''; position: absolute; inset:0; pointer-events:none; z-index:-1; background: radial-gradient(58% 42% at 82% 6%, var(--glow-1), transparent 70%), radial-gradient(48% 38% at 12% 92%, var(--glow-2), transparent 72%); }
+.shell { max-width: 980px; margin: 0 auto; }
+
+/* Buttons */
+.btn { display:inline-flex; align-items:center; justify-content:center; gap: var(--space-2); padding: 0.6875rem var(--space-4); border-radius: var(--radius-md); font-size: var(--text-sm); font-family: var(--font-ui); font-weight: 600; cursor: pointer; border: 1px solid transparent; background: transparent; color: var(--fg); transition: background var(--duration) var(--ease), border-color var(--duration) var(--ease), color var(--duration) var(--ease), transform var(--duration-fast) var(--ease), box-shadow var(--duration) var(--ease), filter var(--duration) var(--ease); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-primary { background: var(--brand); color: var(--brand-ink); font-weight: 700; }
+.btn-primary:hover:not(:disabled) { filter: brightness(1.08); box-shadow: 0 0 26px var(--brand-glow); }
+.btn-primary:active:not(:disabled) { transform: translateY(1px); }
+.btn-ghost { color: var(--fg); border: 1px solid var(--border); }
+.btn-ghost:hover:not(:disabled) { border-color: var(--border-strong); background: var(--surface); }
+.btn-link { color: var(--muted-strong); padding: var(--space-2) var(--space-3); }
+.btn-link:hover { color: var(--fg); }
+
+/* Header */
+.header { display:flex; flex-direction:column; gap: var(--space-4); margin-bottom: var(--space-2); }
+.headerTop { display:flex; align-items:center; justify-content:space-between; gap: var(--space-3); }
+.back { display:inline-flex; align-items:center; gap: var(--space-2); align-self:flex-start; padding: 6px 13px 6px 9px; background: var(--brand-soft); border: 1px solid var(--brand-line); border-radius: var(--radius-pill); color: var(--brand); font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.01em; text-decoration: none; transition: background var(--duration) var(--ease-premium), border-color var(--duration) var(--ease-premium); }
+.back:hover { background: color-mix(in srgb, var(--brand) 18%, transparent); border-color: var(--brand); }
+.backArrow { font-size: 14px; line-height: 1; }
+.titleRow { display:flex; align-items:flex-end; justify-content:space-between; gap: var(--space-4); flex-wrap: wrap; }
+.title { font-family: var(--font-display); font-weight: 600; font-size: var(--text-3xl); line-height: 1.0; letter-spacing: -0.03em; color: var(--fg); margin: 0; }
+.subtitle { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.16em; color: var(--muted); margin: 5px 0 0; }
+
+/* Theme switcher */
+.themeSeg { display:inline-flex; align-items:center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-pill); padding: 3px; gap: 2px; flex-shrink:0; }
+.themeBtn { appearance:none; background: transparent; border:0; color: var(--muted); font-family: var(--font-ui); font-size: 11px; font-weight: 600; letter-spacing: 0.02em; padding: 5px 11px 5px 8px; border-radius: var(--radius-pill); cursor: pointer; display:inline-flex; align-items:center; gap:6px; transition: background var(--duration) var(--ease-premium), color var(--duration) var(--ease-premium); }
+.themeBtn:hover { color: var(--muted-strong); }
+.themeSwatch { width: 11px; height: 11px; border-radius: 50%; box-shadow: 0 0 0 1px var(--border-strong) inset; flex-shrink:0; }
+.themeBtnActive, .themeBtnActive:hover { background: var(--brand-soft); color: var(--fg); }
+.themeBtnActive .themeSwatch { box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--brand); }
+
+/* Liam Score badge */
+.scoreBadge { display:inline-flex; align-items:center; gap: var(--space-3); padding: var(--space-3) var(--space-5); border: 1px solid var(--brand-line); border-radius: var(--radius-lg); background: var(--brand-soft); box-shadow: 0 0 36px -16px var(--brand-glow); }
+.scoreNumber { font-family: var(--font-display); font-weight: 600; font-size: clamp(2.5rem, 4.2vw, 3.25rem); line-height: 1; color: var(--brand); font-variant-numeric: tabular-nums; letter-spacing: -0.03em; }
+.scoreCol { display:flex; flex-direction:column; gap: 3px; }
+.scoreLabel { font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted-strong); white-space: nowrap; }
+.scoreTier { font-family: var(--font-display); font-weight: 600; font-size: var(--text-lg); letter-spacing: -0.01em; color: var(--fg); }
+
+/* Sample-data chip */
+.sampleChip { display:inline-flex; align-items:center; gap: 8px; margin-top: var(--space-4); padding: 6px 13px; border: 1px dashed var(--warn-line); border-radius: var(--radius-pill); background: var(--warn-soft); color: var(--warn); font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; }
+.sampleChip .tickerPulse { background: var(--warn); box-shadow: 0 0 8px var(--warn-soft); }
+
+/* Ticker */
+.ticker { display:flex; align-items:center; gap: var(--space-3); margin-top: var(--space-5); padding: var(--space-2) var(--space-3); border: 1px solid var(--brand-line); border-radius: var(--radius-pill); background: var(--brand-soft); overflow:hidden; }
+.tickerEyebrow { display:inline-flex; align-items:center; gap: 8px; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--brand); white-space:nowrap; padding-right: var(--space-3); border-right: 1px solid var(--border); flex-shrink:0; }
+.tickerPulse { width: 6px; height: 6px; border-radius: 50%; background: var(--brand); box-shadow: 0 0 8px var(--brand-glow); animation: tickerPulse 1.6s ease-in-out infinite; }
+@keyframes tickerPulse { 0%,100% { opacity:1; transform: scale(1); } 50% { opacity:0.35; transform: scale(0.8); } }
+.tickerScroll { flex:1; overflow:hidden; position:relative; min-width:0; mask-image: linear-gradient(90deg, transparent 0, #000 32px, #000 calc(100% - 32px), transparent 100%); -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 32px, #000 calc(100% - 32px), transparent 100%); }
+.tickerTrack { display:inline-flex; align-items:center; gap: var(--space-8); animation: tickerScroll 38s linear infinite; white-space:nowrap; padding-left: var(--space-4); will-change: transform; }
+@keyframes tickerScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.tickerCell { display:inline-flex; align-items:center; gap: var(--space-2); font-variant-numeric: tabular-nums; white-space:nowrap; padding: 2px 10px; border-radius: var(--radius-sm); border: 1px solid transparent; }
+.tickerCell[data-tone="good"] { color: var(--pos); }
+.tickerCell[data-tone="watch"] { color: var(--warn); }
+.tickerCell[data-tone="urgent"] { color: var(--neg); animation: tickerUrgent 1.8s ease-in-out infinite; }
+.tickerSymbol { font-family: var(--font-mono); font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted-strong); }
+.tickerValue { font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--fg); padding: 1px 4px; border-radius: 3px; display:inline-flex; align-items:baseline; gap: 2px; }
+.tickerUnit { font-size: 9px; font-weight: 500; color: var(--muted); letter-spacing: 0.04em; }
+.tickerSpark { width: 56px; height: 16px; flex-shrink:0; color: var(--pos); filter: drop-shadow(0 0 2px currentColor); }
+.tickerSpark[data-tone="watch"] { color: var(--warn); }
+.tickerSpark[data-tone="urgent"] { color: var(--neg); filter: drop-shadow(0 0 3px currentColor); }
+.tickerDelta { font-family: var(--font-mono); font-size: 11px; font-weight: 600; letter-spacing: 0.02em; }
+@keyframes tickerUrgent { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+.ticker:hover .tickerTrack { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) { .tickerTrack, .tickerPulse, .tickerCell { animation: none !important; } }
+
+/* Connect panel */
+.connectPanel { margin-top: var(--space-8); max-width: 520px; display:flex; flex-direction:column; gap: var(--space-4); padding: var(--space-6); border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--card-shadow); }
+.connectIntro { font-size: var(--text-lg); line-height: 1.45; color: var(--fg); margin: 0; }
+.connectIntro em { font-style: normal; color: var(--brand); font-weight: 700; }
+.connectSub { font-size: var(--text-xs); color: var(--muted); margin: 0; letter-spacing: 0.04em; }
+.connectCta { align-self:flex-start; margin-top: var(--space-2); }
+.setupNote { margin:0; padding: var(--space-3) var(--space-4); border-left: 2px solid var(--warn-line); background: var(--warn-soft); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; font-size: var(--text-xs); line-height: 1.55; color: var(--muted-strong); }
+.setupNote strong { color: var(--warn); font-weight: 600; }
+
+/* Connected panel */
+.panel { margin-top: var(--space-6); display:flex; flex-direction:column; gap: var(--space-5); }
+
+/* Recovery hero */
+.heroCard { display:grid; grid-template-columns: minmax(260px, 360px) 1fr; gap: var(--space-6); align-items:center; padding: var(--space-6); border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--card-shadow); }
+@media (max-width: 820px) { .heroCard { grid-template-columns: 1fr; gap: var(--space-5); } }
+.recoveryWrap { display:flex; justify-content:center; }
+.recoveryRing { position: relative; width: clamp(220px, 32vw, 300px); aspect-ratio: 1; display:grid; place-items:center; }
+.ringSvg { position:absolute; inset:0; width:100%; height:100%; transform: rotate(-90deg); }
+.ringTrack { fill:none; stroke: var(--track); stroke-width: 8; }
+.ringFill { fill:none; stroke: currentColor; stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 720ms var(--ease-premium); filter: drop-shadow(0 0 12px currentColor); }
+.recoveryRing[data-tone="good"] .ringFill { color: var(--pos); }
+.recoveryRing[data-tone="watch"] .ringFill { color: var(--warn); }
+.recoveryRing[data-tone="low"] .ringFill { color: var(--neg); }
+.recoveryRing[data-tone="muted"] .ringFill { color: var(--muted); }
+.recoveryInner { position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap: 2px; }
+.recoveryValue { font-family: var(--font-display); font-weight: 600; font-size: clamp(3.5rem, 7vw, 5rem); line-height: 1; letter-spacing: -0.03em; color: var(--fg); font-variant-numeric: tabular-nums; }
+.recoveryUnit { font-family: var(--font-display); font-weight: 500; font-size: var(--text-xl); color: var(--muted-strong); margin-top: -6px; }
+.recoveryLabel { margin-top: var(--space-2); font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted-strong); }
+.recoveryTier { margin-top: 3px; font-family: var(--font-display); font-weight: 600; font-size: var(--text-base); letter-spacing: -0.01em; color: var(--fg); }
+
+/* Trend sparkline */
+.trendWrap { display:flex; flex-direction:column; gap: var(--space-3); }
+.trendHead { display:flex; align-items:baseline; justify-content:space-between; gap: var(--space-3); }
+.serifTitle { font-family: var(--font-display); font-weight: 600; font-size: var(--text-lg); color: var(--fg); letter-spacing: -0.02em; }
+.trendDelta { font-family: var(--font-mono); font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
+.trendUp { color: var(--pos); }
+.trendDown { color: var(--warn); }
+.trendSvg { width: 100%; height: clamp(64px, 11vw, 84px); overflow: visible; }
+.trendLine { fill:none; stroke: var(--brand); stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; filter: drop-shadow(0 0 5px var(--brand-glow)); }
+.trendArea { stroke:none; }
+.trendDot { fill: var(--brand); opacity: 0.4; }
+.trendDotLast { fill: var(--brand); filter: drop-shadow(0 0 5px var(--brand)); }
+
+/* Stat grid */
+.grid { display:grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); }
+@media (max-width: 880px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.stat { display:flex; flex-direction:column; gap: var(--space-2); padding: var(--space-4); border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--card-shadow); transition: border-color var(--duration) var(--ease), background var(--duration) var(--ease), transform var(--duration) var(--ease); }
+.stat:hover { border-color: var(--border-strong); background: var(--surface-2); transform: translateY(-1px); }
+.statLabel { font-family: var(--font-mono); font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted-strong); }
+.statValueRow { display:flex; align-items:baseline; gap: 6px; }
+.statValue { font-family: var(--font-display); font-weight: 600; font-size: var(--text-3xl); line-height: 1; letter-spacing: -0.03em; color: var(--fg); font-variant-numeric: tabular-nums; }
+.statUnit { font-family: var(--font-display); font-weight: 500; font-size: var(--text-base); color: var(--muted-strong); }
+.statSub { font-size: var(--text-xs); color: var(--muted); letter-spacing: 0.02em; }
+.statDelta { font-family: var(--font-mono); font-size: var(--text-xs); font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: 0.04em; padding: 3px 9px; border-radius: var(--radius-pill); align-self:flex-start; border: 1px solid var(--border); background: var(--surface-2); }
+.statDelta[data-tone="good"] { color: var(--pos); border-color: var(--pos-line); }
+.statDelta[data-tone="watch"] { color: var(--warn); border-color: var(--warn-line); }
+.statDelta[data-tone="low"] { color: var(--neg); border-color: var(--neg-line); }
+.statDelta[data-tone="neutral"] { color: var(--muted-strong); }
+
+/* Sleep debt + coach */
+.debtCard, .coachCard { padding: var(--space-5); border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--card-shadow); transition: border-color var(--duration) var(--ease); }
+.debtCard:hover, .coachCard:hover { border-color: var(--border-strong); }
+.cardHead { display:flex; align-items:baseline; justify-content:space-between; gap: var(--space-3); margin-bottom: var(--space-4); }
+.debtTotal { font-family: var(--font-display); font-weight: 600; font-size: var(--text-lg); letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+.debtTotal em { font-family: var(--font-mono); font-style: normal; font-size: var(--text-xs); letter-spacing: 0.06em; color: var(--muted); margin-left: 6px; }
+.debtTotal[data-tone="watch"] { color: var(--neg); }
+.debtTotal[data-tone="good"] { color: var(--pos); }
+.debtBars { display:grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: var(--space-2); }
+.debtCol { display:flex; flex-direction:column; align-items:center; gap: var(--space-2); }
+.debtTrack { position:relative; width:100%; height: 96px; display:flex; align-items:center; }
+.debtBaseline { position:absolute; left:0; right:0; top:50%; height:1px; background: var(--border-strong); z-index:0; }
+.debtBarSurplus, .debtBarDeficit { position:absolute; left:18%; right:18%; border-radius: 4px 4px 0 0; z-index:1; }
+.debtBarSurplus { bottom:50%; background: linear-gradient(180deg, var(--pos) 0%, var(--pos-soft) 100%); box-shadow: 0 0 8px -2px var(--pos-line); }
+.debtBarDeficit { top:50%; border-radius: 0 0 4px 4px; background: linear-gradient(180deg, var(--neg) 0%, var(--neg-soft) 100%); }
+.debtLabel { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+
+.coachList { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap: var(--space-4); }
+.coachList li { display:grid; grid-template-columns: auto 1fr; gap: var(--space-3); align-items:flex-start; padding-left: var(--space-3); border-left: 1px solid var(--border); transition: border-color var(--duration) var(--ease); }
+.coachList li:hover { border-left-color: var(--brand); }
+.coachMark { color: var(--brand); font-size: var(--text-lg); line-height: 1.2; filter: drop-shadow(0 0 5px var(--brand-glow)); }
+.coachList strong { display:block; font-weight: 700; color: var(--fg); margin-bottom: 4px; font-size: var(--text-sm); line-height: 1.4; }
+.coachList li span:not(.coachMark) { color: var(--muted-strong); font-size: var(--text-sm); line-height: 1.55; }
+
+/* Footer */
+.footer { display:flex; align-items:center; justify-content:space-between; gap: var(--space-4); margin-top: var(--space-2); flex-wrap: wrap; }
+.legend { display:flex; align-items:center; gap: var(--space-3); font-family: var(--font-mono); font-size: var(--text-xs); color: var(--muted-strong); letter-spacing: 0.06em; }
+.legendDot { display:inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+.legendDot[data-tone="good"] { background: var(--pos); box-shadow: 0 0 8px var(--pos-line); }
+.legendDot[data-tone="watch"] { background: var(--warn); }
+.legendDot[data-tone="low"] { background: var(--neg); }
+.footerActions { display:flex; align-items:center; gap: var(--space-3); }
+.synced { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+@media (max-width: 560px) { .footer { flex-direction:column; align-items:flex-start; } .footerActions { flex-wrap: wrap; } }
+
+/* Source toggle (Whoop / Apple Health) */
+.srcSeg { display:inline-flex; align-self:flex-start; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-pill); padding: 3px; gap: 2px; }
+.srcTab { appearance:none; background: transparent; border:0; color: var(--muted); font-family: var(--font-ui); font-size: var(--text-sm); font-weight: 600; padding: 7px 15px; border-radius: var(--radius-pill); cursor: pointer; display:inline-flex; align-items:center; gap: 7px; transition: background var(--duration) var(--ease-premium), color var(--duration) var(--ease-premium); }
+.srcTab:hover { color: var(--muted-strong); }
+.srcTabActive, .srcTabActive:hover { background: var(--brand-soft); color: var(--fg); }
+
+/* Manual-entry form (Apple Health) */
+.fieldGrid { display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+.field { display:flex; flex-direction:column; gap: 6px; }
+.fieldFull { grid-column: 1 / -1; }
+.fieldLabel { font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted-strong); }
+.fieldInput { width: 100%; padding: 0.6rem 0.75rem; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--fg); font-family: var(--font-ui); font-size: var(--text-base); transition: border-color var(--duration) var(--ease), box-shadow var(--duration) var(--ease); }
+.fieldInput:focus { outline:none; border-color: var(--brand-line); box-shadow: 0 0 0 3px var(--brand-soft); }
+.formActions { display:flex; align-items:center; justify-content:flex-end; gap: var(--space-3); margin-top: var(--space-2); }
+
+/* Apple-data chip (mirrors the sample chip, brand-toned) */
+.appleChip { display:inline-flex; align-items:center; gap: 8px; margin-top: var(--space-4); padding: 6px 13px; border: 1px solid var(--brand-line); border-radius: var(--radius-pill); background: var(--brand-soft); color: var(--brand); font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; }
+.appleChip .tickerPulse { background: var(--brand); box-shadow: 0 0 8px var(--brand-glow); }
+
+</style>
+<link rel="stylesheet" href="skin.css?v=1">
+</head>
+<body>
+<main class="page grain-overlay">
+  <div class="shell" id="app"></div>
+</main>
+
+<script>
+/* ============================================================
+ * SAMPLE DATA — matches the Liam WhoopData shape.
+ * Replace this object (or feed it from a real sync) once the
+ * server-side WHOOP OAuth flow is wired up.
+ * ============================================================ */
+const SLEEP_TARGET = 8;
+
+const SAMPLE = {
+  date: 'today',
+  recovery: 92,
+  hrv: 218,            // out of the valid 15–150 range → flagged
+  rhr: 32,
+  sleepPerf: 85,
+  sleepHours: 7 + 40 / 60,   // 7h 40m
+  strain: 4.0,
+  hrvBaseline: null,
+  rhrBaseline: null,
+  sleepPerfBaseline: null,
+  strainWeeklyAvg: 7.8,
+  hrvAnomalous: true,
+  recoveryTrend: [78, 92],
+  sleepDebt7d: [
+    { day: 'Sun', hours: 6.7 },
+    { day: 'Tue', hours: 7 + 40 / 60 },
+  ],
+  sleepTargetHours: SLEEP_TARGET,
+  vitalityScore: 73,
+  vitalityTier: 'Solid',
+  lastSyncedMinutes: 12,
+  daysAvailable: 2,
+};
+
+/* ============================================================
+ * HELPERS (ported from WhoopModule.tsx / TickerBar.tsx)
+ * ============================================================ */
+function recoveryTone(r) {
+  if (r == null) return 'muted';
+  if (r >= 67) return 'good';
+  if (r >= 34) return 'watch';
+  return 'low';
+}
+function formatHM(h) {
+  if (h == null) return '—';
+  const hh = Math.floor(h);
+  const mm = Math.round((h - hh) * 60);
+  return hh + 'h ' + String(mm).padStart(2, '0') + 'm';
+}
+function formatDebt(minutes) {
+  const sign = minutes < 0 ? '-' : '+';
+  const abs = Math.abs(minutes);
+  const h = Math.floor(abs / 60);
+  const m = abs % 60;
+  return sign + h + 'h ' + String(m).padStart(2, '0') + 'm';
+}
+function esc(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+/* ---- Ticker items (ported from buildItems) ---- */
+function buildItems(d) {
+  const items = [];
+  if (d.recovery != null) {
+    const trend = d.recoveryTrend.length >= 2 ? d.recoveryTrend : [d.recovery, d.recovery];
+    const prior = trend.length > 1 ? trend.slice(0, -1).reduce((a, b) => a + b, 0) / (trend.length - 1) : d.recovery;
+    const delta = Math.round(d.recovery - prior);
+    const tone = d.recovery >= 67 ? 'good' : d.recovery >= 34 ? 'watch' : 'urgent';
+    items.push({ symbol: 'REC', value: String(Math.round(d.recovery)), unit: '%', spark: trend, delta, deltaUnit: '%', tone });
+  }
+  if (d.hrv != null) {
+    const baseline = d.hrvBaseline != null ? d.hrvBaseline : d.hrv;
+    const delta = (d.hrvBaseline != null && !d.hrvAnomalous) ? Math.round(d.hrv - d.hrvBaseline) : null;
+    const tone = d.hrvAnomalous ? 'urgent' : delta == null ? 'watch' : delta >= -2 ? 'good' : delta >= -8 ? 'watch' : 'urgent';
+    items.push({ symbol: 'HRV', value: String(Math.round(d.hrv)), unit: 'ms', spark: [baseline, d.hrv], delta, deltaUnit: 'ms', tone });
+  }
+  if (d.rhr != null) {
+    const baseline = d.rhrBaseline != null ? d.rhrBaseline : d.rhr;
+    const delta = d.rhrBaseline != null ? Math.round(d.rhr - d.rhrBaseline) : null;
+    const tone = delta == null ? 'watch' : delta <= 0 ? 'good' : delta <= 3 ? 'watch' : 'urgent';
+    items.push({ symbol: 'RHR', value: String(Math.round(d.rhr)), unit: 'bpm', spark: [baseline, d.rhr], delta, deltaUnit: 'bpm', inverse: true, tone });
+  }
+  if (d.sleepHours != null) {
+    const spark = d.sleepDebt7d.length >= 2 ? d.sleepDebt7d.map(n => n.hours) : [d.sleepTargetHours, d.sleepHours];
+    const delta = Math.round((d.sleepHours - d.sleepTargetHours) * 10) / 10;
+    const tone = d.sleepHours >= d.sleepTargetHours - 0.5 ? 'good' : d.sleepHours >= d.sleepTargetHours - 1.5 ? 'watch' : 'urgent';
+    const h = Math.floor(d.sleepHours);
+    const m = Math.round((d.sleepHours - h) * 60);
+    items.push({ symbol: 'SLP', value: h + 'h' + String(m).padStart(2, '0'), unit: '', spark, delta, deltaUnit: 'h', tone });
+  }
+  if (d.strain != null) {
+    const baseline = d.strainWeeklyAvg != null ? d.strainWeeklyAvg : d.strain;
+    const delta = d.strainWeeklyAvg != null ? Math.round((d.strain - d.strainWeeklyAvg) * 10) / 10 : null;
+    const tone = delta != null && delta > 2 ? 'watch' : 'good';
+    items.push({ symbol: 'STR', value: d.strain.toFixed(1), unit: '', spark: [baseline, d.strain], delta, deltaUnit: '', tone });
+  }
+  if (d.sleepDebt7d.length > 0) {
+    const debtH = d.sleepDebt7d.reduce((a, n) => a + (n.hours - d.sleepTargetHours), 0);
+    const debtRounded = Math.round(debtH * 10) / 10;
+    const tone = debtH > -1 ? 'good' : debtH > -3 ? 'watch' : 'urgent';
+    items.push({ symbol: 'DBT', value: (debtH >= 0 ? '+' : '') + debtRounded.toFixed(1), unit: 'h', spark: d.sleepDebt7d.map(n => n.hours - d.sleepTargetHours), delta: null, deltaUnit: '', tone });
+  }
+  return items;
+}
+
+function sparklineSvg(values, tone) {
+  if (values.length < 2) return '';
+  const W = 56, H = 16, pad = 1.5;
+  const min = Math.min.apply(null, values), max = Math.max.apply(null, values);
+  const range = Math.max(0.0001, max - min);
+  const stepX = (W - pad * 2) / (values.length - 1);
+  const pts = values.map((v, i) => (pad + i * stepX).toFixed(1) + ',' + (H - pad - ((v - min) / range) * (H - pad * 2)).toFixed(1)).join(' ');
+  const last = values[values.length - 1];
+  const lastX = pad + (values.length - 1) * stepX;
+  const lastY = H - pad - ((last - min) / range) * (H - pad * 2);
+  return '<svg viewBox="0 0 ' + W + ' ' + H + '" class="tickerSpark" aria-hidden data-tone="' + tone + '">'
+    + '<polyline points="' + pts + '" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round" />'
+    + '<circle cx="' + lastX.toFixed(1) + '" cy="' + lastY.toFixed(1) + '" r="1.6" fill="currentColor" /></svg>';
+}
+
+function tickerHtml(d) {
+  const items = buildItems(d);
+  if (items.length === 0) return '';
+  const rolled = items.concat(items);
+  const cells = rolled.map(item => {
+    const arrow = item.delta == null ? '' : item.inverse ? (item.delta <= 0 ? '↗' : '↘') : (item.delta >= 0 ? '↗' : '↘');
+    const deltaText = item.delta == null ? '' : (item.delta >= 0 ? '+' : '') + item.delta + item.deltaUnit;
+    return '<span class="tickerCell" data-tone="' + item.tone + '">'
+      + '<span class="tickerSymbol">' + item.symbol + '</span>'
+      + '<span class="tickerValue">' + esc(item.value) + (item.unit ? '<span class="tickerUnit">' + item.unit + '</span>' : '') + '</span>'
+      + sparklineSvg(item.spark, item.tone)
+      + (deltaText ? '<span class="tickerDelta">' + arrow + ' ' + deltaText + '</span>' : '')
+      + '</span>';
+  }).join('');
+  return '<div class="ticker" role="status" aria-label="Liam live insights">'
+    + '<div class="tickerEyebrow"><span class="tickerPulse" aria-hidden></span>Liam · Live</div>'
+    + '<div class="tickerScroll"><div class="tickerTrack">' + cells + '</div></div></div>';
+}
+
+/* ---- Recovery hero ---- */
+function recoveryHeroHtml(d) {
+  const tone = recoveryTone(d.recovery);
+  const r = d.recovery;
+  const trend = d.recoveryTrend;
+  const hasTrend = trend.length >= 2;
+  const min = hasTrend ? Math.min.apply(null, trend) : 0;
+  const max = hasTrend ? Math.max.apply(null, trend) : 100;
+  const range = Math.max(1, max - min);
+  const w = 220, h = 60;
+  const stepX = hasTrend ? w / (trend.length - 1) : 0;
+  const pts = trend.map((v, i) => (i * stepX).toFixed(1) + ',' + (h - ((v - min) / range) * h * 0.85 - h * 0.075).toFixed(1)).join(' ');
+  const trendDelta = hasTrend ? trend[trend.length - 1] - trend[0] : 0;
+  const recoveryTier = r != null ? (r >= 67 ? 'Recovered' : r >= 34 ? 'Building' : 'Drained') : '—';
+  const circ = 2 * Math.PI * 92;
+
+  let dots = '';
+  trend.forEach((v, i) => {
+    const x = i * stepX;
+    const y = h - ((v - min) / range) * h * 0.85 - h * 0.075;
+    const isLast = i === trend.length - 1;
+    dots += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (isLast ? 3.2 : 1.6) + '" class="' + (isLast ? 'trendDotLast' : 'trendDot') + '" />';
+  });
+
+  const trendSvg = hasTrend
+    ? '<svg viewBox="0 0 ' + w + ' ' + h + '" class="trendSvg" preserveAspectRatio="none" aria-hidden="true">'
+      + '<defs><linearGradient id="trendFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--brand)" stop-opacity="0.32" /><stop offset="100%" stop-color="var(--brand)" stop-opacity="0" /></linearGradient></defs>'
+      + '<polyline class="trendArea" points="0,' + h + ' ' + pts + ' ' + w + ',' + h + '" fill="url(#trendFill)" />'
+      + '<polyline class="trendLine" points="' + pts + '" />' + dots + '</svg>'
+    : '<div style="color: var(--muted); font-size: 13px;">Need a few more days of data for the trend.</div>';
+
+  return '<div class="heroCard" data-tone="' + tone + '">'
+    + '<div class="recoveryWrap"><div class="recoveryRing" data-tone="' + tone + '">'
+    +   '<svg viewBox="0 0 200 200" class="ringSvg" aria-hidden="true"><circle cx="100" cy="100" r="92" class="ringTrack" />'
+    +     (r != null ? '<circle cx="100" cy="100" r="92" class="ringFill" style="stroke-dasharray: ' + circ + '; stroke-dashoffset: ' + (circ * (1 - r / 100)) + ';" />' : '')
+    +   '</svg>'
+    +   '<div class="recoveryInner"><div class="recoveryValue">' + (r != null ? Math.round(r) : '—') + '</div>'
+    +     '<div class="recoveryUnit">' + (r != null ? '%' : '') + '</div>'
+    +     '<div class="recoveryLabel">Recovery</div><div class="recoveryTier">' + recoveryTier + '</div></div>'
+    + '</div></div>'
+    + '<div class="trendWrap"><div class="trendHead"><span class="serifTitle">' + trend.length + '-day trend</span>'
+    +   (hasTrend ? '<span class="trendDelta ' + (trendDelta >= 0 ? 'trendUp' : 'trendDown') + '">' + (trendDelta >= 0 ? '↑' : '↓') + ' ' + Math.abs(Math.round(trendDelta)) + '</span>' : '')
+    + '</div>' + trendSvg + '</div></div>';
+}
+
+/* ---- Stat ---- */
+function statHtml(label, value, unit, sub, delta, deltaTone) {
+  return '<div class="stat"><div class="statLabel">' + label + '</div>'
+    + '<div class="statValueRow"><span class="statValue">' + esc(value) + '</span>' + (unit ? '<span class="statUnit">' + unit + '</span>' : '') + '</div>'
+    + '<div class="statSub">' + esc(sub) + '</div>'
+    + (delta ? '<div class="statDelta" data-tone="' + deltaTone + '">' + esc(delta) + '</div>' : '') + '</div>';
+}
+
+function statGridHtml(d) {
+  const hrvDelta = (d.hrv != null && d.hrvBaseline != null) ? Math.round(d.hrv - d.hrvBaseline) : null;
+  const rhrDelta = (d.rhr != null && d.rhrBaseline != null) ? Math.round(d.rhr - d.rhrBaseline) : null;
+  const sleepDelta = (d.sleepPerf != null && d.sleepPerfBaseline != null) ? Math.round((d.sleepPerf - d.sleepPerfBaseline) * 10) / 10 : null;
+  return '<div class="grid">'
+    + statHtml('Sleep', formatHM(d.sleepHours), '', d.sleepPerf != null ? Math.round(d.sleepPerf) + '% efficiency' : '—',
+        sleepDelta != null ? (sleepDelta >= 0 ? '↗ +' + sleepDelta + '%' : '↘ ' + sleepDelta + '%') : null,
+        sleepDelta != null && sleepDelta >= 0 ? 'good' : 'watch')
+    + statHtml('Strain', d.strain != null ? d.strain.toFixed(1) : '—', '', 'today',
+        d.strainWeeklyAvg != null ? 'wk avg ' + d.strainWeeklyAvg.toFixed(1) : null,
+        (d.strainWeeklyAvg != null && d.strain != null && d.strain > d.strainWeeklyAvg + 1) ? 'watch' : 'neutral')
+    + statHtml('HRV', d.hrv != null ? String(Math.round(d.hrv)) : '—', 'ms', d.hrvAnomalous ? 'reading flagged' : 'rmssd',
+        hrvDelta != null ? (hrvDelta >= 0 ? '↑ +' + hrvDelta + ' ms' : '↓ ' + hrvDelta + ' ms') : null,
+        hrvDelta != null && hrvDelta >= 0 ? 'good' : 'watch')
+    + statHtml('RHR', d.rhr != null ? String(Math.round(d.rhr)) : '—', 'bpm', 'resting',
+        rhrDelta != null ? (rhrDelta <= 0 ? '↓ ' + rhrDelta + ' bpm' : '↑ +' + rhrDelta + ' bpm') : null,
+        rhrDelta != null && rhrDelta <= 0 ? 'good' : 'watch')
+    + '</div>';
+}
+
+/* ---- Sleep debt ---- */
+function sleepDebtHtml(d) {
+  if (d.sleepDebt7d.length === 0) return '';
+  const nights = d.sleepDebt7d, target = d.sleepTargetHours;
+  const totalMinutes = nights.reduce((acc, x) => acc + (x.hours - target), 0) * 60;
+  const maxAbs = 1.5;
+  let bars = '';
+  nights.forEach((n, i) => {
+    const delta = n.hours - target;
+    const pct = Math.min(Math.abs(delta) / maxAbs, 1) * 100;
+    const surplus = delta >= 0;
+    const title = n.day + ': ' + n.hours.toFixed(1) + 'h (' + (surplus ? '+' : '') + delta.toFixed(1) + 'h)';
+    bars += '<div class="debtCol"><div class="debtTrack"><div class="debtBaseline"></div>'
+      + '<div class="' + (surplus ? 'debtBarSurplus' : 'debtBarDeficit') + '" style="height: ' + pct + '%" title="' + esc(title) + '"></div>'
+      + '</div><div class="debtLabel">' + esc(n.day) + '</div></div>';
+  });
+  return '<div class="debtCard"><div class="cardHead"><span class="serifTitle">Sleep debt</span>'
+    + '<span class="debtTotal" data-tone="' + (totalMinutes < 0 ? 'watch' : 'good') + '">' + formatDebt(Math.round(totalMinutes)) + ' <em>last ' + nights.length + ' nights</em></span>'
+    + '</div><div class="debtBars">' + bars + '</div></div>';
+}
+
+/* ---- Coach (ported from CoachCard) ---- */
+function coachHtml(d) {
+  const tips = [];
+  if (d.hrv != null && d.hrvBaseline != null && !d.hrvAnomalous) {
+    const delta = Math.round(d.hrv - d.hrvBaseline);
+    if (delta <= -5) tips.push({ strong: 'Your HRV is ' + Math.round(d.hrv) + 'ms, ' + Math.abs(delta) + 'ms under your ' + Math.round(d.hrvBaseline) + 'ms baseline.', rest: ' Aim for 8h sleep tonight and skip caffeine after 2pm. HRV usually rebounds inside 48h once the inputs reset.' });
+    else if (delta >= 5) tips.push({ strong: 'HRV is ' + Math.round(d.hrv) + 'ms, ' + delta + 'ms above baseline.', rest: ' Strong recovery signal. This is a green-light day to push the hardest session.' });
+  }
+  if (d.strain != null && d.strainWeeklyAvg != null && d.strain > d.strainWeeklyAvg + 2) {
+    tips.push({ strong: 'Strain ' + d.strain.toFixed(1) + ' today, above your ' + d.strainWeeklyAvg.toFixed(1) + ' weekly avg.', rest: ' One recovery day (Z2 only, target under 10 strain) lets HRV climb back without sacrificing the block.' });
+  }
+  if (d.sleepDebt7d.length > 0) {
+    const debtMin = d.sleepDebt7d.reduce((acc, x) => acc + (x.hours - d.sleepTargetHours), 0) * 60;
+    if (debtMin < -90) tips.push({ strong: 'Sleep debt ' + formatDebt(Math.round(debtMin)) + ' across the week.', rest: ' Add 30 minutes tonight to stay ahead of the cognitive cost. The cheapest training intervention you can make is going to bed earlier.' });
+  }
+  if (d.recovery != null && d.recovery < 34) {
+    tips.unshift({ strong: 'Recovery ' + Math.round(d.recovery) + '%. Your ceiling is lower today.', rest: ' Cut caffeine ~30% and skip a second hard session. Trying to brute-force a red day costs you tomorrow.' });
+  } else if (d.recovery != null && d.recovery >= 80) {
+    tips.unshift({ strong: 'Recovery ' + Math.round(d.recovery) + '%. Green light to push.', rest: ' Stack the hardest training or cognitive session inside the peak window.' });
+  }
+  if (tips.length === 0) tips.push({ strong: 'Building your baseline.', rest: " Need 7+ days of valid readings before personalized coaching kicks in. You're at " + d.daysAvailable + ' now.' });
+
+  const lis = tips.slice(0, 3).map(t => '<li><span class="coachMark" aria-hidden>✦</span><div><strong>' + esc(t.strong) + '</strong><span>' + esc(t.rest) + '</span></div></li>').join('');
+  return '<div class="coachCard"><div class="cardHead"><span class="serifTitle">How to improve today</span></div><ul class="coachList">' + lis + '</ul></div>';
+}
+
+/* ============================================================
+ * STATE — connected toggle (placeholder for real OAuth)
+ * ============================================================ */
+const LS_KEY = 'whoop_standalone_connected_v1';
+// Publish a small metrics snapshot to a shared key so sibling standalones
+// (e.g. Supplements) can read "my Whoop metrics if I have them". Cleared on disconnect.
+const WHOOP_SHARE_KEY = 'patron_whoop_data_v1';
+const HEALTH_KEY = 'patron_health_v1'; // suite-wide vitals record (also written by the dashboard's manual/Apple Watch entry)
+function publishWhoopData(d) {
+  const snap = {
+    source: 'whoop', connected: true, ts: Date.now(),
+    recovery: d.recovery, hrv: d.hrv, rhr: d.rhr,
+    sleepPerf: d.sleepPerf, sleepHours: d.sleepHours,
+    sleepTargetHours: d.sleepTargetHours, strain: d.strain,
+    vitalityScore: d.vitalityScore,
+  };
+  try { localStorage.setItem(WHOOP_SHARE_KEY, JSON.stringify(snap)); } catch (e) {}
+  try { localStorage.setItem(HEALTH_KEY, JSON.stringify(snap)); } catch (e) {}
+}
+function clearWhoopData() {
+  try { localStorage.removeItem(WHOOP_SHARE_KEY); } catch (e) {}
+  // Only clear the shared record if Whoop owns it — never wipe manually-entered vitals.
+  try { const cur = JSON.parse(localStorage.getItem(HEALTH_KEY) || 'null'); if (cur && cur.source === 'whoop') localStorage.removeItem(HEALTH_KEY); } catch (e) {}
+}
+function publishFitbitData(d) {
+  const snap = {
+    source: 'fitbit', connected: true, ts: Date.now(),
+    recovery: d.recovery, hrv: d.hrv, rhr: d.rhr,
+    sleepPerf: d.sleepPerf, sleepHours: d.sleepHours,
+    sleepTargetHours: d.sleepTargetHours, strain: d.strain,
+    bedtime: d.bedtime, wakeTime: d.wakeTime, // Fitbit gives real bed/wake times → feeds Goals day-window
+    vitalityScore: d.vitalityScore,
+  };
+  try { localStorage.setItem(HEALTH_KEY, JSON.stringify(snap)); } catch (e) {}
+}
+function clearFitbitData() {
+  try { const cur = JSON.parse(localStorage.getItem(HEALTH_KEY) || 'null'); if (cur && cur.source === 'fitbit') localStorage.removeItem(HEALTH_KEY); } catch (e) {}
+}
+
+/* ---- Apple Health (manual entry, tagged Apple Watch) ----
+ * Apple HealthKit has no web API — a browser can't read it directly — so the
+ * honest path is the same one the dashboard uses: the user copies today's
+ * numbers in by hand, and they publish into the suite under HEALTH_KEY. */
+let appleData = null;     // saved manual snapshot, or null
+let editingApple = false; // true while the entry form is open over saved data
+function loadApple() {
+  try { const cur = JSON.parse(localStorage.getItem(HEALTH_KEY) || 'null'); if (cur && cur.source === 'apple') appleData = cur; } catch (e) {}
+}
+function clearApple() {
+  appleData = null;
+  try { const cur = JSON.parse(localStorage.getItem(HEALTH_KEY) || 'null'); if (cur && cur.source === 'apple') localStorage.removeItem(HEALTH_KEY); } catch (e) {}
+}
+function saveAppleEntry() {
+  const num = (id) => { const el = document.getElementById(id); if (!el || el.value === '') return null; const n = Number(el.value); return isFinite(n) ? n : null; };
+  const recovery = num('a-rec'), sleepHours = num('a-sleep'), hrv = num('a-hrv'), rhr = num('a-rhr'), strain = num('a-strain');
+  const target = num('a-target') || 8;
+  if (recovery == null && sleepHours == null && hrv == null && rhr == null && strain == null) { alert('Enter at least one reading (recovery or sleep).'); return; }
+  const sleepPerf = sleepHours != null ? Math.round(Math.min(100, (sleepHours / target) * 100)) : null;
+  const snap = { source: 'apple', connected: true, ts: Date.now(), recovery, hrv, rhr, sleepPerf, sleepHours, sleepTargetHours: target, strain, vitalityScore: null };
+  appleData = snap;
+  try { localStorage.setItem(HEALTH_KEY, JSON.stringify(snap)); } catch (e) {}
+  editingApple = false;
+  render();
+}
+const THEMES = [
+  { key: 'nocturne', label: 'Nocturne', swatch: '#8B7CFF' },
+  { key: 'aurora', label: 'Aurora', swatch: 'linear-gradient(135deg,#8B7BFF,#4FE3D0)' },
+  { key: 'daylight', label: 'Daylight', swatch: '#6A45FF' },
+];
+let currentTheme = (function(){ try { return localStorage.getItem('patron_theme') || 'nocturne'; } catch(e){ return 'nocturne'; } })();
+if (!THEMES.some(t => t.key === currentTheme)) currentTheme = 'nocturne';
+function applyTheme(name){
+  if (!THEMES.some(t => t.key === name)) name = 'nocturne';
+  currentTheme = name;
+  document.documentElement.setAttribute('data-theme', name);
+  try { localStorage.setItem('patron_theme', name); } catch(e){}
+  render();
+}
+function themeSegHtml(){
+  return '<div class="themeSeg" role="radiogroup" aria-label="Theme">'
+    + THEMES.map(t => '<button type="button" class="themeBtn ' + (t.key === currentTheme ? 'themeBtnActive' : '') + '" data-action="theme" data-theme="' + t.key + '"><span class="themeSwatch" style="background:' + t.swatch + '"></span>' + t.label + '</button>').join('')
+    + '</div>';
+}
+let connected = false;
+try { connected = localStorage.getItem(LS_KEY) === '1'; } catch {}
+let syncing = false;
+let connectSource = 'whoop'; // which tab the connect panel shows: 'whoop' | 'apple'
+
+function setConnected(v) {
+  connected = v;
+  try { localStorage.setItem(LS_KEY, v ? '1' : '0'); } catch {}
+  render();
+}
+
+/* ---- Real WHOOP sync via the /api OAuth flow (deployed host only) ----
+ * On a server we use live data; the old localStorage toggle + sample data is a
+ * LOCAL preview only, and is never published into the suite. */
+const ON_SERVER = location.protocol === 'http:' || location.protocol === 'https:';
+let liveData = null, liveConnected = false;
+let fitbitData = null, fitbitConnected = false; // parallel live path for Fitbit
+let activeKind = null; // which source is currently displayed: 'whoop-live' | 'fitbit-live' | 'apple' | 'sample'
+function isLive() { return !!liveData; }
+function isConnected() { return ON_SERVER ? liveConnected : connected; }
+function activeData() { return liveData || SAMPLE; }
+function buildLiveData(j) {
+  const trend = Array.isArray(j.recoveryTrend) && j.recoveryTrend.length ? j.recoveryTrend : (j.recovery != null ? [j.recovery] : []);
+  return {
+    date: 'today',
+    recovery: j.recovery, hrv: j.hrv, rhr: j.rhr,
+    sleepPerf: j.sleepPerf, sleepHours: j.sleepHours, strain: j.strain,
+    hrvBaseline: null, rhrBaseline: null, sleepPerfBaseline: null,
+    strainWeeklyAvg: j.strainWeeklyAvg != null ? j.strainWeeklyAvg : null,
+    hrvAnomalous: false,
+    recoveryTrend: trend,
+    sleepDebt7d: Array.isArray(j.sleepDebt7d) ? j.sleepDebt7d : [],
+    sleepTargetHours: j.sleepTargetHours || 8,
+    vitalityScore: null, vitalityTier: '',
+    lastSyncedMinutes: 0,
+    daysAvailable: trend.length,
+  };
+}
+async function syncWhoopLive() {
+  if (!ON_SERVER) return;
+  syncing = true; render();
+  try {
+    const r = await fetch('/api/whoop/data', { cache: 'no-store' });
+    const j = await r.json();
+    if (j && j.connected) { liveData = buildLiveData(j); liveConnected = true; }
+    else { liveData = null; liveConnected = false; }
+  } catch (e) { liveData = null; liveConnected = false; }
+  syncing = false; render();
+}
+async function syncFitbitLive() {
+  if (!ON_SERVER) return;
+  syncing = true; render();
+  try {
+    const r = await fetch('/api/fitbit/data', { cache: 'no-store' });
+    const j = await r.json();
+    if (j && j.connected) { fitbitData = buildLiveData(j); fitbitData.bedtime = j.bedtime; fitbitData.wakeTime = j.wakeTime; fitbitConnected = true; }
+    else { fitbitData = null; fitbitConnected = false; }
+  } catch (e) { fitbitData = null; fitbitConnected = false; }
+  syncing = false; render();
+}
+
+/* ============================================================
+ * VIEWS
+ * ============================================================ */
+function headerHtml(d) {
+  const badge = (connected && d && d.vitalityScore != null)
+    ? '<aside class="scoreBadge" aria-label="Liam Score"><div class="scoreNumber">' + d.vitalityScore + '</div>'
+      + '<div class="scoreCol"><div class="scoreLabel">Liam Score</div><div class="scoreTier">' + esc(d.vitalityTier) + '</div></div></aside>'
+    : '';
+  return '<div class="header"><div class="headerTop"><a class="back" href="index.html"><span class="backArrow">←</span> Liam</a>' + themeSegHtml() + '</div>'
+    + '<div class="titleRow"><div><h1 class="title">Fitness Band</h1><p class="subtitle">Recovery · sleep · strain · HRV</p></div>' + badge + '</div></div>';
+}
+
+function sourceTabsHtml() {
+  const tab = (key, emoji, label) => '<button type="button" class="srcTab ' + (connectSource === key ? 'srcTabActive' : '') + '" data-action="src-tab" data-src="' + key + '"><span aria-hidden>' + emoji + '</span>' + label + '</button>';
+  return '<div class="srcSeg" role="tablist" aria-label="Data source">' + tab('whoop', '🔋', 'Whoop') + tab('fitbit', '💠', 'Fitbit') + tab('apple', '⌚', 'Apple Health') + '</div>';
+}
+
+function fitbitConnectBodyHtml() {
+  const cta = ON_SERVER
+    ? '<a class="btn btn-primary connectCta" href="/api/fitbit/login">Connect Fitbit</a>'
+      + '<p class="setupNote"><strong>Setup note:</strong> needs your Fitbit API keys set on the host (see <em>FITBIT_SETUP.md</em>). Then this is a real one-tap sign-in — sleep, HRV, resting HR &amp; your bed/wake times sync automatically.</p>'
+    : '<p class="setupNote"><strong>Setup note:</strong> live Fitbit sync runs on the deployed app (Vercel) with your Fitbit keys. Opened locally, use <strong>Apple Health</strong> to enter numbers by hand.</p>';
+  return '<p class="connectIntro">Bring your <em>sleep</em>, <em>HRV</em>, and <em>resting HR</em> into Liam. One tap. Sign in with Fitbit, allow access, you’re back here.</p>'
+    + '<p class="connectSub">We never see your Fitbit password. You can disconnect anytime. Fitbit has no recovery score, so that ring stays blank — everything else fills in.</p>'
+    + cta;
+}
+
+function appleFieldHtml(id, label, ph, val, attrs, full) {
+  return '<div class="field' + (full ? ' fieldFull' : '') + '"><label class="fieldLabel" for="' + id + '">' + label + '</label>'
+    + '<input id="' + id + '" class="fieldInput" type="number" placeholder="' + esc(ph) + '" value="' + esc(val) + '" ' + attrs + ' /></div>';
+}
+
+function appleFormHtml() {
+  const a = appleData || {};
+  const v = (k) => (a[k] != null ? a[k] : '');
+  const savedNote = appleData ? '<p class="connectSub">Editing your saved Apple Watch readings.</p>' : '';
+  return '<p class="connectIntro">Add today’s <em>recovery</em>, <em>sleep</em> &amp; <em>HRV</em> from Apple Health. They feed the same dashboard and supplement picks as Whoop.</p>'
+    + savedNote
+    + '<div class="fieldGrid">'
+    + appleFieldHtml('a-rec', 'Recovery / readiness %', '—', v('recovery'), 'min="0" max="100" inputmode="numeric"')
+    + appleFieldHtml('a-sleep', 'Sleep (hours)', '7.5', v('sleepHours'), 'min="0" max="24" step="0.1" inputmode="decimal"')
+    + appleFieldHtml('a-hrv', 'HRV (ms)', '—', v('hrv'), 'min="0" max="300" inputmode="numeric"')
+    + appleFieldHtml('a-rhr', 'Resting HR (bpm)', '—', v('rhr'), 'min="20" max="150" inputmode="numeric"')
+    + appleFieldHtml('a-strain', 'Strain (0–21, optional)', '—', v('strain'), 'min="0" max="21" step="0.1" inputmode="decimal"')
+    + appleFieldHtml('a-target', 'Sleep target (hours)', '8', (a.sleepTargetHours != null ? a.sleepTargetHours : 8), 'min="4" max="12" step="0.5" inputmode="decimal"', true)
+    + '</div>'
+    + '<p class="setupNote"><strong>Setup note:</strong> Apple Health has no web API — a browser can’t read HealthKit directly. Open the Health app, copy today’s <em>HRV</em>, <em>resting HR</em> &amp; <em>time asleep</em> in here. Saved into the suite tagged <strong>Apple Watch</strong>.</p>'
+    + '<div class="formActions">'
+    + (appleData ? '<button type="button" class="btn btn-link" data-action="remove-apple">remove</button>' : '')
+    + '<button type="button" class="btn btn-primary" data-action="save-apple">Save readings</button></div>';
+}
+
+function whoopConnectBodyHtml() {
+  const cta = ON_SERVER
+    ? '<a class="btn btn-primary connectCta" href="/api/whoop/login">Connect Whoop</a>'
+      + '<p class="setupNote"><strong>Setup note:</strong> needs your WHOOP API keys set on the host (see <em>WHOOP_SETUP.md</em>). Then this is a real one-tap sign-in — recovery, sleep &amp; strain sync automatically.</p>'
+    : '<button type="button" class="btn btn-primary connectCta" data-action="connect">Preview with sample data</button>'
+      + '<p class="setupNote"><strong>Setup note:</strong> live WHOOP sync runs on the deployed app. Opened locally, tap above to preview the dashboard with sample numbers — these are <em>not</em> saved into the suite.</p>';
+  return '<p class="connectIntro">Bring your <em>recovery</em>, <em>sleep</em>, and <em>strain</em> into Liam. One tap. Sign in with Whoop, allow access, you’re back here.</p>'
+    + '<p class="connectSub">We never see your Whoop password. You can disconnect anytime.</p>'
+    + cta;
+}
+
+function connectPanelHtml() {
+  const body = connectSource === 'apple' ? appleFormHtml()
+    : connectSource === 'fitbit' ? fitbitConnectBodyHtml()
+    : whoopConnectBodyHtml();
+  return '<section class="connectPanel">' + sourceTabsHtml() + body + '</section>';
+}
+
+function dataPanelHtml(d, kind) {
+  const actions = kind === 'apple'
+    ? '<span class="synced">entered manually · Apple Watch</span>'
+      + '<button type="button" class="btn btn-ghost" data-action="edit-apple">edit readings</button>'
+      + '<button type="button" class="btn btn-link" data-action="remove-apple">remove</button>'
+    : '<span class="synced">' + (d.lastSyncedMinutes != null ? 'last synced ' + d.lastSyncedMinutes + 'm ago' : 'sync time unknown') + '</span>'
+      + '<button type="button" class="btn btn-ghost" data-action="sync"' + (syncing ? ' disabled' : '') + '>' + (syncing ? 'syncing…' : 'sync now') + '</button>'
+      + '<button type="button" class="btn btn-link" data-action="disconnect">disconnect</button>';
+  return '<section class="panel">'
+    + recoveryHeroHtml(d)
+    + statGridHtml(d)
+    + sleepDebtHtml(d)
+    + coachHtml(d)
+    + '<div class="footer"><div class="legend">'
+    +   '<span class="legendDot" data-tone="good"></span> Good'
+    +   '<span class="legendDot" data-tone="watch"></span> Watch'
+    +   '<span class="legendDot" data-tone="low"></span> Low'
+    + '</div><div class="footerActions">' + actions + '</div></div></section>';
+}
+
+function render() {
+  // Source priority: live Whoop > live Fitbit > saved Apple Health > local sample preview.
+  let d = null, kind = null;
+  if (liveData) { d = liveData; kind = 'whoop-live'; }
+  else if (fitbitData) { d = fitbitData; kind = 'fitbit-live'; }
+  else if (appleData && !editingApple) { d = buildLiveData(appleData); kind = 'apple'; }
+  else if (!ON_SERVER && connected) { d = SAMPLE; kind = 'sample'; }
+  activeKind = kind;
+
+  // ONLY ever publish real live data into the suite — and only the active source.
+  if (kind === 'whoop-live') publishWhoopData(liveData);
+  else if (kind === 'fitbit-live') publishFitbitData(fitbitData);
+
+  let html = headerHtml(d);
+  if (d) {
+    if (kind === 'sample') html += '<div class="sampleChip"><span class="tickerPulse" aria-hidden></span>Sample data · connect WHOOP for live numbers</div>';
+    else if (kind === 'apple') html += '<div class="appleChip"><span class="tickerPulse" aria-hidden></span>Apple Health · entered manually</div>';
+    else if (kind === 'fitbit-live') html += '<div class="appleChip"><span class="tickerPulse" aria-hidden></span>Fitbit · live (no recovery score)</div>';
+    html += tickerHtml(d);
+    html += dataPanelHtml(d, kind);
+  } else {
+    html += connectPanelHtml();
+  }
+  document.getElementById('app').innerHTML = html;
+}
+
+/* ============================================================
+ * EVENTS
+ * ============================================================ */
+document.addEventListener('click', e => {
+  const btn = e.target.closest('[data-action]');
+  if (!btn) return;
+  const action = btn.getAttribute('data-action');
+  if (action === 'back') { e.preventDefault(); return; }
+  if (action === 'theme') { applyTheme(btn.getAttribute('data-theme')); return; }
+  if (action === 'src-tab') { connectSource = btn.getAttribute('data-src'); render(); return; }
+  if (action === 'save-apple') { saveAppleEntry(); return; }
+  if (action === 'edit-apple') { editingApple = true; connectSource = 'apple'; render(); return; }
+  if (action === 'remove-apple') { if (confirm('Remove your Apple Health readings from the suite?')) { clearApple(); editingApple = false; render(); } return; }
+  if (action === 'connect') { setConnected(true); return; } // local sample preview only
+  if (action === 'disconnect') {
+    if (activeKind === 'fitbit-live') {
+      fetch('/api/fitbit/logout').catch(() => {}).then(() => { fitbitConnected = false; fitbitData = null; clearFitbitData(); render(); });
+    } else if (ON_SERVER) {
+      fetch('/api/whoop/logout').catch(() => {}).then(() => { liveConnected = false; liveData = null; clearWhoopData(); render(); });
+    } else if (confirm('Disconnect Whoop? (Hides the sample preview in this standalone.)')) {
+      setConnected(false);
+    }
+    return;
+  }
+  if (action === 'sync') {
+    if (activeKind === 'fitbit-live') { syncFitbitLive(); }
+    else if (ON_SERVER) { syncWhoopLive(); }
+    else { syncing = true; render(); setTimeout(() => { syncing = false; render(); }, 900); }
+    return;
+  }
+});
+
+loadApple();        // pick up any manually-entered Apple Watch readings
+applyTheme(currentTheme);
+
+// On a deployed host: pick up the OAuth return + pull live WHOOP / Fitbit data.
+(function bootLive(){
+  if (!ON_SERVER) return;
+  try {
+    const q = new URLSearchParams(location.search);
+    const w = q.get('whoop'), f = q.get('fitbit');
+    if (w || f) {
+      history.replaceState(null, '', location.pathname);
+      if (w === 'error' || w === 'denied') alert('Whoop connection didn’t complete — check the host’s WHOOP keys & redirect URL (WHOOP_SETUP.md).');
+      if (f === 'error' || f === 'denied') alert('Fitbit connection didn’t complete — check the host’s FITBIT keys & redirect URL (FITBIT_SETUP.md).');
+      if (f === 'connected') connectSource = 'fitbit';
+    }
+  } catch (e) {}
+  syncWhoopLive();
+  syncFitbitLive();
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="db.js?v=15"></script>
+<script src="brand.js?v=16"></script>
+</body>
+</html>

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#0C0C12" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Patron" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="icon" type="image/svg+xml" href="icon.svg" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<title>Macros · Liam</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<script>try{document.documentElement.setAttribute("data-theme",localStorage.getItem("patron_theme")||"nocturne");}catch(e){document.documentElement.setAttribute("data-theme","nocturne");}</script>
+<link rel="stylesheet" href="theme.css" />
+
+<style>
+  /* page-specific layout — all colours/sizes still come from theme.css tokens */
+  .macroGrid { display:grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-3); }
+  @media (max-width: 560px) { .macroGrid { grid-template-columns: repeat(2, 1fr); } }
+  .macroBox { display:flex; flex-direction:column; gap:4px; padding: var(--space-4); border:1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); }
+  .macroBox[data-accent="cal"] { border-color: var(--brand-line); background: var(--brand-soft); }
+  .macroVal { font-family: var(--font-display); font-weight:600; font-size: var(--text-2xl); letter-spacing:-0.02em; font-variant-numeric: tabular-nums; }
+  .macroLabel { font-family: var(--font-mono); font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color: var(--muted); }
+
+  /* MyFitnessPal-style header: Goal − Food = Remaining + a progress bar */
+  .calHead { display:flex; align-items:center; justify-content:space-between; gap: var(--space-4); flex-wrap:wrap; margin-bottom: var(--space-4); }
+  .calMath { display:flex; align-items:center; gap: var(--space-5); flex-wrap:wrap; }
+  .calCell { display:flex; flex-direction:column; gap:2px; }
+  .calCell .n { font-family: var(--font-display); font-weight:600; font-size: var(--text-2xl); letter-spacing:-0.02em; font-variant-numeric: tabular-nums; }
+  .calCell .l { font-family: var(--font-mono); font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color: var(--muted); }
+  .calOp { font-family: var(--font-display); font-size: var(--text-xl); color: var(--muted); }
+  .calCell.remain .n { color: var(--brand); }
+  .calCell.remain.over .n { color: var(--neg); }
+  .goalEdit { display:flex; align-items:center; gap:8px; }
+  .goalEdit .fieldInput { width: 92px; }
+  .bar { height: 10px; border-radius: var(--radius-pill); background: var(--track); overflow:hidden; }
+  .barFill { height:100%; border-radius: var(--radius-pill); background: var(--brand); transition: width var(--duration) var(--ease-premium); }
+  .barFill.over { background: var(--neg); }
+
+  .search { position: relative; margin: var(--space-5) 0 var(--space-3); }
+  .results { display:flex; flex-direction:column; gap:6px; margin-top: var(--space-3); }
+  .foodRow { display:flex; align-items:center; justify-content:space-between; gap: var(--space-3); padding: 10px 12px; border:1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); }
+  .foodRow .meta { font-family: var(--font-mono); font-size:11px; color: var(--muted); }
+  .foodName { font-weight:600; font-size: var(--text-sm); }
+  .gramInput { width: 74px; }
+  .empty { color: var(--muted); font-size: 13px; padding: var(--space-4) 0; }
+
+  .logList { display:flex; flex-direction:column; gap:6px; margin-top: var(--space-3); }
+  .logRow { display:flex; align-items:center; justify-content:space-between; gap: var(--space-3); padding: 10px 12px; border:1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); }
+  .logRow .nums { font-family: var(--font-mono); font-size:11px; color: var(--muted-strong); }
+  .xBtn { background:transparent; border:1px solid var(--border); color:var(--muted); width:26px; height:26px; border-radius:50%; cursor:pointer; flex-shrink:0; }
+  .xBtn:hover { color: var(--neg); border-color: var(--neg-line); }
+  .sectionTitle { font-family: var(--font-display); font-weight:600; font-size: var(--text-lg); margin: var(--space-8) 0 0; }
+</style>
+<link rel="stylesheet" href="skin.css?v=1">
+</head>
+<body>
+<main class="page grain-overlay">
+  <div class="shell" id="app"></div>
+</main>
+
+<script src="theme.js"></script>
+<script>
+/* ============================================================
+ * Macros — a simple daily food + macro tracker.
+ * Data is saved per-day in localStorage under macros_standalone_v1.
+ * ============================================================ */
+const STORE_KEY = 'macros_standalone_v1';
+
+/* A small built-in food database (values per 100g). Add your own here. */
+const FOODS = [
+  { name: 'Chicken breast',  cal: 165, p: 31,  c: 0,   f: 3.6 },
+  { name: 'Beef mince (5%)', cal: 137, p: 21,  c: 0,   f: 5   },
+  { name: 'Salmon',          cal: 208, p: 20,  c: 0,   f: 13  },
+  { name: 'Egg',             cal: 143, p: 13,  c: 1.1, f: 9.5 },
+  { name: 'Greek yogurt',    cal: 59,  p: 10,  c: 3.6, f: 0.4 },
+  { name: 'Whey protein',    cal: 400, p: 80,  c: 8,   f: 6   },
+  { name: 'White rice',      cal: 130, p: 2.7, c: 28,  f: 0.3 },
+  { name: 'Oats',            cal: 389, p: 17,  c: 66,  f: 7   },
+  { name: 'Pasta (cooked)',  cal: 157, p: 6,   c: 31,  f: 0.9 },
+  { name: 'Potato',          cal: 77,  p: 2,   c: 17,  f: 0.1 },
+  { name: 'Sweet potato',    cal: 86,  p: 1.6, c: 20,  f: 0.1 },
+  { name: 'Banana',          cal: 89,  p: 1.1, c: 23,  f: 0.3 },
+  { name: 'Apple',           cal: 52,  p: 0.3, c: 14,  f: 0.2 },
+  { name: 'Broccoli',        cal: 34,  p: 2.8, c: 7,   f: 0.4 },
+  { name: 'Almonds',         cal: 579, p: 21,  c: 22,  f: 50  },
+  { name: 'Peanut butter',   cal: 588, p: 25,  c: 20,  f: 50  },
+  { name: 'Olive oil',       cal: 884, p: 0,   c: 0,   f: 100 },
+  { name: 'Avocado',         cal: 160, p: 2,   c: 9,   f: 15  },
+  { name: 'Cheddar cheese',  cal: 402, p: 25,  c: 1.3, f: 33  },
+  { name: 'Milk (whole)',    cal: 61,  p: 3.2, c: 4.8, f: 3.3 },
+  { name: 'Bread (slice)',   cal: 265, p: 9,   c: 49,  f: 3.2 },
+  { name: 'Tuna (canned)',   cal: 116, p: 26,  c: 0,   f: 1   },
+];
+
+/* ---- storage helpers ---- */
+function todayKey(){ const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+function loadAll(){ try { const r = localStorage.getItem(STORE_KEY); return r ? JSON.parse(r) : {}; } catch(e){ return {}; } }
+function saveAll(o){ try { localStorage.setItem(STORE_KEY, JSON.stringify(o)); } catch(e){} }
+let store = loadAll();
+function todaysLog(){ return store[todayKey()] || []; }
+function setTodaysLog(list){ store[todayKey()] = list; saveAll(store); }
+function goalCal(){ return store.goalCal != null ? store.goalCal : 2000; } // daily calorie target (editable)
+function setGoalCal(n){ store.goalCal = n; saveAll(store); }
+
+function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function round(n){ return Math.round(n); }
+
+let query = '';
+let matches = [];
+
+/* ---- calculations ---- */
+function totals(){
+  return todaysLog().reduce((t, e) => {
+    t.cal += e.cal; t.p += e.p; t.c += e.c; t.f += e.f; return t;
+  }, { cal:0, p:0, c:0, f:0 });
+}
+
+/* ---- views ---- */
+function summaryHtml(){
+  const t = totals();
+  const goal = goalCal();
+  const remaining = goal - t.cal;
+  const over = remaining < 0;
+  const pct = Math.min(100, goal > 0 ? (t.cal / goal) * 100 : 0);
+
+  // MyFitnessPal-style: Goal − Food = Remaining
+  const cell = (cls, n, l) => '<div class="calCell ' + cls + '"><span class="n">' + round(n) + '</span><span class="l">' + l + '</span></div>';
+  const head = '<div class="calHead">'
+    + '<div class="calMath">'
+    + cell('', goal, 'goal')
+    + '<span class="calOp">−</span>'
+    + cell('', t.cal, 'food')
+    + '<span class="calOp">=</span>'
+    + cell('remain' + (over ? ' over' : ''), Math.abs(remaining), over ? 'over' : 'remaining')
+    + '</div>'
+    + '<div class="goalEdit"><span class="calCell"><span class="l">daily goal</span></span>'
+    + '<input class="fieldInput" id="goal" type="number" min="0" step="50" value="' + goal + '" /></div>'
+    + '</div>';
+  const bar = '<div class="bar"><div class="barFill' + (over ? ' over' : '') + '" style="width:' + pct + '%"></div></div>';
+
+  const box = (accent, val, unit, label) =>
+    '<div class="macroBox" data-accent="' + accent + '"><span class="macroVal">' + round(val) + (unit||'') + '</span><span class="macroLabel">' + label + '</span></div>';
+  return '<section class="card"><span class="cardName">Today</span>'
+    + head + bar
+    + '<div class="macroGrid" style="margin-top:var(--space-4)">'
+    + box('p', t.p, 'g', 'protein')
+    + box('c', t.c, 'g', 'carbs')
+    + box('f', t.f, 'g', 'fat')
+    + box('cal', t.cal, '', 'calories')
+    + '</div></section>';
+}
+
+function resultsInner(){
+  const q = query.trim().toLowerCase();
+  matches = q ? FOODS.filter(f => f.name.toLowerCase().includes(q)).slice(0, 8) : [];
+  if (!q) return '<p class="empty">Start typing to find a food…</p>';
+  if (!matches.length) return '<p class="empty">No match. (Add it to the FOODS list in macros.html.)</p>';
+  return matches.map((f, i) =>
+    '<div class="foodRow"><div><div class="foodName">' + esc(f.name) + '</div>'
+    + '<div class="meta">' + f.cal + ' kcal · ' + f.p + 'P / ' + f.c + 'C / ' + f.f + 'F per 100g</div></div>'
+    + '<div style="display:flex;align-items:center;gap:8px;">'
+    + '<input class="fieldInput gramInput" type="number" min="0" placeholder="g" data-grams="' + i + '" />'
+    + '<button class="btn btn-primary" data-add="' + i + '">Add</button></div></div>').join('');
+}
+
+function searchHtml(){
+  return '<h2 class="sectionTitle">Add food</h2>'
+    + '<div class="search"><input class="fieldInput" id="q" type="text" placeholder="Search foods (e.g. chicken, rice, banana)" value="' + esc(query) + '" autocomplete="off" /></div>'
+    + '<div class="results" id="results">' + resultsInner() + '</div>';
+}
+
+function logHtml(){
+  const log = todaysLog();
+  if (!log.length) return '<h2 class="sectionTitle">Logged today</h2><p class="empty">Nothing logged yet.</p>';
+  const rows = log.map((e, i) =>
+    '<div class="logRow"><div><div class="foodName">' + esc(e.name) + ' <span class="meta">' + e.grams + 'g</span></div>'
+    + '<div class="nums">' + round(e.cal) + ' kcal · ' + round(e.p) + 'P / ' + round(e.c) + 'C / ' + round(e.f) + 'F</div></div>'
+    + '<button class="xBtn" data-del="' + i + '" title="Remove">×</button></div>').join('');
+  return '<h2 class="sectionTitle">Logged today</h2><div class="logList">' + rows + '</div>';
+}
+
+function headerHtml(){
+  return '<header class="header"><div><h1 class="title">Macros</h1><p class="subtitle">protein · carbs · fat</p></div>'
+    + '<div class="headerControls"><a class="backLink" href="index.html">← Dashboard</a><span id="themeSeg"></span></div></header>';
+}
+
+function render(){
+  document.getElementById('app').innerHTML =
+    headerHtml() + summaryHtml() + searchHtml() + logHtml();
+  document.getElementById('themeSeg').innerHTML = Patron.switcherHtml();
+}
+
+/* ---- events ---- */
+document.addEventListener('input', e => {
+  if (e.target.id === 'q') {
+    query = e.target.value;
+    // re-render only the results list so the search box keeps focus + caret
+    document.getElementById('results').innerHTML = resultsInner();
+  }
+  if (e.target.id === 'goal') {
+    const n = Number(e.target.value);
+    setGoalCal(isFinite(n) && n >= 0 ? n : 0);
+    render(); // refresh the Remaining number + bar live
+    document.getElementById('goal').focus(); // keep the cursor in the goal box
+  }
+});
+
+document.addEventListener('click', e => {
+  const add = e.target.closest('[data-add]');
+  if (add) {
+    const f = matches[Number(add.getAttribute('data-add'))];
+    const gramsEl = document.querySelector('[data-grams="' + add.getAttribute('data-add') + '"]');
+    const grams = Number(gramsEl && gramsEl.value);
+    if (!f || !isFinite(grams) || grams <= 0) { alert('Enter how many grams.'); return; }
+    const k = grams / 100;
+    const log = todaysLog();
+    log.push({ name: f.name, grams, cal: f.cal*k, p: f.p*k, c: f.c*k, f: f.f*k });
+    setTodaysLog(log);
+    query = '';
+    render();
+    return;
+  }
+  const del = e.target.closest('[data-del]');
+  if (del) {
+    const log = todaysLog();
+    log.splice(Number(del.getAttribute('data-del')), 1);
+    setTodaysLog(log);
+    render();
+    return;
+  }
+});
+
+// keep totals in sync if edited in another tab
+window.addEventListener('storage', e => { if (e.key === STORE_KEY) { store = loadAll(); render(); } });
+
+render();
+</script>
+<script src="brand.js?v=16"></script>
+</body>
+</html>

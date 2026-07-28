@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Schedule Lab · Rowan4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  /* ============================================================
+   * SCHEDULE LAB — customize how task / schedule cards look over
+   * the readiness curve. Left: live chart with task bands. Right:
+   * a control panel + editable task list. Tell Claude "make the
+   * cards glassy / move pills to the bottom / round them more" and
+   * Claude tweaks this file.
+   * ============================================================ */
+  :root {
+    --bg:#000; --fg:#fff; --mint:#6EE7B7; --mint2:#A7F3D0;
+    --muted:rgba(255,255,255,.5); --line:rgba(255,255,255,.08); --card:rgba(255,255,255,.02);
+    --serif:'Instrument Serif',Georgia,serif; --ui:'Inter',-apple-system,sans-serif; --mono:'JetBrains Mono',monospace;
+    --ease:cubic-bezier(.16,1,.3,1); --acc:#6EE7B7;
+    color-scheme:dark;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font-family:var(--ui); min-height:100vh;
+    background-image:radial-gradient(ellipse 50% 40% at 70% 0%, rgba(110,231,183,.06), transparent 60%); }
+
+  .topbar { display:flex; align-items:center; gap:16px; padding:14px 22px; border-bottom:1px solid var(--line); }
+  .topbar h1 { font-family:var(--serif); font-style:italic; font-weight:400; font-size:24px; margin:0; }
+  .nav { display:flex; gap:8px; margin-left:auto; }
+  .nav a { font-size:13px; color:var(--muted); text-decoration:none; padding:7px 12px; border:1px solid var(--line); border-radius:9px; }
+  .nav a:hover, .nav a.on { color:var(--mint); border-color:rgba(110,231,183,.35); }
+  .sendGroup { display:flex; gap:8px; }
+  .labBtn { font-size:13px; font-weight:600; color:var(--muted); background:transparent; cursor:pointer; padding:7px 13px; border:1px solid var(--line); border-radius:9px; transition:all .15s ease; }
+  .labBtn:hover { color:var(--mint); border-color:rgba(110,231,183,.4); }
+  .labBtn.primary { color:#04140e; background:var(--mint); border-color:transparent; }
+  .labBtn.primary:hover { filter:brightness(1.08); color:#04140e; }
+  .labToast { position:fixed; left:50%; bottom:26px; transform:translate(-50%,16px); background:#0b0c0c; border:1px solid rgba(110,231,183,.4); color:var(--mint); font-size:13px; padding:11px 17px; border-radius:11px; opacity:0; pointer-events:none; transition:.25s cubic-bezier(.16,1,.3,1); z-index:200; max-width:90vw; }
+  .labToast.show { opacity:1; transform:translate(-50%,0); }
+
+  .layout { display:grid; grid-template-columns:1fr 320px; gap:18px; padding:20px 22px; align-items:start; }
+  @media (max-width:900px){ .layout{ grid-template-columns:1fr; } }
+
+  /* ---- chart card ---- */
+  .chartCard { position:relative; border:1px solid var(--line); border-radius:18px; background:#040605; overflow:hidden; }
+  .plotWrap { position:relative; width:100%; height:330px; }
+  .plotWrap svg { position:absolute; inset:0; width:100%; height:100%; display:block; }
+  .overlay { position:absolute; inset:0; pointer-events:none; }
+  .axisRow { position:relative; height:30px; }
+  .axisRow span { position:absolute; transform:translateX(-50%); top:4px; font-family:var(--mono); font-size:12px; color:var(--muted); }
+
+  /* ---- task bands ---- */
+  .band { position:absolute; top:0; bottom:0; box-sizing:border-box; transition:all .2s var(--ease); }
+  .band.bd { border-left:1px solid var(--bc,rgba(255,255,255,.25)); border-right:1px solid var(--bc,rgba(255,255,255,.25)); }
+  .pill {
+    position:absolute; left:50%; transform:translateX(-50%); display:inline-flex; align-items:center; gap:7px;
+    white-space:nowrap; pointer-events:auto; cursor:default; line-height:1;
+  }
+  .pill.top { top:12px; } .pill.bottom { bottom:12px; } .pill.mid { top:50%; transform:translate(-50%,-50%); }
+  .pill .nm { font-family:var(--serif); font-style:italic; font-size:15px; }
+  .pill .ic { font-size:13px; opacity:.9; }
+  .pill .dur { font-family:var(--mono); font-size:10px; opacity:.6; }
+  /* pill styles */
+  .pill.glass { background:rgba(255,255,255,.07); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,.16); color:#fff; padding:6px 12px; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,.35); }
+  .pill.solid { background:var(--pc); color:#04140e; padding:6px 12px; border-radius:10px; }
+  .pill.solid .dur { opacity:.7; }
+  .pill.outline { background:rgba(0,0,0,.4); border:1px solid var(--pc); color:var(--pc); padding:6px 12px; border-radius:10px; }
+  .pill.minimal { background:transparent; color:var(--pc); padding:2px; }
+  .pill.minimal .nm { text-shadow:0 0 10px var(--pc); }
+  /* per-task number, fitted time-range, lock state */
+  .pill { max-width:185px; }
+  .pill .no { display:inline-grid; place-items:center; min-width:15px; height:15px; padding:0 3px; border-radius:7px; font-family:var(--mono); font-size:9px; font-weight:700; color:#fff; background:rgba(0,0,0,.5); flex:none; }
+  .pill.solid .no { background:rgba(0,0,0,.32); }
+  .pill .nm { overflow:hidden; text-overflow:ellipsis; max-width:96px; }
+  .pill .tm { font-family:var(--mono); font-size:9.5px; opacity:.72; letter-spacing:.01em; flex:none; }
+  .pill.movable { cursor:grab; }
+  .pill.movable:active, .pill.dragging { cursor:grabbing; }
+  .pill.locked { cursor:default; }
+  /* lock toggle pinned to the bottom of each task's band on the graph */
+  .lockBtn { position:absolute; bottom:5px; transform:translateX(-50%); z-index:5; pointer-events:auto; cursor:pointer;
+    width:22px; height:21px; display:grid; place-items:center; font-size:10px; line-height:1; padding:0;
+    background:rgba(4,6,5,.7); border:1px solid var(--line); border-radius:7px; transition:border-color .15s, transform .12s; }
+  .lockBtn:hover { transform:translateX(-50%) scale(1.12); }
+  .lockBtn.on { border-color:rgba(255,255,255,.32); }
+  .lockBtn:not(.on) { border-color:rgba(110,231,183,.55); box-shadow:0 0 10px -3px var(--acc); }
+
+  /* ---- now marker ---- */
+  .nowline { position:absolute; top:0; bottom:0; width:1px; background:rgba(255,255,255,.45); }
+  .nowdot { position:absolute; width:14px; height:14px; border-radius:50%; background:#fff; border:2px solid var(--acc);
+    box-shadow:0 0 14px var(--acc); transform:translate(-50%,-50%); }
+  .nowbubble { position:absolute; transform:translate(-50%,calc(-100% - 14px)); background:#0b0c0c; border:1px solid var(--line);
+    border-radius:11px; padding:6px 11px; text-align:center; box-shadow:0 8px 22px rgba(0,0,0,.5); }
+  .nowbubble b { display:block; font-size:17px; font-weight:600; }
+  .nowbubble span { font-family:var(--mono); font-size:10px; color:var(--muted); }
+  .nowmoon { position:absolute; display:inline-flex; align-items:center; gap:7px; white-space:nowrap;
+    background:rgba(255,255,255,.05); border:1px solid var(--line); border-radius:10px; padding:6px 11px; font-size:13px; }
+
+  /* armed-window highlight on the chart (between two armed chips / clicked gap) */
+  .armBand { position:absolute; top:0; bottom:0; z-index:2; border:1.5px dashed var(--acc); border-radius:10px;
+    background:linear-gradient(to top, rgba(110,231,183,.05), rgba(110,231,183,.16));
+    box-shadow:0 0 26px -6px var(--acc) inset; display:flex; align-items:flex-start; justify-content:center;
+    pointer-events:none; animation:armPulse 1.6s ease-in-out infinite; }
+  .armLbl { margin-top:7px; font-family:var(--mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--acc); background:rgba(0,0,0,.55); padding:2px 8px; border-radius:6px; }
+  @keyframes armPulse { 0%,100%{ opacity:.78 } 50%{ opacity:1 } }
+  .pill { z-index:3; }
+  .nowbubble, .nowdot, .nowmoon { z-index:4; }
+
+  /* ---- plan footer ---- */
+  .plan { margin-top:16px; padding:16px 18px; border:1px solid var(--line); border-radius:14px; background:var(--card); }
+  .plan .lbl { font-family:var(--mono); font-size:11px; letter-spacing:.12em; color:var(--muted); text-transform:uppercase; }
+  .plan .row { display:flex; align-items:center; justify-content:space-between; margin-top:10px; font-size:14px; color:var(--mint); }
+
+  /* ---- control panel ---- */
+  .panel { border:1px solid var(--line); border-radius:18px; background:var(--card); padding:16px; }
+  .panel h2 { font-family:var(--serif); font-style:italic; font-weight:400; font-size:18px; margin:0 0 12px; }
+  .ctl { margin-bottom:13px; }
+  .ctl > label { display:block; font-size:11px; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); margin-bottom:5px; }
+  .seg { display:flex; flex-wrap:wrap; gap:5px; }
+  .seg button { background:var(--card); color:var(--muted); border:1px solid var(--line); padding:6px 10px; border-radius:8px; cursor:pointer; font-size:12px; font-family:var(--ui); }
+  .seg button.on { background:rgba(110,231,183,.14); color:var(--mint); border-color:rgba(110,231,183,.35); }
+  .ctl input[type=range] { width:100%; accent-color:var(--mint); }
+  .ctl.inline { display:flex; align-items:center; justify-content:space-between; }
+  .ctl.inline label { margin:0; }
+  input[type=color] { width:30px; height:26px; padding:0; border:1px solid var(--line); border-radius:7px; background:var(--card); cursor:pointer; }
+  .presetRow { display:flex; gap:6px; margin-bottom:14px; flex-wrap:wrap; }
+  .presetRow button { flex:1; min-width:64px; background:var(--card); border:1px solid var(--line); color:var(--fg); border-radius:9px; padding:8px; cursor:pointer; font-size:12px; }
+  .presetRow button:hover { border-color:rgba(110,231,183,.35); }
+
+  /* ---- task editor ---- */
+  .tasks { margin-top:14px; border-top:1px solid var(--line); padding-top:14px; }
+  .trow { display:grid; grid-template-columns:16px 1fr 36px 36px 50px 24px 16px; align-items:center; gap:6px; margin-bottom:7px; font-size:12px; }
+  .trLock { background:var(--card); border:1px solid var(--line); border-radius:7px; cursor:pointer; padding:4px 0; font-size:11px; line-height:1; }
+  .trLock.on { border-color:rgba(255,255,255,.28); } .trLock:not(.on){ border-color:rgba(110,231,183,.5); }
+  .trow input[type=text] { background:var(--card); border:1px solid var(--line); color:var(--fg); border-radius:7px; padding:5px 7px; font-size:12px; min-width:0; }
+  .trow input[type=number] { width:38px; background:var(--card); border:1px solid var(--line); color:var(--fg); border-radius:7px; padding:5px 4px; font-size:12px; }
+  .trow select { background:var(--card); border:1px solid var(--line); color:var(--fg); border-radius:7px; padding:5px 3px; font-size:11px; min-width:0; }
+  .chip[draggable=true] { cursor:pointer; }
+  .chip.dragging { opacity:.4; }
+  /* armed (clicked) chip fills solid with its color */
+  .chip.sel { background:var(--cc) !important; border-color:transparent !important; box-shadow:0 0 16px -4px var(--cc); }
+  .chip.sel .nm { color:#04140e; }
+  .chip.sel .ct, .chip.sel .gp { color:rgba(4,20,14,.6); }
+  .chip.sel .x { color:rgba(4,20,14,.6); }
+  .chip.sel.s-bar::before { background:rgba(4,20,14,.35); }
+  /* gap-fill banner shown when two chips are armed */
+  .gapBanner { display:none; margin:11px 2px 2px; font-family:var(--mono); font-size:12px; color:var(--acc); }
+  .gapBanner.on { display:block; }
+  .gapBanner.warn { color:#FBBF24; }
+  .confirmBar { display:none; align-items:center; gap:8px; flex-wrap:wrap; margin:10px 2px 2px; font-family:var(--mono); font-size:12px; color:#FBBF24; }
+  .confirmBar.on { display:flex; }
+  .confirmBar button { background:rgba(255,255,255,.05); border:1px solid var(--line); color:var(--fg); border-radius:8px; padding:5px 11px; cursor:pointer; font-size:12px; font-family:var(--ui); }
+  .confirmBar button[data-cf=fit] { border-color:rgba(110,231,183,.45); color:var(--mint); }
+  .confirmBar button[data-cf=override] { border-color:rgba(251,191,36,.5); color:#FBBF24; }
+  .trow .rm { color:var(--muted); cursor:pointer; text-align:center; }
+  .trow .rm:hover { color:#EF4444; }
+  .addBtn { width:100%; margin-top:6px; background:rgba(110,231,183,.12); color:var(--mint); border:1px solid rgba(110,231,183,.3); border-radius:9px; padding:8px; cursor:pointer; font-size:13px; }
+  .toggle { display:flex; align-items:center; gap:7px; font-size:13px; color:var(--muted); cursor:pointer; }
+  .toggle input { accent-color:var(--mint); }
+
+  /* ============================================================
+   * SCHEDULE UI KIT — input bar, task chips, free-time card,
+   * today's-plan rows. All restyleable from the panel.
+   * ============================================================ */
+  .uikit { padding:6px 22px 40px; }
+  .secTitle { font-family:var(--serif); font-style:italic; font-weight:400; font-size:22px; margin:6px 0 16px; }
+  .uikit-layout { display:grid; grid-template-columns:1fr 320px; gap:18px; align-items:start; }
+  @media (max-width:900px){ .uikit-layout{ grid-template-columns:1fr; } }
+
+  /* input bar */
+  .nlbar { display:flex; gap:12px; }
+  .nlInput { flex:1; padding:14px 18px; border-radius:14px; font-size:15px; color:#fff; font-family:var(--ui); outline:none; }
+  .nlInput::placeholder { color:rgba(255,255,255,.4); }
+  .nlInput.glass { background:rgba(255,255,255,.04); border:1px solid var(--line); }
+  .nlInput.outline { background:transparent; border:1px solid var(--line); }
+  .nlInput.filled { background:#101413; border:1px solid transparent; }
+  .nlInput:focus { border-color:rgba(110,231,183,.4); }
+  .addBtn2 { background:var(--acc); color:#04140e; border:none; border-radius:14px; padding:0 22px; font-weight:600; font-size:14px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+  .hint { font-family:var(--mono); font-size:12px; color:var(--muted); margin:9px 2px 16px; line-height:1.55; }
+
+  /* chips */
+  .chips { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:20px; }
+  .chip { position:relative; display:inline-flex; align-items:center; gap:8px; padding:9px 13px; border-radius:12px;
+    background:rgba(255,255,255,.03); border:1px solid var(--line); font-size:14px; overflow:hidden; }
+  .chip .nm { font-weight:500; }
+  .chip .ct { color:var(--muted); font-family:var(--mono); font-size:12px; }
+  .chip .gp { color:var(--muted); font-size:12px; }
+  .chip .x { color:var(--muted); cursor:pointer; margin-left:3px; font-size:13px; }
+  .chip .cdot { width:8px; height:8px; border-radius:50%; background:var(--cc); }
+  .chip.s-bar { padding-left:16px; }
+  .chip.s-bar::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--cc); }
+  .chip.s-fill { background:var(--ccsoft); border-color:transparent; }
+  .chip.s-border { border-color:var(--cc); }
+  .chip.gap { border-style:dashed; }
+
+  /* free-time card */
+  .freecard { padding:20px 22px; border-radius:16px; margin-bottom:6px; }
+  .freecard .ft { font-family:var(--mono); font-size:12px; letter-spacing:.1em; color:var(--acc); text-transform:uppercase; display:flex; gap:7px; align-items:center; }
+  .freecard .big { font-family:var(--serif); font-style:italic; font-size:30px; margin:10px 0 8px; }
+  .freecard .sub { font-size:14px; color:var(--muted); }
+  .freecard .sub b { color:var(--acc); font-family:var(--mono); font-weight:500; }
+  .freecard.outline { border:1px solid var(--line); background:transparent; }
+  .freecard.glass { border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.04); backdrop-filter:blur(8px); }
+  .freecard.solid { border:1px solid var(--line); background:#0a0d0c; }
+  .freecard.minimal { border:none; background:transparent; padding:8px 0; }
+
+  /* today's plan list */
+  .planTitle2 { font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin:24px 0 10px; }
+  .planlist { border:1px solid var(--line); border-radius:14px; overflow:hidden; }
+  .planrow { display:flex; align-items:center; gap:12px; padding:14px 16px; }
+  .planrow.div + .planrow { border-top:1px solid var(--line); }
+  .planrow .dot { width:9px; height:9px; border-radius:2px; background:var(--cc); flex:none; }
+  .planrow .nm { flex:1; font-size:15px; }
+  .planrow .tm { font-family:var(--mono); font-size:12px; color:var(--muted); }
+  .peak { font-family:var(--mono); font-size:12px; padding:4px 9px; border-radius:8px; white-space:nowrap; }
+  .peak.pill { background:rgba(110,231,183,.14); color:var(--acc); }
+  .peak.outline { border:1px solid var(--acc); color:var(--acc); }
+  .peak.minimal { color:var(--acc); padding:0; }
+
+  /* gap bands + dragging */
+  .pill.gap { opacity:.82; border-style:dashed; }
+  .pill.dragging { cursor:grabbing; z-index:6; box-shadow:0 8px 22px rgba(0,0,0,.5); }
+
+  /* chip pop / entrance animations (restyleable) */
+  .chips { perspective:600px; }
+  .chip.in-pop    { animation:cPop    var(--cspd,.5s) var(--ease) both; }
+  .chip.in-slide  { animation:cSlide  var(--cspd,.5s) var(--ease) both; }
+  .chip.in-fade   { animation:cFade   var(--cspd,.5s) var(--ease) both; }
+  .chip.in-bounce { animation:cBounce var(--cspd,.5s) cubic-bezier(.3,1.5,.5,1) both; }
+  .chip.in-flip   { animation:cFlip   var(--cspd,.5s) var(--ease) both; }
+  @keyframes cPop    { from{ opacity:0; transform:scale(.55); } to{ opacity:1; transform:scale(1); } }
+  @keyframes cSlide  { from{ opacity:0; transform:translateY(16px); } to{ opacity:1; transform:translateY(0); } }
+  @keyframes cFade   { from{ opacity:0; } to{ opacity:1; } }
+  @keyframes cBounce { 0%{ opacity:0; transform:scale(.4); } 60%{ opacity:1; transform:scale(1.14); } 100%{ transform:scale(1); } }
+  @keyframes cFlip   { from{ opacity:0; transform:rotateX(-90deg); } to{ opacity:1; transform:rotateX(0); } }
+
+  /* command reference */
+  .cmds { margin:6px 0 20px; }
+  .cmdTitle { font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-bottom:9px; }
+  .cmdEx { display:flex; flex-wrap:wrap; gap:8px; }
+  .cmdEx button { background:rgba(110,231,183,.08); border:1px solid rgba(110,231,183,.28); color:var(--mint);
+    border-radius:9px; padding:7px 11px; font-family:var(--mono); font-size:12px; cursor:pointer; transition:all .15s var(--ease); }
+  .cmdEx button:hover { background:rgba(110,231,183,.18); }
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <h1>Schedule Lab</h1>
+    <div class="nav">
+      <a href="text-lab.html">Text</a>
+      <a href="graph-lab.html">Graph</a>
+      <a href="schedule-lab.html" class="on">Schedule</a>
+    </div>
+    <div class="sendGroup">
+      <button id="dlLab" class="labBtn" title="Download this Schedule Lab as a single file you can open on any computer">⬇ Download</button>
+      <button id="copyCfg" class="labBtn" title="Copy this style as JSON">Copy config</button>
+      <button id="copyTheme" class="labBtn primary" title="Copy a share code your Patreon subscribers paste into their own Peak (graph color + background + card style + tasks)">🎨 Copy theme code</button>
+      <button id="sendPeak" class="labBtn" title="Send this exact style to your own Peak tracker (same browser)">Send to Peak →</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div>
+      <div class="chartCard">
+        <div class="plotWrap">
+          <svg id="chart" viewBox="0 0 1000 320" preserveAspectRatio="none"></svg>
+          <div class="overlay" id="overlay"></div>
+        </div>
+        <div class="axisRow" id="axis"></div>
+      </div>
+      <div class="plan">
+        <div class="lbl">Today's plan</div>
+        <div class="row"><span id="planCount">0 scheduled · view against your curve</span><span>▾</span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Card style</h2>
+      <div class="presetRow" id="presets"></div>
+
+      <div class="ctl"><label>Band fill</label>
+        <div class="seg" id="fillSeg">
+          <button data-v="grad" class="on">Gradient</button>
+          <button data-v="solid">Solid</button>
+          <button data-v="outline">Outline</button>
+          <button data-v="none">None</button>
+        </div>
+      </div>
+      <div class="ctl"><label>Card color from</label>
+        <div class="seg" id="colorSeg">
+          <button data-v="auto" class="on">Auto (unique)</button>
+          <button data-v="difficulty">Difficulty</button>
+          <button data-v="task">Per task</button>
+          <button data-v="accent">Accent</button>
+          <button data-v="value">Readiness</button>
+        </div>
+      </div>
+      <div class="ctl inline"><label>Accent</label><input type="color" id="acc" value="#6EE7B7" /></div>
+      <div class="ctl inline"><label>Background</label><input type="color" id="bgC" value="#000000" /></div>
+      <div class="ctl"><label>Difficulty colors</label>
+        <div style="display:flex; gap:14px; align-items:center; font-size:11px; color:var(--muted)">
+          <span>easy <input type="color" id="dE" value="#6EE7B7" /></span>
+          <span>med <input type="color" id="dM" value="#F59E0B" /></span>
+          <span>hard <input type="color" id="dH" value="#FF50A6" /></span>
+        </div>
+      </div>
+      <div class="ctl"><label>Fill opacity <span id="opV">0.18</span></label><input id="op" type="range" min="0" max="0.6" step="0.02" value="0.18" /></div>
+      <div class="ctl"><label>Corner radius <span id="radV">10</span>px</label><input id="rad" type="range" min="0" max="22" step="1" value="10" /></div>
+
+      <div class="ctl"><label>Pill style</label>
+        <div class="seg" id="pillSeg">
+          <button data-v="glass" class="on">Glass</button>
+          <button data-v="solid">Solid</button>
+          <button data-v="outline">Outline</button>
+          <button data-v="minimal">Minimal</button>
+        </div>
+      </div>
+      <div class="ctl"><label>Pill position</label>
+        <div class="seg" id="posSeg">
+          <button data-v="top" class="on">Top</button>
+          <button data-v="mid">Middle</button>
+          <button data-v="bottom">Bottom</button>
+        </div>
+      </div>
+
+      <div class="ctl inline"><label class="toggle"><input type="checkbox" id="bd" checked /> side borders</label></div>
+      <div class="ctl inline"><label class="toggle"><input type="checkbox" id="icon" checked /> show icon</label></div>
+      <div class="ctl inline"><label class="toggle"><input type="checkbox" id="dur" checked /> show duration</label></div>
+      <div class="ctl inline"><label class="toggle"><input type="checkbox" id="now" checked /> now marker</label></div>
+      <div class="ctl"><label>Now <span id="nowV">1:28 PM</span></label><input id="nowT" type="range" min="0" max="24" step="0.25" value="13.46" /></div>
+      <div class="ctl"><label>Bedtime <span id="bedV">10:45 PM</span></label><input id="bedT" type="range" min="12" max="24" step="0.25" value="22.75" /></div>
+      <div class="ctl inline"><label class="toggle"><input type="checkbox" id="valcol" /> value-colored curve</label></div>
+
+      <div class="tasks" id="tasks"></div>
+    </div>
+  </div>
+
+  <div class="uikit">
+    <div class="secTitle">Schedule UI</div>
+    <div class="uikit-layout">
+      <div>
+        <div class="nlbar">
+          <input id="schIn" class="nlInput glass" placeholder="e.g. school 8-2, gym 1930 hard, gap claude" autocomplete="off" />
+          <button class="addBtn2" id="schAdd">+ ADD</button>
+        </div>
+        <div class="gapBanner" id="gapBanner"></div>
+        <div class="confirmBar" id="confirmBar"></div>
+        <div class="hint">fixed task = give a time (9-11) · “big gap claude” fills your whole free day · “small gap email” fills only short windows · gaps never touch sleep · easy/med/hard = color · loose tasks auto-place at the best energy window on your curve</div>
+        <div class="chips" id="chips"></div>
+        <div class="cmds">
+          <div class="cmdTitle">Try a prompt →</div>
+          <div class="cmdEx" id="cmdEx"></div>
+        </div>
+        <div id="freecard"></div>
+        <div class="planTitle2">Today's plan</div>
+        <div id="planlist"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Schedule UI style</h2>
+        <div class="presetRow" id="presets2"></div>
+
+        <div class="ctl"><label>Input bar</label>
+          <div class="seg" id="uInputSeg">
+            <button data-v="glass" class="on">Glass</button>
+            <button data-v="outline">Outline</button>
+            <button data-v="filled">Filled</button>
+          </div>
+        </div>
+        <div class="ctl"><label>Chip style</label>
+          <div class="seg" id="uChipSeg">
+            <button data-v="bar" class="on">Accent bar</button>
+            <button data-v="dot">Dot</button>
+            <button data-v="fill">Fill</button>
+            <button data-v="border">Border</button>
+          </div>
+        </div>
+        <div class="ctl"><label>Free-time card</label>
+          <div class="seg" id="uCardSeg">
+            <button data-v="outline" class="on">Outline</button>
+            <button data-v="glass">Glass</button>
+            <button data-v="solid">Solid</button>
+            <button data-v="minimal">Minimal</button>
+          </div>
+        </div>
+        <div class="ctl"><label>Peak badge</label>
+          <div class="seg" id="uBadgeSeg">
+            <button data-v="pill" class="on">Pill</button>
+            <button data-v="outline">Outline</button>
+            <button data-v="minimal">Minimal</button>
+            <button data-v="none">None</button>
+          </div>
+        </div>
+        <div class="ctl"><label>Chip entrance</label>
+          <div class="seg" id="uAnimSeg">
+            <button data-v="pop" class="on">Pop</button>
+            <button data-v="slide">Slide</button>
+            <button data-v="fade">Fade</button>
+            <button data-v="bounce">Bounce</button>
+            <button data-v="flip">Flip</button>
+          </div>
+        </div>
+        <div class="ctl"><label>Pop speed <span id="spdV">0.50</span>s</label><input id="uSpd" type="range" min="0.2" max="1.2" step="0.05" value="0.5" /></div>
+        <button class="addBtn" id="popReplay" style="margin-bottom:12px">Replay pop ⟳</button>
+
+        <div class="ctl inline"><label class="toggle"><input type="checkbox" id="uDiv" checked /> row dividers</label></div>
+        <div class="ctl inline"><label class="toggle"><input type="checkbox" id="uTimes" checked /> show times</label></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* ---------- data + helpers ---------- */
+var DATA = [.55,.28,.10,.07,.07,.08,.12,.45,.62,.66,.70,.90,.88,.74,.66,.60,.58,.60,.64,.70,.76,.82,.88,.92,.84];
+var TIME = ['12A','','3A','','6A','','9A','','12P','','3P','','6P','','9P','','12A'];
+var VW=1000, VH=320, TOP=22, BOT=276;
+function hex2rgb(h){ h=h.replace('#',''); if(h.length===3)h=h.split('').map(function(c){return c+c}).join(''); return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]; }
+function rgba(h,a){ var c=hex2rgb(h); return 'rgba('+c[0]+','+c[1]+','+c[2]+','+a+')'; }
+function lerpHex(a,b,t){ var x=hex2rgb(a),y=hex2rgb(b); return 'rgb('+Math.round(x[0]+(y[0]-x[0])*t)+','+Math.round(x[1]+(y[1]-x[1])*t)+','+Math.round(x[2]+(y[2]-x[2])*t)+')'; }
+function valAt(h){ var i=Math.floor(h), f=h-i; if(i>=DATA.length-1)return DATA[DATA.length-1]; return DATA[i]+(DATA[i+1]-DATA[i])*f; }
+function xPct(h){ return h/24*100; }
+function yPct(v){ return (TOP+(BOT-TOP)*(1-v))/VH*100; }
+function fmt(h){ var H=Math.floor(h), m=Math.round((h-H)*60); if(m===60){H++;m=0;} var ap=H<12?'AM':'PM', hr=H%12; if(hr===0)hr=12; return hr+':'+(m<10?'0'+m:m)+ap; }
+function dur(t){ var d=t.end-t.start, hh=Math.floor(d), mm=Math.round((d-hh)*60); return (hh?hh+'h':'')+(mm?mm+'m':''); }
+/* compact clock + range: 14→"2pm", 14.25→"2:15pm"; range drops the am/pm on the
+ * first end when both share it → "2–4pm", "11am–1pm", "2:15–3:15pm". */
+function fmtT(h){ h=((h%24)+24)%24; var H=Math.floor(h), m=Math.round((h-H)*60); if(m===60){H++;m=0;} var ap=H<12?'am':'pm'; var hr=H%12; if(hr===0)hr=12; return hr+(m?':'+(m<10?'0'+m:m):'')+ap; }
+function fmtRange(a,b){ var A=fmtT(a), B=fmtT(b); if(A.slice(-2)===B.slice(-2)) A=A.slice(0,-2); return A+'–'+B; }
+
+/* ---------- chart (smooth area + line) ---------- */
+function pts(){ return DATA.map(function(v,i){ var x=VW*(i/(DATA.length-1)); var y=TOP+(BOT-TOP)*(1-v); return [x,y]; }); }
+function smoothPath(P){
+  var d='M'+P[0][0]+','+P[0][1];
+  for(var i=0;i<P.length-1;i++){ var p0=P[i-1]||P[i],p1=P[i],p2=P[i+1],p3=P[i+2]||P[i+1];
+    var c1x=p1[0]+(p2[0]-p0[0])/6,c1y=p1[1]+(p2[1]-p0[1])/6,c2x=p2[0]-(p3[0]-p1[0])/6,c2y=p2[1]-(p3[1]-p1[1])/6;
+    d+=' C'+c1x+','+c1y+' '+c2x+','+c2y+' '+p2[0]+','+p2[1]; }
+  return d;
+}
+function drawChart(){
+  var P=pts(), line=smoothPath(P), area=line+' L'+VW+','+BOT+' L0,'+BOT+' Z';
+  var acc=S.acc, hi='#6EE7B7', lo='#EF4444', mid=lerpHex(lo,hi,.5);
+  var svg='<defs>';
+  if(S.valcol){
+    svg+='<linearGradient id="vf" gradientUnits="userSpaceOnUse" x1="0" y1="'+TOP+'" x2="0" y2="'+BOT+'">'
+       +'<stop offset="0%" stop-color="'+hi+'" stop-opacity=".9"/>'
+       +'<stop offset="42%" stop-color="'+mid+'" stop-opacity=".5"/>'
+       +'<stop offset="100%" stop-color="'+lo+'" stop-opacity=".35"/></linearGradient>'
+       +'<linearGradient id="vs" gradientUnits="userSpaceOnUse" x1="0" y1="'+TOP+'" x2="0" y2="'+BOT+'">'
+       +'<stop offset="0%" stop-color="'+lerpHex(hi,'#fff',.25)+'"/><stop offset="40%" stop-color="'+hi+'"/>'
+       +'<stop offset="70%" stop-color="'+mid+'"/><stop offset="100%" stop-color="'+lo+'"/></linearGradient>';
+  } else {
+    svg+='<linearGradient id="vf" x1="0" y1="0" x2="0" y2="1">'
+       +'<stop offset="0%" stop-color="'+acc+'" stop-opacity=".42"/>'
+       +'<stop offset="60%" stop-color="'+acc+'" stop-opacity=".12"/>'
+       +'<stop offset="100%" stop-color="'+acc+'" stop-opacity="0"/></linearGradient>';
+  }
+  // gridlines
+  var grid='';
+  for(var g=0;g<=4;g++){ var y=TOP+(BOT-TOP)*g/4; grid+='<line x1="0" y1="'+y+'" x2="1000" y2="'+y+'" stroke="rgba(255,255,255,.05)"/>'; }
+  TIME.forEach(function(t,i){ if(i%2===0){ var x=i/(TIME.length-1)*VW; grid+='<line x1="'+x+'" y1="0" x2="'+x+'" y2="'+BOT+'" stroke="rgba(110,231,183,.12)" stroke-dasharray="2 5"/>'; } });
+  svg+='</defs>'+grid
+     +'<path d="'+area+'" fill="url(#vf)"/>'
+     +'<path d="'+line+'" fill="none" stroke="'+(S.valcol?'url(#vs)':acc)+'" stroke-width="'+(S.valcol?3.2:2.6)+'" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 5px '+(S.valcol?hi:rgba(acc,.6))+')"/>';
+  document.getElementById('chart').innerHTML=svg;
+
+  // axis labels
+  var ax=document.getElementById('axis'); ax.innerHTML='';
+  TIME.forEach(function(t,i){ if(t){ var s=document.createElement('span'); s.textContent=t; s.style.left=(i/(TIME.length-1)*100)+'%'; ax.appendChild(s); } });
+}
+
+/* ---------- tasks ---------- */
+// difficulty colors mirror the Peak tracker (hard = pink, med = amber, easy = mint)
+var DIFF={ easy:'#6EE7B7', med:'#F59E0B', hard:'#FF50A6' };
+// Distinct, vivid colors assigned by a task's order in the day, so adjacent tasks
+// never share a shade. Used by the default "auto" color mode.
+var PALETTE=['#6EE7B7','#F59E0B','#EC4899','#22D3EE','#A78BFA','#FB7185','#FBBF24','#34D399','#60A5FA','#F472B6'];
+function dayColor(i){ var n=PALETTE.length; return PALETTE[(((i||0)%n)+n)%n]; }
+// locked = pinned to a fixed time (can't move or be overlapped); movable = duration
+// task that auto-places and can be dragged. Two of each by default for the demo.
+var TASKS=[
+  { id:'t1', name:'Morning',  start:6,   end:8,    color:'#6EE7B7', icon:'☀', diff:'easy', explicit:true, locked:true },
+  { id:'t2', name:'Claude',   start:9,   end:11.5, color:'#A78BFA', icon:'✦', diff:'med',  explicit:true, locked:false },
+  { id:'t3', name:'Homework', start:13,  end:15.5, color:'#F59E0B', icon:'✎', diff:'hard', explicit:true, locked:false },
+  { id:'t4', name:'Wind down',start:21.5,end:23,   color:'#38BDF8', icon:'☾', diff:'easy', explicit:true, locked:true }
+];
+// remember whatever you add/edit/drag — restore it next time the lab opens
+var TASKS_KEY='rowan4_sched_tasks_v1';
+try{ var _savedTasks=JSON.parse(localStorage.getItem(TASKS_KEY)||'null'); if(_savedTasks&&Array.isArray(_savedTasks)&&_savedTasks.length) TASKS=_savedTasks; }catch(e){}
+function saveTasks(){ try{ localStorage.setItem(TASKS_KEY, JSON.stringify(TASKS)); }catch(e){} }
+
+/* ---------- style state ---------- */
+var S={ fill:'grad', colorMode:'auto', acc:'#6EE7B7', op:0.18, rad:10, pill:'glass', pos:'top', bd:true, icon:true, dur:true, now:true, valcol:false, bg:'#000000', nowH:13.46, bed:22.75 };
+// armed-window state — declared up here so the first drawBands()/gapWindow() call can read them
+var selIds=[];   // up to two "armed" chips — typing a task fills the gap between them
+var armWin=null; // a window armed by clicking a free stretch of the chart
+
+// every task gets a distinct, evenly-spread hue assigned ONCE when it's first
+// seen and stored on the rule (cseed) — so a task keeps the same shade forever,
+// no matter what order things are added or sorted into. Keyed off the rule id
+// so a chip and its chart bands/gap-fills always match.
+var colorSeq=0;
+function ruleIdOf(t){ return String((t&&t.id)||'').split('_').slice(0,2).join('_'); }
+function ruleCseed(rid){ var r=TASKS.filter(function(x){return x.id===rid;})[0];
+  if(r){ if(r.cseed==null) r.cseed=colorSeq++; return r.cseed; }
+  var h=0; for(var i=0;i<rid.length;i++) h=(h*31+rid.charCodeAt(i))>>>0; return h; } // fallback: hash
+// return HEX (the rest of the code feeds colors through rgba()/hex2rgb which only parse hex)
+function hslToHex(h,s,l){ s/=100; l/=100; var a=s*Math.min(l,1-l);
+  var f=function(n){ var k=(n+h/30)%12; var x=l-a*Math.max(-1,Math.min(k-3,9-k,1)); return Math.round(255*x); };
+  var hx=function(x){ return ('0'+x.toString(16)).slice(-2); };
+  return '#'+hx(f(0))+hx(f(8))+hx(f(4)); }
+function autoColor(t){ return hslToHex((ruleCseed(ruleIdOf(t))*53)%360, 66, 61); }
+function taskColor(t){
+  if(S.colorMode==='auto') return autoColor(t);
+  if(S.colorMode==='accent') return S.acc;
+  if(S.colorMode==='difficulty') return DIFF[t.diff||'med'];
+  if(S.colorMode==='value') return lerpHex('#EF4444','#6EE7B7', valAt((t.start+t.end)/2));
+  return t.color || DIFF[t.diff||'med'];
+}
+
+/* ============================================================
+ * NL command parser + energy-aware scheduler — ported from the
+ * Peak tracker (peak.html). The readiness curve IS the energy
+ * function, so tasks auto-place where they best fit:
+ *   hard → highest-energy free window · easy → lowest · med → mid.
+ * Grammar: "school 8-2" (fixed range) · "gym 1930 hard" (compact
+ * time + difficulty) · "homework 1 hour med" (duration, auto-placed)
+ * · "big gap claude" (fills all free time) · "small gap email"
+ * (only short windows). Comma / "and" separate multiple.
+ * ============================================================ */
+var WAKE=6.5;
+function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+function uid(p){ return p+Math.random().toString(36).slice(2,7); }
+function energyAt(t){ return valAt(((t%24)+24)%24)*100; }
+function diffColor(d){ return DIFF[d]||DIFF.med; }
+function keyword(l){ return String(l).trim().split(/\s+/).slice(0,2).join(' ').slice(0,16); }
+function diffOf(s){ if(/\b(hard|intense|deep|heavy|max|pr|grind)\b/i.test(s))return 'hard'; if(/\b(easy|chill|light|admin|rest|relax|recover)\b/i.test(s))return 'easy'; return 'med'; }
+function pClock(h,m,ap){ h=+h; m=m?+m:0; if(ap){ ap=ap.toLowerCase(); if(ap[0]==='p'&&h<12)h+=12; if(ap[0]==='a'&&h===12)h=0; } return h+m/60; }
+function parseTask(str){
+  var gm=str.match(/^\s*(small|big)?\s*gap\b/i);
+  var s=' '+str.replace(/^\s*(small|big)?\s*gap\b/i,' ').trim()+' '; if(!s.trim())return null;
+  var diff=diffOf(s);
+  var fillFlag=/\b(fill|full)\b/i.test(s); // "fill"/"full" = span the whole armed gap
+  if(gm){
+    var size=((gm[1]||'big').toLowerCase()==='small')?'small':'big';
+    var rStart=null,rEnd=null;
+    var mr=s.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\s*(?:to|till|until|[-–—])\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i);
+    if(mr){ rStart=pClock(mr[1],mr[2],mr[3]); rEnd=pClock(mr[4],mr[5],mr[6]||mr[3]); if(rEnd<=rStart)rEnd=(rEnd+12<=24)?rEnd+12:rEnd; s=s.replace(mr[0],' '); }
+    s=s.replace(/\b(hard|intense|deep|heavy|max|pr|grind|easy|chill|light|admin|rest|relax|recover|medium|med|moderate|all|full|wake|waking|hours?|day|at|from|the)\b/ig,' ').replace(/\s+/g,' ').trim();
+    return {id:uid('g_'),name:(s||'Gap'),diff:diff,color:diffColor(diff),icon:'∿',gap:true,size:size,rStart:rStart,rEnd:rEnd};
+  }
+  var start=null,end=null,durH=null,explicit=false;
+  var m=s.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\s*(?:to|till|until|[-–—])\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i);
+  if(m){ start=pClock(m[1],m[2],m[3]); end=pClock(m[4],m[5],m[6]||m[3]); if(end<=start)end=(end+12<=24)?end+12:start+1; s=s.replace(m[0],' '); explicit=true; durH=end-start; }
+  else {
+    var comp=s.match(/\b([01]?\d|2[0-3])([0-5]\d)\b/), one=s.match(/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b/i), du=s.match(/\b(\d+(?:\.\d+)?)\s*(h|hrs?|hours?|m|mins?|minutes?)\b/i);
+    if(one){ start=pClock(one[1],one[2],one[3]); s=s.replace(one[0],' '); explicit=true; }
+    else if(comp){ start=(+comp[1])+(+comp[2])/60; s=s.replace(comp[0],' '); explicit=true; }
+    if(du){ var n=+du[1]; durH=/^m/i.test(du[2])?n/60:n; s=s.replace(du[0],' '); }
+    durH=durH||1; if(explicit){ end=start+durH; }
+  }
+  s=s.replace(/\b(hard|intense|deep|heavy|max|pr|grind|easy|chill|light|admin|rest|relax|recover|medium|med|moderate|fill|full|at|from)\b/ig,' ').replace(/\s+/g,' ').trim();
+  // pinned to a time ("4-6pm", "gym 1930") → locked; duration only ("homework 1hr") → movable
+  return {id:uid('k_'),name:(s||'Task'),diff:diff,color:diffColor(diff),icon:'●',durH:durH||1,explicit:explicit,locked:explicit,start:start,end:end,fill:fillFlag};
+}
+function taskDur(t){ return (t&&t.durH&&t.durH>0)?t.durH:((t&&t.start!=null&&t.end!=null)?Math.max(0.25,t.end-t.start):1); }
+function freeWithin(a,b,occupied){ var segs=[[a,b]];
+  occupied.slice().sort(function(x,y){return x.start-y.start;}).forEach(function(o){ var out=[]; segs.forEach(function(p){ var s=p[0],e=p[1]; if(o.end<=s||o.start>=e){out.push([s,e]);return;} if(o.start>s)out.push([s,o.start]); if(o.end<e)out.push([o.end,e]); }); segs=out; }); return segs.filter(function(g){return g[1]-g[0]>0.12;}); }
+function effectiveSegments(){ var items=TASKS, bed=S.bed, wake=WAKE, SMALL_MAX=1.5;
+  var fixed=items.filter(function(t){return !t.gap&&t.start!=null;}).map(function(t){return {id:t.id,name:t.name,diff:t.diff,color:t.color,start:t.start,end:t.end,gap:false,locked:!!t.locked};});
+  var occupied=fixed.map(function(f){return {start:f.start,end:f.end};}); var segs=fixed.slice();
+  function fill(rule,onlySmall){ var a=Math.max(rule.rStart!=null?rule.rStart:wake,wake), b=Math.min(rule.rEnd!=null?rule.rEnd:bed,bed);
+    freeWithin(a,b,occupied).forEach(function(g){ if(onlySmall&&(g[1]-g[0])>SMALL_MAX)return; segs.push({id:rule.id+'_'+occupied.length,name:rule.name,diff:rule.diff,color:rule.color,start:g[0],end:g[1],gap:true}); occupied.push({start:g[0],end:g[1]}); }); }
+  items.filter(function(t){return t.gap&&t.size==='small';}).forEach(function(r){fill(r,true);});
+  items.filter(function(t){return t.gap&&t.size!=='small';}).forEach(function(r){fill(r,false);});
+  return segs.sort(function(a,b){return a.start-b.start;});
+}
+function freeGaps(list){ var wake=WAKE,bed=S.bed,t=wake,gaps=[];
+  list.filter(function(x){return x.end>wake&&x.start<bed;}).sort(function(a,b){return a.start-b.start;}).forEach(function(x){ if(x.start>t)gaps.push([t,Math.min(x.start,bed)]); t=Math.max(t,x.end); });
+  if(t<bed)gaps.push([t,bed]); return gaps.filter(function(g){return g[1]-g[0]>=0.25;}); }
+function bestSlot(list,durH,diff){ durH=Math.max(0.25,durH||1); var best=null,bestScore=-1e9;
+  freeGaps(list).forEach(function(g){ for(var st=g[0]; st+durH<=g[1]+1e-6; st+=0.25){ var sum=0,n=0; for(var t=st;t<st+durH;t+=0.25){ sum+=energyAt(t); n++; } var avg=sum/(n||1);
+    var score = diff==='hard'?avg : diff==='easy'?(100-avg) : (100-Math.abs(avg-65));
+    if(score>bestScore){ bestScore=score; best=st; } } });
+  if(best==null){ var bed=S.bed; best=list.length?Math.min(bed-durH,Math.max.apply(null,list.map(function(x){return x.end;}))):WAKE; best=clamp(best,WAKE,bed-durH); }
+  return Math.round(best*4)/4;
+}
+function placeTask(p,list){ var d=taskDur(p); var st=bestSlot(list,d,p.diff); p.start=st; p.end=Math.min(24,st+d); p.durH=d; return p; }
+function snapFree(desired,dur,others){ var wake=WAKE,bed=S.bed,t=wake,gaps=[];
+  others.slice().sort(function(a,b){return a.start-b.start;}).forEach(function(o){ if(o.end<=wake||o.start>=bed)return; if(o.start>t)gaps.push([t,Math.min(o.start,bed)]); t=Math.max(t,o.end); });
+  if(t<bed)gaps.push([t,bed]); var fit=gaps.filter(function(g){return g[1]-g[0]>=dur-1e-6;});
+  if(!fit.length) return clamp(Math.round(desired*4)/4, wake, Math.max(wake,bed-dur));
+  var best=fit[0][0],bd=1e9; fit.forEach(function(g){ var s=clamp(desired,g[0],g[1]-dur); var d=Math.abs(s-desired); if(d<bd){bd=d;best=s;} }); return Math.round(best*4)/4;
+}
+function addSched(str, win){ if(!str||!str.trim())return; str.split(/,|;|\band\b/i).forEach(function(pStr){ var p=parseTask(pStr); if(!p)return;
+    if(p.gap){ if(win){ p.rStart=win[0]; p.rEnd=win[1]; } TASKS.push(p); return; }
+    if(win){ var gapLen=win[1]-win[0]; var d=p.fill?gapLen:Math.min(taskDur(p),gapLen); p.start=win[0]; p.end=Math.min(win[1], win[0]+d); if(p.end-p.start<0.1)p.end=win[1]; p.durH=p.end-p.start; p.explicit=true; }
+    else if(!p.explicit||p.start==null){ placeTask(p,TASKS.filter(function(x){return !x.gap;})); }
+    else { p.start=((p.start%24)+24)%24; p.end=Math.max(p.start+0.25,Math.min(24,p.end)); }
+    TASKS.push(p); });
+  TASKS.sort(function(a,b){return (a.start==null?99:a.start)-(b.start==null?99:b.start);}); drawEditor(); drawBands(); }
+
+function drawBands(){
+  var ov=document.getElementById('overlay'); ov.innerHTML='';
+  var SEG=effectiveSegments(); var pills=[];
+  var gw=gapWindow();
+  if(gw && gw.hi>gw.lo+0.05){ var ab=document.createElement('div'); ab.className='armBand'; ab.style.left=xPct(gw.lo)+'%'; ab.style.width=xPct(gw.hi-gw.lo)+'%'; ab.innerHTML='<span class="armLbl">fill window</span>'; ov.appendChild(ab); }
+  var no=0;
+  SEG.forEach(function(t){
+    var isTask=!t.gap; if(isTask) no++;            // number tasks in day order
+    // distinct, neighbour-contrasting color by day order (auto mode); else the chosen mode
+    var col=(S.colorMode==='auto'&&isTask)?dayColor(no-1):taskColor(t);
+    var band=document.createElement('div');
+    band.className='band'+(S.bd?' bd':'')+(t.gap?' gapband':'');
+    band.style.left=xPct(t.start)+'%';
+    band.style.width=xPct(t.end-t.start)+'%';
+    band.style.setProperty('--bc', rgba(col,.5));
+    band.style.borderRadius=S.rad+'px '+S.rad+'px 0 0';
+    var op=S.op*(t.gap?.55:1);
+    if(S.fill==='solid') band.style.background=rgba(col,op);
+    else if(S.fill==='grad') band.style.background='linear-gradient(to top, '+rgba(col,0)+', '+rgba(col,op*1.6)+')';
+    else band.style.background='transparent';
+    ov.appendChild(band);
+
+    var pill=document.createElement('div');
+    pill.className='pill '+S.pill+(t.gap?' gap':(t.locked?' locked':' movable'));
+    if(isTask) pill.dataset.taskid=t.id;
+    pill.style.setProperty('--pc', col);
+    var html='';
+    if(isTask) html+='<span class="no">'+no+'</span>';
+    if(S.icon && t.icon) html+='<span class="ic">'+t.icon+'</span>';
+    html+='<span class="nm">'+keyword(t.name)+'</span>';
+    if(isTask) html+='<span class="tm">'+fmtRange(t.start,t.end)+'</span>';   // fitted time range, e.g. 2–4pm
+    else if(S.dur) html+='<span class="dur">'+dur(t)+'</span>';
+    pill.innerHTML=html;
+    ov.appendChild(pill);
+
+    if(isTask){                                     // lock toggle pinned to the bottom of the band
+      var lb=document.createElement('button');
+      lb.className='lockBtn'+(t.locked?' on':'');
+      lb.dataset.lock=t.id;
+      lb.title=t.locked?'Locked at '+fmtRange(t.start,t.end)+' — click to unlock & drag':'Movable — click to lock at this time';
+      lb.textContent=t.locked?'🔒':'🔓';
+      lb.style.left=((t.start+t.end)/2)/24*100+'%';
+      ov.appendChild(lb);
+    }
+    pills.push({ el:pill, centerPct:((t.start+t.end)/2)/24*100, startPct:t.start/24, endPct:t.end/24, pos:S.pos });
+  });
+
+  var bub=null, nx=0;
+  if(S.now){
+    nx=xPct(S.nowH); var v=valAt(S.nowH);
+    var nl=document.createElement('div'); nl.className='nowline'; nl.style.left=nx+'%'; ov.appendChild(nl);
+    bub=document.createElement('div'); bub.className='nowbubble'; bub.style.left=nx+'%'; bub.style.top=yPct(v)+'%';
+    bub.innerHTML='<b>'+Math.round(v*100)+'</b><span>'+fmt(S.nowH)+'</span>'; ov.appendChild(bub);
+    var dot=document.createElement('div'); dot.className='nowdot'; dot.style.left=nx+'%'; dot.style.top=yPct(v)+'%'; ov.appendChild(dot);
+    var moon=document.createElement('div'); moon.className='nowmoon'; moon.innerHTML='<span>☾</span> '+fmtShort(S.bed); ov.appendChild(moon);
+    pills.push({ el:moon, centerPct:xPct(S.bed), pos:'top' });
+  }
+  layoutPills(pills);
+  if(bub) dodgeBubble(bub, nx);
+  bindBandDrag();
+  document.getElementById('planCount').textContent=SEG.length+' scheduled · view against your curve';
+}
+
+/* Anti-overlap: position every pill in px, keep it over its own band when the
+   band is wide enough, clamp inside the plot, then stack any horizontally
+   overlapping pills into separate vertical lanes — text can NEVER overlap. */
+function layoutPills(refs){
+  var ov=document.getElementById('overlay'); var W=ov.clientWidth, H=ov.clientHeight;
+  if(!W){ return; }
+  var groups={};
+  refs.forEach(function(r){ (groups[r.pos]=groups[r.pos]||[]).push(r); });
+  Object.keys(groups).forEach(function(pos){
+    var list=groups[pos];
+    list.forEach(function(r){ var w=r.el.offsetWidth; r.w=w; r.h=r.el.offsetHeight;
+      var cx=W*r.centerPct/100;
+      if(r.startPct!=null){ var bl=W*r.startPct, br=W*r.endPct; if(br-bl > w+8) cx=clamp(cx, bl+w/2+2, br-w/2-2); } // auto-fit over band
+      cx=clamp(cx, w/2+4, W-w/2-4);
+      r.cx=cx; r.l=cx-w/2; r.rgt=cx+w/2; });
+    list.sort(function(a,b){ return a.cx-b.cx; });
+    var lanes=[], G=10, rowH=((list[0]&&list[0].h)||30)+8;
+    list.forEach(function(r){
+      var lane=0;
+      while(lane<24){
+        var occ=lanes[lane]||(lanes[lane]=[]);
+        var hit=occ.some(function(s){ return !(r.rgt < s[0]-G || r.l > s[1]+G); });
+        if(!hit){ occ.push([r.l,r.rgt]); break; }
+        lane++;
+      }
+      var ph=r.h, top;
+      if(pos==='bottom') top=(H-12-ph)-lane*rowH;
+      else if(pos==='mid') top=(H/2-ph/2)+lane*rowH;
+      else top=12+lane*rowH;
+      r.el.style.left=r.cx+'px'; r.el.style.top=top+'px'; r.el.style.bottom='auto'; r.el.style.transform='translateX(-50%)';
+    });
+    if(pos==='top'){ window._topLanes=lanes; window._rowH=rowH; }
+  });
+}
+
+/* the now-value bubble drops below any pills it would collide with */
+function dodgeBubble(bub, nxPct){
+  var ov=document.getElementById('overlay'); var W=ov.clientWidth; if(!W) return;
+  var bw=bub.offsetWidth, cx=clamp(W*nxPct/100, bw/2+4, W-bw/2-4), l=cx-bw/2, r=cx+bw/2;
+  var lanes=window._topLanes||[], rowH=window._rowH||38, maxLane=-1;
+  lanes.forEach(function(occ,i){ if(occ&&occ.some(function(s){ return !(r<s[0]-10||l>s[1]+10); })) maxLane=Math.max(maxLane,i); });
+  if(maxLane>=0){ bub.style.left=cx+'px'; bub.style.top=(12+(maxLane+1)*rowH)+'px'; bub.style.transform='translateX(-50%)'; }
+}
+
+/* drag a task's pill along the chart to reschedule (snaps into a free slot) */
+function bindBandDrag(){
+  var ov=document.getElementById('overlay');
+  // lock / unlock toggles on the graph
+  ov.querySelectorAll('.lockBtn[data-lock]').forEach(function(b){
+    b.addEventListener('click',function(e){ e.stopPropagation(); var t=TASKS.filter(function(x){return x.id===b.dataset.lock;})[0]; if(t){ t.locked=!t.locked; drawEditor(); drawBands(); } });
+  });
+  // only movable (unlocked) tasks can be dragged; locked ones stay put and can't be overlapped
+  ov.querySelectorAll('.pill[data-taskid]').forEach(function(el){
+    var id=el.dataset.taskid; var t=TASKS.filter(function(x){return x.id===id;})[0];
+    if(!t||t.locked){ el.style.cursor='default'; return; }
+    el.style.pointerEvents='auto'; el.style.cursor='grab';
+    el.addEventListener('pointerdown',function(e){
+      e.preventDefault();
+      var d=taskDur(t); var others=TASKS.filter(function(x){return !x.gap&&x.id!==id;});  // every other task is an obstacle → no overlap
+      var r=ov.getBoundingClientRect(); el.classList.add('dragging'); var ns=t.start; var tm=el.querySelector('.tm');
+      // snapFree rounds the start into the nearest free 15-min slot (Math.round(x*4)/4)
+      function move(ev){ var x=clamp((ev.clientX-r.left)/r.width,0,1); ns=snapFree(x*24-d/2, d, others); el.style.left=(((ns+d/2)/24)*r.width)+'px'; if(tm)tm.textContent=fmtRange(ns,ns+d); }
+      function up(){ document.removeEventListener('pointermove',move); document.removeEventListener('pointerup',up); el.classList.remove('dragging'); t.start=ns; t.end=Math.min(24,ns+d); t.durH=d; t.explicit=true; TASKS.sort(function(a,b){return a.start-b.start;}); drawEditor(); drawBands(); }
+      document.addEventListener('pointermove',move); document.addEventListener('pointerup',up);
+    });
+  });
+}
+
+/* ---------- task editor ---------- */
+function drawEditor(){
+  var box=document.getElementById('tasks'); box.innerHTML='<label style="font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)">Tasks</label>';
+  TASKS.forEach(function(t,i){
+    var row=document.createElement('div'); row.className='trow';
+    var opts=['easy','med','hard'].map(function(d){ return '<option value="'+d+'"'+(t.diff===d?' selected':'')+'>'+d+'</option>'; }).join('');
+    row.innerHTML='<input type="color" value="'+t.color+'" />'
+      +'<input type="text" value="'+t.name+'" />'
+      +'<input type="number" step="0.5" min="0" max="24" value="'+t.start+'" />'
+      +'<input type="number" step="0.5" min="0" max="24" value="'+t.end+'" />'
+      +'<select>'+opts+'</select>'
+      +'<button class="trLock'+(t.locked?' on':'')+'" title="'+(t.locked?'Locked at a fixed time':'Movable — drag on the graph')+'">'+(t.locked?'🔒':'🔓')+'</button>'
+      +'<span class="rm">✕</span>';
+    var ins=row.querySelectorAll('input');
+    ins[0].addEventListener('input',function(){ t.color=this.value; redraw(); });
+    ins[1].addEventListener('input',function(){ t.name=this.value; redraw(); });
+    ins[2].addEventListener('input',function(){ t.start=parseFloat(this.value)||0; redraw(); });
+    ins[3].addEventListener('input',function(){ t.end=parseFloat(this.value)||0; redraw(); });
+    row.querySelector('select').addEventListener('change',function(){ t.diff=this.value; redraw(); });
+    row.querySelector('.trLock').addEventListener('click',function(){ t.locked=!t.locked; drawEditor(); drawBands(); });
+    row.querySelector('.rm').addEventListener('click',function(){ TASKS.splice(i,1); drawEditor(); drawBands(); });
+    box.appendChild(row);
+  });
+  var add=document.createElement('button'); add.className='addBtn'; add.textContent='+ add task';
+  add.addEventListener('click',function(){ TASKS.push({id:uid('k_'),name:'New task',start:16,end:18,color:'#6EE7B7',icon:'●',diff:'med',explicit:true,locked:true}); drawEditor(); drawBands(); });
+  box.appendChild(add);
+}
+
+/* ---------- presets ---------- */
+var PRESETS={
+  'Glass':   { fill:'grad', pill:'glass',   pos:'top',    bd:true,  rad:12, op:0.16, colorMode:'task' },
+  'Minimal': { fill:'none', pill:'minimal', pos:'top',    bd:false, rad:0,  op:0.10, colorMode:'task' },
+  'Solid':   { fill:'solid',pill:'solid',   pos:'top',    bd:true,  rad:8,  op:0.22, colorMode:'task' },
+  'Neon':    { fill:'grad', pill:'outline', pos:'mid',    bd:true,  rad:14, op:0.20, colorMode:'accent' }
+};
+function applyPreset(name){ var p=PRESETS[name]; Object.keys(p).forEach(function(k){ S[k]=p[k]; }); syncUI(); redraw(); }
+
+/* ---------- wiring ---------- */
+function redraw(){ drawChart(); drawBands(); }
+function segWire(id, key, after){
+  var seg=document.getElementById(id);
+  seg.addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b)return;
+    S[key]=b.dataset.v; [].forEach.call(seg.children,function(x){x.classList.toggle('on',x===b);}); (after||redraw)(); });
+}
+function syncUI(){
+  [['fillSeg','fill'],['colorSeg','colorMode'],['pillSeg','pill'],['posSeg','pos']].forEach(function(p){
+    var seg=document.getElementById(p[0]); [].forEach.call(seg.children,function(x){ x.classList.toggle('on', x.dataset.v===S[p[1]]); });
+  });
+  document.getElementById('bd').checked=S.bd; document.getElementById('icon').checked=S.icon;
+  document.getElementById('dur').checked=S.dur; document.getElementById('now').checked=S.now;
+  document.getElementById('op').value=S.op; document.getElementById('opV').textContent=S.op;
+  document.getElementById('rad').value=S.rad; document.getElementById('radV').textContent=S.rad;
+  document.getElementById('acc').value=S.acc;
+  document.getElementById('bgC').value=S.bg;
+}
+
+segWire('fillSeg','fill'); segWire('colorSeg','colorMode'); segWire('pillSeg','pill'); segWire('posSeg','pos');
+document.getElementById('acc').addEventListener('input',function(){ S.acc=this.value; document.documentElement.style.setProperty('--acc',this.value); redraw(); });
+document.getElementById('bgC').addEventListener('input',function(){ S.bg=this.value; document.documentElement.style.setProperty('--bg',this.value); redraw(); });
+document.getElementById('op').addEventListener('input',function(){ S.op=parseFloat(this.value); document.getElementById('opV').textContent=this.value; drawBands(); });
+document.getElementById('rad').addEventListener('input',function(){ S.rad=parseFloat(this.value); document.getElementById('radV').textContent=this.value; drawBands(); });
+document.getElementById('bd').addEventListener('change',function(){ S.bd=this.checked; drawBands(); });
+document.getElementById('icon').addEventListener('change',function(){ S.icon=this.checked; drawBands(); });
+document.getElementById('dur').addEventListener('change',function(){ S.dur=this.checked; drawBands(); });
+document.getElementById('now').addEventListener('change',function(){ S.now=this.checked; drawBands(); });
+document.getElementById('valcol').addEventListener('change',function(){ S.valcol=this.checked; redraw(); });
+document.getElementById('nowT').addEventListener('input',function(){ S.nowH=parseFloat(this.value); document.getElementById('nowV').textContent=fmtShort(S.nowH); drawBands(); });
+document.getElementById('bedT').addEventListener('input',function(){ S.bed=parseFloat(this.value); document.getElementById('bedV').textContent=fmtShort(S.bed); drawBands(); });
+
+var pr=document.getElementById('presets');
+Object.keys(PRESETS).forEach(function(name){ var b=document.createElement('button'); b.textContent=name; b.addEventListener('click',function(){ applyPreset(name); }); pr.appendChild(b); });
+
+document.documentElement.style.setProperty('--acc', S.acc);
+document.documentElement.style.setProperty('--bg', S.bg);
+drawChart(); drawBands(); drawEditor();
+
+/* ============================================================
+ * SCHEDULE UI KIT
+ * ============================================================ */
+var S2={ input:'glass', chip:'bar', card:'outline', badge:'pill', div:true, times:true, anim:'pop', spd:0.5 };
+function byId(id){ return TASKS.filter(function(x){return x.id===id;})[0]; }
+function gapWindow(){
+  if(armWin) return { lo:armWin.lo, hi:armWin.hi, first:{name:'free'}, second:{name:'free'}, free:true };
+  if(selIds.length!==2) return null;
+  var a=byId(selIds[0]), b=byId(selIds[1]); if(!a||!b||a.gap||b.gap||a.start==null||b.start==null) return null;
+  var first=a.start<=b.start?a:b, second=a.start<=b.start?b:a;
+  return { lo:first.end, hi:second.start, first:first, second:second };
+}
+function updateGapBanner(){
+  var el=document.getElementById('gapBanner'); if(!el)return;
+  var g=gapWindow();
+  if(!g){ el.className='gapBanner'; return; }
+  if(g.hi>g.lo+0.05){ el.textContent='↳ '+fmtShort(g.lo)+'–'+fmtShort(g.hi)+(g.free?' free window':(' between '+g.first.name+' & '+g.second.name))+' — type a task  ("fill" = whole gap · "sleep 2h" = sized)'; el.className='gapBanner on'; }
+  else { el.textContent='⚠ no gap there (tasks touch/overlap)'; el.className='gapBanner on warn'; }
+}
+function fmtShort(h){ var H=Math.floor(h),m=Math.round((h-H)*60); var ap=H<12?'AM':'PM',hr=H%12||12; return m?(hr+':'+(m<10?'0'+m:m)+' '+ap):(hr+' '+ap); }
+function peakIn(t){ var mx=valAt(t.start); for(var h=Math.ceil(t.start);h<=Math.floor(t.end);h++) mx=Math.max(mx,valAt(h)); mx=Math.max(mx,valAt(t.end)); return Math.round(mx*100); }
+
+function drawUIKit(){
+  // input bar (persistent element — just restyle it)
+  var inp=document.getElementById('schIn'); if(inp) inp.className='nlInput '+S2.input;
+
+  // chips, one per RULE (fixed tasks + gap rules) — draggable + pop-animated
+  var chipsHtml = TASKS.map(function(t,i){
+    var col=taskColor(t);
+    var lead = S2.chip==='dot' ? '<span class="cdot"></span>' : '';
+    var time = t.gap ? (t.rStart!=null ? fmtShort(t.rStart)+'–'+fmtShort(t.rEnd) : (t.size==='small'?'small gaps':'fills day')) : fmtShort(t.start);
+    var tcls = t.gap ? 'gp' : 'ct';
+    var sel = selIds.indexOf(t.id)>=0 ? ' sel' : '';
+    return '<span class="chip s-'+S2.chip+(t.gap?' gap':'')+sel+' in-'+S2.anim+'" draggable="true" data-i="'+i+'" '
+      + 'style="--cc:'+col+';--ccsoft:'+rgba(col,.16)+';--cspd:'+S2.spd+'s;animation-delay:'+(i*0.06)+'s">'
+      + lead + '<span class="nm">'+t.name+'</span>'
+      + '<span class="'+tcls+'">'+time+'</span><span class="x" data-rm="'+i+'">×</span></span>';
+  }).join('');
+  document.getElementById('chips').innerHTML = chipsHtml || '<span style="color:var(--muted);font-size:13px">No tasks — type a prompt above ↑</span>';
+
+  // free-time card — countdown from now → bedtime
+  var delta=((S.bed-S.nowH)%24+24)%24, hh=Math.floor(delta), mm=Math.round((delta-hh)*60);
+  if(mm===60){ hh++; mm=0; }
+  var cd=(hh?hh+'h ':'')+mm+'m';
+  document.getElementById('freecard').innerHTML =
+    '<div class="freecard '+S2.card+'">'
+    + '<div class="ft">○ Free time</div>'
+    + '<div class="big">Nothing scheduled</div>'
+    + '<div class="sub"><b>'+cd+'</b> until bedtime</div></div>';
+
+  // today's plan rows — from the expanded segments (peak = curve energy at start)
+  var SEG=effectiveSegments();
+  var rows = SEG.map(function(t){
+    var col=taskColor(t);
+    var badge = S2.badge==='none' ? '' : '<span class="peak '+S2.badge+'">peak '+Math.round(energyAt(t.start))+'</span>';
+    var time = S2.times ? '<span class="tm">'+fmtShort(t.start)+' → '+fmtShort(t.end)+'</span>' : '';
+    return '<div class="planrow'+(S2.div?' div':'')+'" style="--cc:'+col+'">'
+      + '<span class="dot"></span><span class="nm">'+t.name+(t.gap?' <em style="color:var(--muted);font-style:normal;font-size:10px">gap</em>':'')+'</span>'+time+badge+'</div>';
+  }).join('');
+  document.getElementById('planlist').innerHTML = rows || '<div class="planrow">Nothing scheduled</div>';
+  updateGapBanner();
+}
+
+function seg2(id,key){
+  var seg=document.getElementById(id);
+  seg.addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b)return;
+    S2[key]=b.dataset.v; [].forEach.call(seg.children,function(x){x.classList.toggle('on',x===b);}); drawUIKit(); });
+}
+function syncUI2(){
+  [['uInputSeg','input'],['uChipSeg','chip'],['uCardSeg','card'],['uBadgeSeg','badge']].forEach(function(p){
+    var seg=document.getElementById(p[0]); [].forEach.call(seg.children,function(x){ x.classList.toggle('on', x.dataset.v===S2[p[1]]); });
+  });
+  document.getElementById('uDiv').checked=S2.div; document.getElementById('uTimes').checked=S2.times;
+}
+seg2('uInputSeg','input'); seg2('uChipSeg','chip'); seg2('uCardSeg','card'); seg2('uBadgeSeg','badge');
+document.getElementById('uDiv').addEventListener('change',function(){ S2.div=this.checked; drawUIKit(); });
+document.getElementById('uTimes').addEventListener('change',function(){ S2.times=this.checked; drawUIKit(); });
+
+var PRESETS2={
+  'Default':{ input:'glass', chip:'bar', card:'outline', badge:'pill', div:true },
+  'Glass':  { input:'glass', chip:'fill', card:'glass', badge:'pill', div:true },
+  'Minimal':{ input:'outline', chip:'dot', card:'minimal', badge:'minimal', div:false },
+  'Bold':   { input:'filled', chip:'fill', card:'solid', badge:'outline', div:true }
+};
+var pr2=document.getElementById('presets2');
+Object.keys(PRESETS2).forEach(function(name){ var b=document.createElement('button'); b.textContent=name;
+  b.addEventListener('click',function(){ var p=PRESETS2[name]; Object.keys(p).forEach(function(k){S2[k]=p[k];}); syncUI2(); drawUIKit(); }); pr2.appendChild(b); });
+
+// keep the UI kit in sync on any task / accent / style change (all flow through drawBands)
+var _drawBands=drawBands;
+drawBands=function(){ _drawBands(); drawUIKit(); saveTasks(); };
+
+// chips: drag to reorder, click × to remove
+(function(){
+  var c=document.getElementById('chips'), dragI=null;
+  c.addEventListener('dragstart',function(e){ var ch=e.target.closest('.chip'); if(!ch||ch.dataset.i===undefined){ e.preventDefault(); return; } dragI=+ch.dataset.i; ch.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; });
+  c.addEventListener('dragend',function(e){ var ch=e.target.closest('.chip'); if(ch) ch.classList.remove('dragging'); });
+  c.addEventListener('dragover',function(e){ e.preventDefault(); });
+  c.addEventListener('drop',function(e){ e.preventDefault(); var ch=e.target.closest('.chip'); if(!ch||ch.dataset.i===undefined||dragI===null) return; var to=+ch.dataset.i; if(to===dragI) return; var item=TASKS.splice(dragI,1)[0]; TASKS.splice(to,0,item); dragI=null; drawEditor(); drawBands(); });
+  c.addEventListener('click',function(e){
+    var x=e.target.closest('.x');
+    if(x){ var i=+x.dataset.rm, rid=TASKS[i]&&TASKS[i].id; TASKS.splice(i,1); selIds=selIds.filter(function(id){return id!==rid;}); drawEditor(); drawBands(); return; }
+    var ch=e.target.closest('.chip'); if(!ch||ch.dataset.i===undefined)return;
+    var t=TASKS[+ch.dataset.i]; if(!t||t.gap)return;            // arm a fixed task
+    var k=selIds.indexOf(t.id);
+    if(k>=0) selIds.splice(k,1); else { selIds.push(t.id); if(selIds.length>2) selIds.shift(); }
+    armWin=null; drawBands();
+  });
+})();
+
+// search bar — parse a prompt into tasks. With a window armed (two chips or a
+// clicked free stretch), the task fills that window; otherwise it auto-places
+// on the curve by energy. A fill that would overlap is held for Fit/Override.
+var pending=null;
+function clearConfirm(){ pending=null; var el=document.getElementById('confirmBar'); if(el){ el.innerHTML=''; el.className='confirmBar'; } }
+function commitTask(p){ TASKS.push(p); TASKS.sort(function(a,b){return (a.start==null?99:a.start)-(b.start==null?99:b.start);}); selIds=[]; armWin=null; clearConfirm(); var inp=document.getElementById('schIn'); if(inp) inp.value=''; drawEditor(); drawBands(); }
+function clashesWith(s0,e0){ return TASKS.filter(function(x){return !x.gap&&x.start!=null && x.start<e0-1e-6 && x.end>s0+1e-6;}); }
+function askOverlap(p,lo,hi,d,clashName){ pending={p:p,lo:lo,hi:hi,d:d}; var el=document.getElementById('confirmBar');
+  el.innerHTML='⚠ “'+p.name+'” overlaps '+clashName+' — <button data-cf="fit">Fit to schedule</button><button data-cf="override">Override</button><button data-cf="cancel">Cancel</button>';
+  el.className='confirmBar on'; }
+function fitPending(){ if(!pending)return; var p=pending.p;
+  var occ=TASKS.filter(function(x){return !x.gap&&x.start!=null;}).map(function(x){return {start:x.start,end:x.end};});
+  var segs=freeWithin(pending.lo,pending.hi,occ); if(!segs.length){ overridePending(); return; }
+  segs.sort(function(a,b){return (b[1]-b[0])-(a[1]-a[0]);}); var g=segs[0];
+  var len=p.fill?(g[1]-g[0]):Math.min(taskDur(p),g[1]-g[0]);
+  p.start=g[0]; p.end=g[0]+len; p.durH=len; p.explicit=true; commitTask(p); }
+function overridePending(){ if(!pending)return; var p=pending.p; p.start=pending.lo; p.end=Math.min(pending.hi,pending.lo+pending.d); p.durH=p.end-p.start; p.explicit=true; commitTask(p); }
+function runPrompt(v){ if(!v||!v.trim())return; clearConfirm();
+  var g=gapWindow(), win=(g&&g.hi>g.lo+0.05)?[g.lo,g.hi]:null;
+  if(win && v.split(/,|;|\band\b/i).length===1){
+    var p=parseTask(v);
+    if(p && !p.gap){
+      var lo=win[0],hi=win[1],gapLen=hi-lo, d=p.fill?gapLen:Math.min(taskDur(p),gapLen);
+      var s0=lo, e0=Math.min(hi,lo+d), clash=clashesWith(s0,e0);
+      if(clash.length){ askOverlap(p,lo,hi,d,clash[0].name); return; }
+      p.start=s0; p.end=e0; p.durH=e0-s0; p.explicit=true; commitTask(p); return;
+    }
+  }
+  addSched(v, win); selIds=[]; armWin=null;
+  var inp=document.getElementById('schIn'); if(inp) inp.value='';
+  updateGapBanner();
+}
+document.getElementById('schAdd').addEventListener('click',function(){ runPrompt(document.getElementById('schIn').value); });
+document.getElementById('schIn').addEventListener('keydown',function(e){ if(e.key==='Enter') runPrompt(this.value); });
+
+// overlap confirm buttons
+document.getElementById('confirmBar').addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b)return;
+  var cf=b.dataset.cf; if(cf==='fit')fitPending(); else if(cf==='override')overridePending(); else clearConfirm(); });
+
+// click a free stretch of the chart to arm that window (or click on a task to arm it)
+(function(){
+  var pw=document.querySelector('.plotWrap'); if(!pw)return;
+  pw.addEventListener('click',function(e){
+    if(e.target.closest('.pill')) return; // pills handle drag
+    var r=pw.getBoundingClientRect(); var hour=clamp((e.clientX-r.left)/r.width,0,1)*24;
+    var fixed=TASKS.filter(function(x){return !x.gap&&x.start!=null;});
+    var inside=fixed.filter(function(t){return hour>=t.start&&hour<t.end;})[0];
+    if(!inside) return; // clicking empty space does NOTHING (no accidental gap window)
+    var k=selIds.indexOf(inside.id); if(k>=0)selIds.splice(k,1); else { selIds.push(inside.id); if(selIds.length>2)selIds.shift(); }
+    armWin=null; clearConfirm(); drawBands();
+  });
+})();
+
+// clickable example prompts
+var EXAMPLES=['school 8-2','gym 1930 hard','homework 1 hour med','meditate 30m easy','read 2h','big gap claude','small gap email'];
+var cmdEx=document.getElementById('cmdEx');
+EXAMPLES.forEach(function(ex){ var b=document.createElement('button'); b.textContent=ex; b.addEventListener('click',function(){ addSched(ex); }); cmdEx.appendChild(b); });
+
+// chip entrance animation controls
+seg2('uAnimSeg','anim');
+document.getElementById('uSpd').addEventListener('input',function(){ S2.spd=parseFloat(this.value); document.getElementById('spdV').textContent=(+this.value).toFixed(2); drawUIKit(); });
+document.getElementById('popReplay').addEventListener('click',function(){ drawUIKit(); });
+
+// difficulty color pickers
+function wireDiff(id,key){ document.getElementById(id).addEventListener('input',function(){ DIFF[key]=this.value; redraw(); }); }
+wireDiff('dE','easy'); wireDiff('dM','med'); wireDiff('dH','hard');
+
+// re-run the anti-overlap layout when the window resizes
+window.addEventListener('resize', function(){ drawBands(); });
+
+/* ---------- Send to Peak ----------
+ * The Peak tracker (peak.html) reads localStorage['peak_sched_style_v1'] and
+ * renders your schedule with this exact style. Same key the baked default in
+ * peak.html falls back to — so this overrides it live, no redeploy needed.
+ * "Copy config" gives you the JSON to paste in as the new baked default. */
+// Style only (the visual knobs) — for the SCHED_STYLE_DEFAULT bake-in path.
+function styleCfg(){ return { fill:S.fill, op:S.op, rad:S.rad, colorMode:S.colorMode, acc:S.acc, pill:S.pill, pos:S.pos, bd:S.bd, icon:S.icon, dur:S.dur, now:S.now, valcol:S.valcol, diff:{ easy:DIFF.easy, med:DIFF.med, hard:DIFF.hard } }; }
+// EVERYTHING — the full Schedule Lab snapshot: style + every task (name, time,
+// color, icon, difficulty, lock, gap rules). This is what travels to Peak.
+function fullCfg(){ return { v:2, style:styleCfg(), wake:WAKE, tasks:TASKS.map(function(t){ return {
+  id:t.id, name:t.name, start:(t.start==null?null:t.start), end:(t.end==null?null:t.end), durH:t.durH||null,
+  color:t.color||null, icon:t.icon||null, diff:t.diff||'med', locked:!!t.locked, gap:!!t.gap, size:t.size||null,
+  rStart:(t.rStart==null?null:t.rStart), rEnd:(t.rEnd==null?null:t.rEnd), explicit:!!t.explicit, fill:!!t.fill }; }) }; }
+function labToast(msg){ var t=document.getElementById('labToast'); if(!t){ t=document.createElement('div'); t.id='labToast'; t.className='labToast'; document.body.appendChild(t); } t.textContent=msg; t.classList.add('show'); clearTimeout(t._t); t._t=setTimeout(function(){ t.classList.remove('show'); },2600); }
+document.getElementById('sendPeak').addEventListener('click',function(){
+  try{
+    var cfg=fullCfg();
+    localStorage.setItem('peak_sched_style_v1', JSON.stringify(cfg.style));   // the visual style
+    var d=new Date(); var dk=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    // write the whole schedule into Peak's own store (label = name, carries color/icon/lock)
+    var ptasks=cfg.tasks.map(function(t){ return { id:t.id, label:t.name, diff:t.diff, start:t.start, end:t.end, durH:t.durH, color:t.color, icon:t.icon, locked:t.locked, gap:t.gap, size:t.size, rStart:t.rStart, rEnd:t.rEnd, explicit:t.explicit, fill:t.fill }; });
+    localStorage.setItem('peak_schedule_v1', JSON.stringify({ day:dk, tasks:ptasks, fromLab:true }));
+    labToast('✓ Sent your whole schedule + style to Peak — open Peak & refresh');
+  }catch(e){ labToast('Could not save — storage blocked'); }
+});
+document.getElementById('copyCfg').addEventListener('click',function(){ var json=JSON.stringify(fullCfg()); function done(){ labToast('✓ Full schedule + style copied (JSON)'); } if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(json).then(done,function(){ window.prompt('Copy the full schedule + style:', json); }); } else { window.prompt('Copy the full schedule + style:', json); } });
+/* ---------- Copy theme code ----------
+ * A compact, shareable PEAK-THEME code: graph/accent color + background +
+ * card style + the schedule tasks. Post it on Patreon; a subscriber pastes it
+ * into "Import a creator theme" in their own Peak and gets your exact look. */
+function themeCode(){ var theme={ v:1, style:styleCfg(), bg:S.bg, tasks:fullCfg().tasks }; return 'PEAK-THEME:'+btoa(unescape(encodeURIComponent(JSON.stringify(theme)))); }
+document.getElementById('copyTheme').addEventListener('click',function(){ var code=themeCode(); function done(){ labToast('✓ Theme code copied — share it on Patreon; subscribers paste it into Peak'); } if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(code).then(done,function(){ window.prompt('Copy your theme code (share on Patreon):', code); }); } else { window.prompt('Copy your theme code (share on Patreon):', code); } });
+/* ---------- Download this Lab as a single standalone file ----------
+ * Schedule Lab is one self-contained HTML file (all CSS + JS inline). This
+ * saves a copy you can keep and double-click on any computer — no install. */
+document.getElementById('dlLab').addEventListener('click',function(){
+  function save(text){ var blob=new Blob([text],{type:'text/html'}); var url=URL.createObjectURL(blob); var a=document.createElement('a'); a.href=url; a.download='schedule-lab.html'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){ URL.revokeObjectURL(url); },1500); labToast('✓ Downloaded schedule-lab.html — double-click it to open'); }
+  // grab the pristine page source; fall back to the live DOM if fetch is blocked (e.g. file://)
+  fetch(location.href,{cache:'no-store'}).then(function(r){ return r.text(); }).then(save).catch(function(){ save('<!DOCTYPE html>\n'+document.documentElement.outerHTML); });
+});
+
+drawUIKit();
+</script>
+</body>
+</html>

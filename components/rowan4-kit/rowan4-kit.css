@@ -1,0 +1,308 @@
+/* =====================================================================
+   ROWAN4 KIT — drop-in aesthetic + animation
+   Pure vanilla CSS. No Tailwind, no animation libraries.
+   All classes are `vk-` prefixed so they never collide with your app.
+   Import once (e.g. in your root layout): import './rowan4-kit/rowan4-kit.css'
+   ===================================================================== */
+
+/* ---------- 1. Tokens (the "brand") ---------------------------------- */
+:root {
+  --vk-bg: #000000;
+  --vk-bg-elevated: #0a0a0a;
+  --vk-fg: #ffffff;
+  --vk-mint: #6EE7B7;
+  --vk-mint-hover: #5dd6a6;
+  --vk-mint-deep: #1f4d3d;
+  --vk-mint-glow: rgba(110, 231, 183, 0.4);
+  --vk-amber: #F59E0B;
+  --vk-wine: #7c2d12;
+  --vk-red: #EF4444;
+  --vk-muted: rgba(255, 255, 255, 0.5);
+  --vk-muted-strong: rgba(255, 255, 255, 0.7);
+  --vk-border: rgba(255, 255, 255, 0.08);
+  --vk-border-strong: rgba(255, 255, 255, 0.16);
+  --vk-card: rgba(255, 255, 255, 0.02);
+  --vk-card-elevated: rgba(255, 255, 255, 0.04);
+
+  --vk-space-2: 0.5rem;
+  --vk-space-3: 0.75rem;
+  --vk-space-4: 1rem;
+  --vk-space-6: 1.5rem;
+  --vk-space-8: 2rem;
+  --vk-space-10: 2.5rem;
+  --vk-space-16: 4rem;
+
+  --vk-radius-pill: 999px;
+
+  /* Motion — the signature is --vk-ease-premium. Put it on every state change. */
+  --vk-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --vk-ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
+  --vk-ease-out-soft: cubic-bezier(0.32, 0.72, 0, 1);
+  --vk-duration-fast: 120ms;
+  --vk-duration: 180ms;
+  --vk-duration-lift: 480ms;
+
+  /* The tile-art components (tiles/*.module.css) read the UN-prefixed token
+     names below — they're copied verbatim. These aliases let them work
+     without edits. Safe to keep even if your app defines its own. */
+  --mint: var(--vk-mint);
+  --amber: var(--vk-amber);
+}
+
+/* ---------- 2. Film-grain overlay ----------------------------------- */
+/* Add class "vk-grain" to your page wrapper (or <body>). */
+.vk-grain { position: relative; }
+.vk-grain::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: 200px 200px;
+}
+
+/* ---------- 3. Page canvas + editorial greeting --------------------- */
+.vk-page {
+  position: relative;
+  min-height: 100vh;
+  padding: var(--vk-space-10) var(--vk-space-6) var(--vk-space-16);
+  overflow: hidden;
+  background: var(--vk-bg);
+  color: var(--vk-fg);
+}
+
+/* Slow drifting glow wash behind everything. */
+.vk-page::before {
+  content: '';
+  position: absolute;
+  inset: -10% -5%;
+  background:
+    radial-gradient(ellipse 50% 35% at 70% 20%, rgba(110, 231, 183, 0.06), transparent 65%),
+    radial-gradient(ellipse 40% 30% at 20% 80%, rgba(110, 231, 183, 0.04), transparent 70%);
+  pointer-events: none;
+  animation: vk-canvas-drift 60s ease-in-out infinite alternate;
+  z-index: 0;
+}
+@keyframes vk-canvas-drift {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-2%, 1%, 0); }
+}
+
+.vk-shell {
+  position: relative;
+  z-index: 5;               /* above the backdrop layers (z 0-2) */
+  max-width: 1180px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-10);
+}
+
+.vk-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vk-space-2);
+  opacity: 0;
+  animation: vk-fade-up 700ms var(--vk-ease-premium) forwards;
+}
+.vk-greeting {
+  font-family: var(--vk-font-serif, 'Times New Roman'), Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(2.25rem, 4.5vw, 3.25rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.vk-greeting-name { font-style: italic; color: var(--vk-mint); }
+.vk-date {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--vk-muted);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+@keyframes vk-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- 4. Bento poster grid ------------------------------------ */
+.vk-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(3, minmax(160px, 200px));
+  grid-template-areas:
+    "a a b b"
+    "a a c d"
+    "e e c f";
+  gap: var(--vk-space-4);
+}
+.vk-area-a { grid-area: a; }
+.vk-area-b { grid-area: b; }
+.vk-area-c { grid-area: c; }
+.vk-area-d { grid-area: d; }
+.vk-area-e { grid-area: e; }
+.vk-area-f { grid-area: f; }
+
+@media (max-width: 980px) {
+  .vk-grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: auto;
+    grid-template-areas: "a a" "b b" "c d" "e e" "f f";
+    grid-auto-rows: minmax(160px, auto);
+  }
+}
+@media (max-width: 560px) {
+  .vk-grid { grid-auto-rows: minmax(150px, auto); gap: var(--vk-space-3); }
+  .vk-area-a { min-height: 208px; }
+}
+
+/* ---------- 5. The tile (card + entrance + hover) ------------------- */
+.vk-tile {
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid var(--vk-border);
+  min-height: 160px;
+  background: #080b0a;          /* solid backing so backdrop never bleeds through */
+  cursor: pointer;
+  isolation: isolate;
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  transition:
+    transform var(--vk-duration-lift) var(--vk-ease-premium),
+    border-color var(--vk-duration) var(--vk-ease);
+  opacity: 0;
+  transform: translateY(12px) scale(0.97);
+  animation: vk-tile-in 800ms var(--vk-ease-premium) forwards;
+  will-change: transform;
+}
+@keyframes vk-tile-in {
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.vk-tile:hover {
+  border-color: rgba(110, 231, 183, 0.35);
+  box-shadow: 0 0 40px rgba(110, 231, 183, 0.08);
+}
+/* Staggered entrance — cascades the cards in like a film strip. */
+.vk-tile:nth-child(1) { animation-delay: 120ms; }
+.vk-tile:nth-child(2) { animation-delay: 200ms; }
+.vk-tile:nth-child(3) { animation-delay: 280ms; }
+.vk-tile:nth-child(4) { animation-delay: 360ms; }
+.vk-tile:nth-child(5) { animation-delay: 440ms; }
+.vk-tile:nth-child(6) { animation-delay: 520ms; }
+
+/* Wrapper for an animated background (cursor-parallax handled in JS). */
+.vk-tile-art {
+  position: absolute;
+  inset: -10%;
+  pointer-events: none;
+  transition: transform 240ms var(--vk-ease-out-soft);
+  will-change: transform;
+}
+
+/* ---------- 6. Tile text overlay ------------------------------------ */
+.vk-tile-glyph {
+  position: absolute; top: 16px; right: 18px; z-index: 3;
+  width: 26px; height: 26px;
+  color: var(--vk-mint); opacity: 0.78;
+  filter: drop-shadow(0 0 6px rgba(110, 231, 183, 0.28));
+  display: inline-flex; pointer-events: none;
+}
+.vk-tile-glyph svg { width: 100%; height: 100%; display: block; }
+.vk-tile-index {
+  position: absolute; top: 18px; left: 22px; z-index: 3;
+  font-family: var(--vk-font-serif, 'Times New Roman'), Georgia, serif;
+  font-style: italic; font-size: 0.875rem;
+  color: var(--vk-muted); letter-spacing: 0.02em;
+}
+.vk-tile-label {
+  position: absolute; bottom: 46px; left: 22px; z-index: 3;
+  font-family: var(--vk-font-serif, 'Times New Roman'), Georgia, serif;
+  font-style: italic; font-size: clamp(20px, 2vw, 28px);
+  color: var(--vk-fg);
+}
+.vk-tile-summary {
+  position: absolute; left: 22px; right: 60px; bottom: 22px; z-index: 3;
+  font-size: 13px; line-height: 1.4; letter-spacing: 0.005em;
+  color: rgba(255, 255, 255, 0.45);
+}
+.vk-tile-arrow {
+  position: absolute; bottom: 22px; right: 22px; z-index: 3;
+  color: var(--vk-fg); opacity: 0.9; font-size: 18px;
+}
+@media (max-width: 560px) {
+  .vk-tile-label { left: 16px; font-size: 22px; bottom: 38px; }
+  .vk-tile-summary { left: 16px; right: 48px; bottom: 16px; font-size: 11px; }
+  .vk-tile-index { left: 16px; }
+  .vk-tile-arrow { bottom: 34px; right: 16px; }
+}
+
+/* ---------- 7. Static art variants (gradients, no JS) --------------- */
+/* Use these when you don't want a full animated <TileArt> component. */
+.vk-art-aurora {
+  background:
+    radial-gradient(ellipse 60% 50% at 35% 55%, rgba(110, 231, 183, 0.35), transparent 70%),
+    radial-gradient(ellipse 50% 40% at 70% 40%, rgba(74, 140, 110, 0.28), transparent 70%),
+    linear-gradient(135deg, #0c1612 0%, #060a08 100%);
+}
+.vk-art-dots {
+  background: #0a0d0b;
+  background-image:
+    radial-gradient(rgba(110, 231, 183, 0.6) 1.2px, transparent 1.4px),
+    radial-gradient(ellipse 60% 60% at 50% 50%, rgba(40, 80, 60, 0.6), #0a0d0b 75%);
+  background-size: 14px 14px, 100% 100%;
+}
+.vk-art-grid {
+  background: #07090a;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+.vk-art-duotone {
+  background:
+    radial-gradient(ellipse 80% 80% at 50% 50%, rgba(214, 119, 60, 0.65) 0%, rgba(122, 50, 30, 0.7) 50%, rgba(40, 14, 10, 1) 100%);
+}
+
+/* ---------- 8. Atmospheric backdrop (used by Rowan4Backdrop.tsx) ---- */
+.vk-atmosphere {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    radial-gradient(60% 50% at 50% 30%, rgba(110, 231, 183, 0.16) 0%, rgba(110, 231, 183, 0.06) 32%, rgba(110, 231, 183, 0) 65%),
+    radial-gradient(28% 22% at 50% 38%, rgba(255, 226, 181, 0.07) 0%, rgba(255, 226, 181, 0) 70%),
+    radial-gradient(120% 80% at 50% 100%, rgba(14, 38, 30, 0.5) 0%, rgba(4, 6, 10, 0.95) 75%);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+.vk-mountains {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 1;
+  height: 30vh; min-height: 180px; pointer-events: none; opacity: 0.8;
+}
+.vk-mountains svg { width: 100%; height: 100%; display: block; }
+.vk-particles { position: fixed; inset: 0; z-index: 2; pointer-events: none; overflow: hidden; }
+.vk-particles span {
+  position: absolute; width: 1.5px; height: 1.5px; border-radius: 50%;
+  background: rgba(233, 239, 233, 0.7);
+  box-shadow: 0 0 6px rgba(167, 243, 208, 0.5);
+  animation: vk-drift linear infinite;
+}
+@keyframes vk-drift {
+  0%   { transform: translate3d(0, 0, 0); opacity: 0; }
+  10%  { opacity: 0.7; }
+  90%  { opacity: 0.55; }
+  100% { transform: translate3d(var(--dx, 12px), var(--dy, -100vh), 0); opacity: 0; }
+}
+
+/* ---------- 9. Respect reduced motion ------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .vk-tile, .vk-header, .vk-page::before, .vk-particles span {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

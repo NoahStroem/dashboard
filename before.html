@@ -19,12 +19,11 @@ img{max-width:100%;height:auto}
 @media (max-width:480px){input,select,textarea{font-size:16px !important}}
 @supports (padding:max(0px)){body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}}
 </style>
-<title>Liam · dashboard</title>
+<title>BEFORE · Liam dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800&family=Exo+2:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <script>try{document.documentElement.setAttribute("data-theme",localStorage.getItem("patron_theme")||"nocturne");}catch(e){document.documentElement.setAttribute("data-theme","nocturne");}</script>
-<script src="icons.js?v=1"></script>
 <style>
 /* ============================================================
  * Liam — the main dashboard. Bento hub linking every app
@@ -33,20 +32,19 @@ img{max-width:100%;height:auto}
  * ============================================================ */
 :root {
   color-scheme: dark;
-  /* === UI/UX Pro Max — "Cyberpunk / NFT-Web3" · purple tech + gold value + neon === */
-  --bg: #0F0F23; --bg-elevated: #1A1A3A;
-  --surface: rgba(139,92,246,0.06); --surface-2: rgba(139,92,246,0.11);
-  --fg: #F8FAFC; --muted: rgba(226,232,255,0.52); --muted-strong: rgba(226,232,255,0.80);
-  --border: rgba(124,58,237,0.22); --border-strong: rgba(167,139,250,0.45);
-  --brand: #8B5CF6; --brand-2: #22D3EE; --brand-ink: #0B0420;
-  --brand-soft: rgba(139,92,246,0.16); --brand-line: rgba(139,92,246,0.40); --brand-glow: rgba(139,92,246,0.65);
-  --pos: #22D3EE; --pos-soft: rgba(34,211,238,0.14); --pos-line: rgba(34,211,238,0.34);
-  --neg: #F472B6; --neg-soft: rgba(244,114,182,0.14); --neg-line: rgba(244,114,182,0.30);
-  --warn: #FBBF24; --warn-soft: rgba(251,191,36,0.12); --warn-line: rgba(251,191,36,0.30);
+  --bg: #0C0C12; --bg-elevated: #15151F;
+  --surface: rgba(255,255,255,0.028); --surface-2: rgba(255,255,255,0.055);
+  --fg: #F3F2F8; --muted: rgba(243,242,248,0.50); --muted-strong: rgba(243,242,248,0.74);
+  --border: rgba(255,255,255,0.08); --border-strong: rgba(255,255,255,0.17);
+  --brand: #8B7CFF; --brand-2: #C7BBFF; --brand-ink: #130E2E;
+  --brand-soft: rgba(139,124,255,0.12); --brand-line: rgba(139,124,255,0.28); --brand-glow: rgba(139,124,255,0.42);
+  --pos: #46E0A8; --pos-soft: rgba(70,224,168,0.12); --pos-line: rgba(70,224,168,0.26);
+  --neg: #FB7185; --neg-soft: rgba(251,113,133,0.12); --neg-line: rgba(251,113,133,0.26);
+  --warn: #FBBF24; --warn-soft: rgba(251,191,36,0.10); --warn-line: rgba(251,191,36,0.26);
   --track: rgba(255,255,255,0.06);
-  --card-shadow: 0 1px 0 rgba(167,139,250,0.08) inset, 0 22px 50px -28px rgba(0,0,0,0.95);
-  --glow-1: rgba(139,92,246,0.22); --glow-2: rgba(34,211,238,0.12);
-  --grain-opacity: 0.04; --overlay: rgba(7,4,22,0.74);
+  --card-shadow: 0 1px 0 rgba(255,255,255,0.04) inset, 0 18px 44px -30px rgba(0,0,0,0.85);
+  --glow-1: rgba(139,124,255,0.12); --glow-2: rgba(70,224,168,0.05);
+  --grain-opacity: 0.05; --overlay: rgba(6,6,12,0.66);
   --space-1:.25rem; --space-2:.5rem; --space-3:.75rem; --space-4:1rem;
   --space-5:1.25rem; --space-6:1.5rem; --space-8:2rem; --space-10:2.5rem; --space-12:3rem; --space-16:4rem;
   --radius-sm: 8px; --radius-md: 11px; --radius-lg: 18px; --radius-pill: 999px;
@@ -54,7 +52,7 @@ img{max-width:100%;height:auto}
   --text-xl:1.375rem; --text-2xl:1.75rem; --text-3xl:2.5rem;
   --ease: cubic-bezier(0.2,0.8,0.2,1); --ease-premium: cubic-bezier(0.16,1,0.3,1);
   --duration-fast:120ms; --duration:200ms;
-  --font-display:'Orbitron'; --font-ui:'Exo 2'; --font-mono:'JetBrains Mono';
+  --font-display:'Space Grotesk'; --font-ui:'Hanken Grotesk'; --font-mono:'JetBrains Mono';
 }
 [data-theme="aurora"] {
   color-scheme: dark;
@@ -100,7 +98,7 @@ body { background: var(--bg); color: var(--fg); font-family: var(--font-ui), -ap
 
 /* Header */
 .header { display:flex; align-items:flex-end; justify-content:space-between; gap: var(--space-4); margin-bottom: var(--space-8); flex-wrap: wrap; }
-.title { font-family: var(--font-display); font-weight: 800; font-size: var(--text-3xl); line-height: 1.0; letter-spacing: 0.03em; text-transform: uppercase; margin: 0; background: linear-gradient(120deg, #fff 35%, var(--brand-2) 75%, var(--brand)); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 0 20px rgba(34,211,238,0.4)); }
+.title { font-family: var(--font-display); font-weight: 600; font-size: var(--text-3xl); line-height: 1.0; letter-spacing: -0.03em; margin: 0; }
 .subtitle { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--muted); margin: 6px 0 0; }
 .themeSeg { display:inline-flex; align-items:center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-pill); padding: 3px; gap: 2px; }
 .themeBtn { appearance:none; background: transparent; border:0; color: var(--muted); font-family: var(--font-ui); font-size: 11px; font-weight: 600; letter-spacing: 0.02em; padding: 5px 11px 5px 8px; border-radius: var(--radius-pill); cursor: pointer; display:inline-flex; align-items:center; gap:6px; transition: background var(--duration) var(--ease-premium), color var(--duration) var(--ease-premium); }
@@ -133,36 +131,18 @@ body { background: var(--bg); color: var(--fg); font-family: var(--font-ui), -ap
 .tileWide { grid-column: span 2; }
 @media (max-width: 520px) { .tileWide { grid-column: span 1; } }
 
-/* App card — NFT/Web3 marketplace style: gradient "art" header + body + heart */
-.card { position: relative; display:flex; flex-direction:column; padding: 0; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--bg-elevated); box-shadow: var(--card-shadow); text-decoration:none; color: var(--fg); overflow:hidden; opacity: 0; transform: translateY(14px); animation: cardIn 0.5s var(--ease-premium) forwards; transition: border-color var(--duration) var(--ease-premium), transform var(--duration) var(--ease-premium), box-shadow var(--duration) var(--ease-premium); }
-.card:hover { border-color: var(--brand-line); transform: translateY(-6px); box-shadow: 0 0 0 1px var(--brand-line), 0 26px 50px -22px var(--brand-glow); }
-@keyframes cardIn { to { opacity: 1; transform: translateY(0); } }
-/* staggered entrance */
-.bento > *:nth-child(1){animation-delay:.02s}.bento > *:nth-child(2){animation-delay:.06s}.bento > *:nth-child(3){animation-delay:.10s}.bento > *:nth-child(4){animation-delay:.14s}.bento > *:nth-child(5){animation-delay:.18s}.bento > *:nth-child(6){animation-delay:.22s}.bento > *:nth-child(7){animation-delay:.26s}.bento > *:nth-child(8){animation-delay:.30s}.bento > *:nth-child(9){animation-delay:.34s}.bento > *:nth-child(10){animation-delay:.38s}
-.cardArt { position: relative; aspect-ratio: 16/10; background: radial-gradient(circle at 50% 42%, #16162a, #0b0b14 72%); display:grid; place-items:center; overflow:hidden; }
-/* per-app color comes back as a soft glow concentrated behind the icon,
-   masked to a radial so it fades to the dark tile at the card edges */
-.cardArt::before { content:''; position:absolute; inset:0; background: var(--art, linear-gradient(135deg,#8B5CF6,#22D3EE)); opacity: 0.5; -webkit-mask: radial-gradient(72% 78% at 50% 44%, #000 0%, transparent 72%); mask: radial-gradient(72% 78% at 50% 44%, #000 0%, transparent 72%); transition: opacity var(--duration) var(--ease-premium); }
-.card:hover .cardArt::before { opacity: 0.72; }
-.cardArt::after { content:''; position:absolute; inset:0; background: radial-gradient(120% 80% at 50% 120%, rgba(0,0,0,.45), transparent 70%); }
-.cardArtIcon { position: relative; z-index:1; display:grid; place-items:center; overflow: visible; transition: transform var(--duration) var(--ease-premium); }
-/* overflow:visible lets each icon's glow/depth fade out softly instead of being
-   clipped into a hard box at the SVG's bounding-box edge */
-.cardArtIcon svg { width: 60px; height: 60px; display:block; overflow: visible; }
-.card:hover .cardArtIcon { transform: scale(1.08); }
-.cardArtBadge { position:absolute; top:10px; left:10px; z-index:1; font-family: var(--font-mono); font-size: 9px; letter-spacing:.1em; text-transform:uppercase; color:#fff; background: rgba(0,0,0,.4); border:1px solid rgba(255,255,255,.18); backdrop-filter: blur(6px); padding: 4px 9px; border-radius: var(--radius-pill); max-width: calc(100% - 20px); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.cardBody { display:flex; flex-direction:column; gap: 3px; padding: 14px 15px 15px; }
-.cardName { font-family: var(--font-display); font-weight: 700; font-size: var(--text-lg); letter-spacing: 0.01em; }
-.cardDesc { font-size: 12px; color: var(--muted-strong); line-height: 1.45; }
-.cardFoot { display:flex; align-items:flex-end; justify-content:space-between; gap: var(--space-3); margin-top: 12px; }
-.cardPrice { display:flex; flex-direction:column; gap: 2px; }
-.cardPriceLabel { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
-.cardPriceVal { font-family: var(--font-display); font-weight: 700; font-size: var(--text-base); color: var(--brand-2); text-shadow: 0 0 14px rgba(34,211,238,.45); font-variant-numeric: tabular-nums; }
-.cardHeart { display:grid; place-items:center; width: 34px; height: 34px; flex-shrink:0; border-radius: 10px; border: 1px solid var(--border-strong); background: rgba(255,255,255,.03); color: var(--muted-strong); cursor: pointer; transition: all var(--duration) var(--ease-premium); }
-.cardHeart:hover { color: var(--neg); border-color: var(--neg-line); transform: scale(1.08); }
-.cardHeart.on { color: #fff; background: var(--neg); border-color: var(--neg); box-shadow: 0 0 16px var(--neg-line); }
-.cardHeart.on svg { fill: #fff; }
-@media (prefers-reduced-motion: reduce) { .card { opacity:1; transform:none; animation:none; } }
+/* App card */
+.card { position: relative; display:flex; flex-direction:column; gap: var(--space-3); min-height: 132px; padding: var(--space-5); border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--card-shadow); text-decoration:none; color: var(--fg); overflow:hidden; transition: border-color var(--duration) var(--ease-premium), background var(--duration) var(--ease-premium), transform var(--duration) var(--ease-premium), box-shadow var(--duration) var(--ease-premium); }
+.card:hover { border-color: var(--brand-line); background: var(--brand-soft); transform: translateY(-2px); box-shadow: 0 0 40px -18px var(--brand-glow), var(--card-shadow); }
+.cardIcon { display:grid; place-items:center; width: 42px; height: 42px; border-radius: 13px; background: var(--brand-soft); border: 1px solid var(--brand-line); font-size: 20px; flex-shrink:0; }
+.cardName { font-family: var(--font-display); font-weight: 600; font-size: var(--text-lg); letter-spacing: -0.02em; }
+.cardTag { font-size: 12px; color: var(--muted); line-height: 1.4; }
+.cardArrow { position:absolute; top: var(--space-5); right: var(--space-5); color: var(--muted); font-size: 16px; transition: color var(--duration) var(--ease-premium), transform var(--duration) var(--ease-premium); }
+.card:hover .cardArrow { color: var(--brand); transform: translate(2px,-2px); }
+.cardTop { display:flex; align-items:center; gap: var(--space-3); }
+.cardStat { display:flex; flex-direction:column; gap: 2px; margin-top: auto; }
+.cardStatValue { font-family: var(--font-display); font-weight: 600; font-size: var(--text-xl); letter-spacing: -0.02em; color: var(--fg); font-variant-numeric: tabular-nums; }
+.cardStatLabel { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
 
 /* Vitals tile */
 .vitals { grid-column: span 2; grid-row: span 2; display:flex; flex-direction:column; gap: var(--space-4); padding: var(--space-6); border: 1px solid var(--brand-line); border-radius: var(--radius-lg); background: var(--brand-soft); box-shadow: 0 0 50px -24px var(--brand-glow), var(--card-shadow); }
@@ -172,20 +152,15 @@ body { background: var(--bg); color: var(--fg); font-family: var(--font-ui), -ap
 .srcBadge { display:inline-flex; align-items:center; gap: 6px; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 10px; border-radius: var(--radius-pill); background: var(--surface); border: 1px solid var(--border); color: var(--muted-strong); }
 .srcDot { width: 6px; height: 6px; border-radius: 50%; background: var(--brand); box-shadow: 0 0 8px var(--brand-glow); }
 .vitalsBody { display:flex; align-items:center; gap: var(--space-6); flex-wrap: wrap; }
-.recRing { position: relative; width: 132px; height: 132px; display:grid; place-items:center; flex-shrink:0; overflow: visible; }
-.recRing[data-tone="good"]  { color: var(--pos); }
-.recRing[data-tone="watch"] { color: var(--warn); }
-.recRing[data-tone="low"]   { color: var(--neg); }
-.recRing[data-tone="muted"] { color: var(--muted); }
-/* soft colored aura so the glow fades smoothly instead of clipping into a box */
-.recRing::before { content:''; position:absolute; inset:-18px; border-radius:50%; background: radial-gradient(closest-side, currentColor, transparent 70%); opacity:.32; filter: blur(14px); pointer-events:none; z-index:0; animation: recPulse 3.6s var(--ease) infinite; }
-.recRing[data-tone="muted"]::before { opacity:.10; animation:none; }
-@keyframes recPulse { 0%,100% { opacity:.26; } 50% { opacity:.44; } }
-@media (prefers-reduced-motion: reduce) { .recRing::before { animation:none; } }
-.recRing svg { position:absolute; inset:0; transform: rotate(-90deg); overflow: visible; z-index:1; }
-.recTrack { fill:none; stroke: var(--track); stroke-width: 10; }
-.recFill { fill:none; stroke: currentColor; stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset 700ms var(--ease-premium); filter: drop-shadow(0 0 4px currentColor) drop-shadow(0 0 13px currentColor); }
-.recNum { position: relative; z-index:1; color: var(--fg); font-family: var(--font-display); font-weight: 600; font-size: 2.5rem; line-height: 1; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.recRing { position: relative; width: 132px; height: 132px; display:grid; place-items:center; flex-shrink:0; }
+.recRing svg { position:absolute; inset:0; transform: rotate(-90deg); }
+.recTrack { fill:none; stroke: var(--track); stroke-width: 9; }
+.recFill { fill:none; stroke: currentColor; stroke-width: 9; stroke-linecap: round; transition: stroke-dashoffset 700ms var(--ease-premium); filter: drop-shadow(0 0 10px currentColor); }
+.recRing[data-tone="good"] .recFill { color: var(--pos); }
+.recRing[data-tone="watch"] .recFill { color: var(--warn); }
+.recRing[data-tone="low"] .recFill { color: var(--neg); }
+.recRing[data-tone="muted"] .recFill { color: var(--muted); }
+.recNum { font-family: var(--font-display); font-weight: 600; font-size: 2.5rem; line-height: 1; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
 .recUnit { font-size: var(--text-base); color: var(--muted-strong); }
 .recCap { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
 .vMetrics { display:flex; flex-direction:column; gap: var(--space-3); flex:1; min-width: 150px; }
@@ -275,52 +250,9 @@ body { background: var(--bg); color: var(--fg); font-family: var(--font-ui), -ap
 .howtoChip { display:inline-block; padding: 3px 9px; border-radius: var(--radius-pill); background: var(--surface-2); border: 1px solid var(--border); font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.04em; color: var(--fg); }
 .howtoFoot { margin: var(--space-3) 0 0; font-size: 11px; line-height: 1.5; color: var(--muted); }
 </style>
-<style id="vitality-skin">
-/* ===== Vitality skin — black canvas, mint, Instrument Serif, grain, backdrop ===== */
-html[data-theme]{
-  --bg:#000;--bg-elevated:#0a0a0a;
-  --surface:rgba(255,255,255,.02);--surface-2:rgba(255,255,255,.04);
-  --fg:#fff;--muted:rgba(255,255,255,.5);--muted-strong:rgba(255,255,255,.7);
-  --border:rgba(255,255,255,.08);--border-strong:rgba(255,255,255,.16);
-  --brand:#6EE7B7;--brand-2:#6EE7B7;--brand-ink:#04130c;
-  --brand-soft:rgba(110,231,183,.10);--brand-line:rgba(110,231,183,.30);--brand-glow:rgba(110,231,183,.45);
-  --pos:#6EE7B7;--pos-soft:rgba(110,231,183,.14);--pos-line:rgba(110,231,183,.34);
-  --neg:#EF4444;--neg-soft:rgba(239,68,68,.14);--neg-line:rgba(239,68,68,.3);
-  --warn:#F59E0B;--track:rgba(255,255,255,.06);
-  --card-shadow:0 1px 0 rgba(110,231,183,.06) inset,0 22px 50px -28px rgba(0,0,0,.95);
-  --font-display:'Instrument Serif';--font-ui:'Inter';
-}
-body{ background:#000 !important; font-family:'Inter',-apple-system,sans-serif; }
-.title{ text-transform:none !important; letter-spacing:-.02em !important; font-style:italic !important; font-weight:400 !important; background:none !important; -webkit-text-fill-color:currentColor !important; color:var(--fg) !important; filter:none !important; }
-.subtitle{ font-family:var(--font-mono) !important; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
-.cardName{ font-style:italic; text-transform:none; letter-spacing:0; }
-.vitalsEmptyTitle,.panelTitle,.recNum{ font-style:italic; }
-/* backdrop layers */
-.vk-atmosphere{ position:fixed; inset:0; z-index:0; pointer-events:none; background-image:
-   radial-gradient(60% 50% at 50% 30%,rgba(110,231,183,.16) 0%,rgba(110,231,183,.06) 32%,rgba(110,231,183,0) 65%),
-   radial-gradient(28% 22% at 50% 38%,rgba(255,226,181,.07) 0%,rgba(255,226,181,0) 70%),
-   radial-gradient(120% 80% at 50% 100%,rgba(14,38,30,.5) 0%,rgba(4,6,10,.95) 75%);
-  background-repeat:no-repeat; background-size:100% 100%; }
-.vk-mountains{ position:fixed; left:0; right:0; bottom:0; z-index:0; height:30vh; min-height:180px; pointer-events:none; opacity:.8; }
-.vk-mountains svg{ width:100%; height:100%; display:block; }
-.vk-particles{ position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
-.vk-particles span{ position:absolute; border-radius:50%; background:rgba(233,239,233,.7); box-shadow:0 0 6px rgba(167,243,208,.5); animation:vk-drift linear infinite; }
-@keyframes vk-drift{ 0%{transform:translate3d(0,0,0);opacity:0} 10%{opacity:.7} 90%{opacity:.55} 100%{transform:translate3d(var(--dx,12px),var(--dy,-100vh),0);opacity:0} }
-.page{ position:relative; z-index:1; }
-/* tile cascade entrance + hover glow + parallax */
-.bento .card{ opacity:0; transform:translateY(12px) scale(.97); animation:vk-tile-in .8s var(--ease-premium) forwards; }
-@keyframes vk-tile-in{ to{ opacity:1; transform:none } }
-.bento .card:nth-child(1){animation-delay:.10s}.bento .card:nth-child(2){animation-delay:.16s}.bento .card:nth-child(3){animation-delay:.22s}.bento .card:nth-child(4){animation-delay:.28s}.bento .card:nth-child(5){animation-delay:.34s}.bento .card:nth-child(6){animation-delay:.40s}.bento .card:nth-child(7){animation-delay:.46s}.bento .card:nth-child(8){animation-delay:.52s}.bento .card:nth-child(9){animation-delay:.58s}.bento .card:nth-child(n+10){animation-delay:.64s}
-.card{ transition:transform .48s var(--ease-premium), border-color .2s var(--ease), box-shadow .3s var(--ease) !important; }
-.card:hover{ border-color:rgba(110,231,183,.35) !important; box-shadow:0 0 40px rgba(110,231,183,.08) !important; }
-.cardArtIcon{ transition:transform .24s var(--ease-premium); }
-@media (prefers-reduced-motion:reduce){ .bento .card,.vk-particles span{ animation:none !important; opacity:1 !important; transform:none !important; } }
-</style>
+<link rel="stylesheet" href="skin.css?v=1">
 </head>
 <body>
-<div class="vk-atmosphere" aria-hidden></div>
-<div class="vk-mountains" aria-hidden><svg viewBox="0 0 1600 420" preserveAspectRatio="none"><defs><linearGradient id="vkmtf" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0d1a17" stop-opacity="0"/><stop offset="55%" stop-color="#0d1a17" stop-opacity=".55"/><stop offset="100%" stop-color="#0d1a17" stop-opacity=".95"/></linearGradient><linearGradient id="vkmtn" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#050a09" stop-opacity=".4"/><stop offset="60%" stop-color="#050a09" stop-opacity=".95"/><stop offset="100%" stop-color="#050a09" stop-opacity="1"/></linearGradient></defs><path d="M0,300 L120,230 L210,260 L320,180 L430,220 L560,150 L680,210 L820,170 L960,220 L1100,180 L1240,240 L1380,200 L1500,250 L1600,220 L1600,420 L0,420 Z" fill="url(#vkmtf)"/><path d="M0,360 L100,320 L220,340 L340,290 L460,330 L590,300 L720,340 L860,310 L1000,350 L1140,310 L1280,355 L1420,320 L1540,360 L1600,340 L1600,420 L0,420 Z" fill="url(#vkmtn)"/></svg></div>
-<div class="vk-particles" id="vkParticles" aria-hidden></div>
 <main class="page grain-overlay">
   <div class="shell" id="app"></div>
 </main>
@@ -330,18 +262,15 @@ body{ background:#000 !important; font-family:'Inter',-apple-system,sans-serif; 
  * Apps in the suite — one bento card each.
  * ============================================================ */
 const APPS = [
-  { file: 'peak.html',        name: 'PEAK TRACKER', tag: 'Daily readiness · energy curve',        icon: '🔆', wide: true },
-  { file: 'peak-standalone.html', name: 'PEAK · STANDALONE', tag: 'Self-contained · share / download', icon: '📦', wide: true },
   { file: 'finance.html',     name: 'Finance',     tag: 'Net worth · subs · orders · wishlist', icon: '💰', wide: true },
   { file: 'gym.html',         name: 'Gym',         tag: 'Progressive overload coach',           icon: '🏋️', wide: true },
-  { file: 'enhancers.html',   name: 'Enhancers',   tag: 'Supplements · stimulants · meds',       icon: '💊', wide: true },
-  { file: 'food.html',        name: 'Food & Water', tag: 'Hydration target · daily macros',       icon: '🥤', wide: true },
-  { file: 'fitband.html',     name: 'Fitness Band', tag: 'Recovery · sleep · strain · trends',     icon: '🔋', wide: true },
-  { file: 'mentor.html',      name: 'Mentor',      tag: 'Nova · live chat + cozy thinking',       icon: '🌟', wide: true },
-  { file: 'ai-avatar-2.html', name: 'AI Mentor',   tag: 'Nova · 3D avatar + animation kit',      icon: '🪐', wide: true },
+  { file: 'supplements.html', name: 'Supplements', tag: 'Your stack + smart recommendations',   icon: '💊' },
+  { file: 'whoop.html',       name: 'Fitness Band', tag: 'Whoop · Fitbit · Apple Watch sync',      icon: '🔋' },
+  { file: 'water.html',       name: 'Water',       tag: 'Daily hydration target',                icon: '💧' },
   { file: 'creator.html',     name: 'Creator',     tag: 'Schedule · accounts · analytics',       icon: '🎬' },
   { file: 'goals.html',       name: 'Goals',       tag: 'Goals & streaks',                       icon: '🎯' },
   { file: 'progress.html',    name: 'Progress',    tag: 'Photos & measurements',                 icon: '📈' },
+  { file: 'macros.html',      name: 'Macros',      tag: 'Protein · carbs · fat',                 icon: '🍳' },
 ];
 
 /* ============================================================
@@ -425,67 +354,8 @@ async function syncFitbit(){
   render();
 }
 
-/* ---- Apple Health sync — an iPhone Shortcut pushes Health data to /api/apple,
-   we read it back here. Only applies when Whoop/Fitbit aren't connected. ---- */
-let appleStatus = { connected: false, checked: false };
-async function syncApple(){
-  if (!ON_SERVER) return;
-  try {
-    const r = await fetch('/api/apple', { cache: 'no-store' });
-    const j = await r.json();
-    appleStatus = { connected: !!j.connected, checked: true };
-    if (j.connected && !whoopStatus.connected && !fitbitStatus.connected) {
-      const incomingTs = j.ts || 0;
-      const incomingSrc = (j.source === 'manual') ? 'manual' : 'apple';
-      // Treat both shortcut sources (apple / manual) as the "pushed" record.
-      if (!health || health.source === 'apple' || health.source === 'manual' || incomingTs > (health.ts || 0)) {
-        health = { source: incomingSrc, connected: true, ts: j.ts || Date.now(), recovery: j.recovery, sleepHours: j.sleepHours, sleepPerf: j.sleepPerf, sleepTargetHours: j.sleepTargetHours || 8, bedtime: j.bedtime, wakeTime: j.wakeTime, hrv: j.hrv, rhr: j.rhr, strain: j.strain };
-        saveHealth(health);
-      }
-    }
-  } catch (e) { appleStatus = { connected: false, checked: true }; }
-  render();
-}
-
 function sourceLabel(s){ return s === 'apple' ? 'Apple Watch' : s === 'manual' ? 'Manual' : s === 'fitbit' ? 'Fitbit' : 'Whoop'; }
 function recTone(r){ if (r == null) return 'muted'; if (r >= 67) return 'good'; if (r >= 34) return 'watch'; return 'low'; }
-function clamp01(x){ return Math.max(0, Math.min(1, x)); }
-/* Estimated recovery/readiness (1–99) when the source gives none (Apple, Fitbit).
- * HRV is the main driver, then resting HR, then sleep. Rough population anchors —
- * a daily readiness estimate, not a medical score. Returns null if too little data. */
-function estRecovery(h){
-  if (!h) return null;
-  if (h.recovery != null) return h.recovery;
-  const parts = [], w = [];
-  if (typeof h.hrv === 'number') { parts.push(clamp01((h.hrv - 20) / (90 - 20)) * 100); w.push(0.5); }
-  if (typeof h.rhr === 'number') { parts.push(clamp01((80 - h.rhr) / (80 - 42)) * 100); w.push(0.25); }
-  if (typeof h.sleepPerf === 'number') { parts.push(Math.min(100, h.sleepPerf)); w.push(0.25); }
-  else if (typeof h.sleepHours === 'number') { parts.push(clamp01(h.sleepHours / (h.sleepTargetHours || 8)) * 100); w.push(0.25); }
-  if (!parts.length) return null;
-  const sw = w.reduce((a, b) => a + b, 0);
-  let s = 0; for (let i = 0; i < parts.length; i++) s += parts[i] * w[i];
-  return Math.max(1, Math.min(99, Math.round(s / sw)));
-}
-/* Subjective readiness (1–99) from morning self-ratings (1–5 each) — no band needed.
- * Modelled on athlete self-report tools (Hooper Index): sleep quality, energy,
- * soreness, stress, mood. Soreness & stress are "higher = worse" so they invert. */
-function subjReadiness(s){
-  if (!s) return null;
-  const up = (v) => (v - 1) / 4 * 100;    // higher = better
-  const down = (v) => (5 - v) / 4 * 100;  // higher = worse
-  const parts = [], w = [];
-  if (s.sleepQ)  { parts.push(up(s.sleepQ));    w.push(0.30); }
-  if (s.energy)  { parts.push(up(s.energy));    w.push(0.25); }
-  if (s.soreness){ parts.push(down(s.soreness));w.push(0.20); }
-  if (s.stress)  { parts.push(down(s.stress));  w.push(0.15); }
-  if (s.mood)    { parts.push(up(s.mood));       w.push(0.10); }
-  if (!parts.length) return null;
-  const sw = w.reduce((a, b) => a + b, 0);
-  let x = 0; for (let i = 0; i < parts.length; i++) x += parts[i] * w[i];
-  return Math.max(1, Math.min(99, Math.round(x / sw)));
-}
-// "est" badge shows for device estimates AND subjective (typed-in) readiness.
-function isEstRecovery(h){ return !!(h && (h.subjective || (h.recovery == null && estRecovery(h) != null))); }
 function formatHM(h){ if (h == null) return '—'; const hh = Math.floor(h); const mm = Math.round((h - hh) * 60); return hh + 'h ' + String(mm).padStart(2,'0') + 'm'; }
 function formatClock(t){ if (!t) return '—'; const [h, m] = String(t).split(':').map(Number); if (!isFinite(h)) return esc(t); const ap = h < 12 ? 'am' : 'pm'; const h12 = h % 12 === 0 ? 12 : h % 12; return h12 + ':' + String(m || 0).padStart(2,'0') + ap; }
 function ago(ts){ if (!ts) return ''; const m = Math.max(0, Math.round((Date.now() - ts) / 60000)); if (m < 1) return 'just now'; if (m < 60) return m + 'm ago'; return Math.round(m / 60) + 'h ago'; }
@@ -536,13 +406,11 @@ function vitalsTileHtml(){
       + '<p class="vitalsEmptyBody">Connect Whoop, link your Apple Watch, or enter recovery &amp; sleep by hand. Your numbers then power the rest of the suite — the supplement recommender reads recovery &amp; sleep automatically.</p>'
       + '<div class="vitalsFoot"><button type="button" class="btn btn-primary" data-action="open-vitals">Add vitals</button></div></div></section>';
   }
-  const rec = estRecovery(h);
-  const est = isEstRecovery(h);
-  const tone = recTone(rec);
+  const tone = recTone(h.recovery);
   const circ = 2 * Math.PI * 56;
   const ring = '<div class="recRing" data-tone="' + tone + '"><svg viewBox="0 0 132 132" aria-hidden><circle cx="66" cy="66" r="56" class="recTrack"/>'
-    + (rec != null ? '<circle cx="66" cy="66" r="56" class="recFill" style="stroke-dasharray:' + circ + ';stroke-dashoffset:' + (circ * (1 - rec / 100)) + ';"/>' : '')
-    + '</svg><div style="text-align:center"><div class="recNum">' + (rec != null ? Math.round(rec) : '—') + (rec != null ? '<span class="recUnit">%</span>' : '') + '</div><div class="recCap">' + (est ? 'Recovery · est' : 'Recovery') + '</div></div></div>';
+    + (h.recovery != null ? '<circle cx="66" cy="66" r="56" class="recFill" style="stroke-dasharray:' + circ + ';stroke-dashoffset:' + (circ * (1 - h.recovery / 100)) + ';"/>' : '')
+    + '</svg><div style="text-align:center"><div class="recNum">' + (h.recovery != null ? Math.round(h.recovery) : '—') + (h.recovery != null ? '<span class="recUnit">%</span>' : '') + '</div><div class="recCap">Recovery</div></div></div>';
   function row(label, val){ return '<div class="vRow"><span class="vLabel">' + label + '</span><span class="vVal">' + val + '</span></div>'; }
   const sleepVal = h.sleepHours != null ? formatHM(h.sleepHours) + (h.sleepPerf != null ? '<em>' + Math.round(h.sleepPerf) + '%</em>' : '') : '—';
   const metrics = '<div class="vMetrics">'
@@ -568,48 +436,20 @@ function statFor(file){
   try {
     if (file === 'finance.html') { const s = lsGet('finance_standalone_v1'); if (s && Array.isArray(s.accounts) && s.accounts.length) { const nw = s.accounts.reduce((a,x)=>a+(Number(x.amountCHF)||0),0); return { value: 'CHF ' + fmtNum(nw), label: 'net worth' }; } }
     else if (file === 'supplements.html') { const s = lsGet('supplements_standalone_v1'); if (s && Array.isArray(s.items) && s.items.length) { const tk = (s.taken && s.taken[activeDateKey()]) || {}; const n = s.items.filter(i => tk[i.id]).length; return { value: n + '/' + s.items.length, label: 'taken today' }; } }
-    else if (file === 'enhancers.html') { const s = lsGet('supplements_standalone_v1'); if (s && Array.isArray(s.items) && s.items.length) { const tk = (s.taken && s.taken[activeDateKey()]) || {}; const n = s.items.filter(i => tk[i.id]).length; return { value: n + '/' + s.items.length, label: 'supplements today' }; } const c = lsGet('stimulant_standalone_v1'); if (c && Array.isArray(c.logs)) { const k = localDateKey(); const mg = c.logs.filter(l => l && localDateKey(new Date(l.t)) === k).reduce((a,l)=>a+(Number(l.mg)||0),0); if (mg>0) return { value: mg + ' mg', label: 'caffeine today' }; } }
     else if (file === 'water.html') { const s = lsGet('water_standalone_v1'); if (s && s.logs) { const n = s.logs[localDateKey()] || 0; return { value: String(n), label: (n === 1 ? 'drink' : 'drinks') + ' today' }; } }
-    else if (file === 'food.html') { const m = lsGet('macros_standalone_v1'); const log = m && m[localDateKey()]; if (Array.isArray(log) && log.length) { const cal = log.reduce((a,e)=>a+(Number(e.cal)||0),0); return { value: fmtNum(cal), label: 'kcal today' }; } const w = lsGet('water_standalone_v1'); if (w && w.logs) { const n = w.logs[localDateKey()] || 0; if (n>0) return { value: String(n), label: (n === 1 ? 'drink' : 'drinks') + ' today' }; } }
-    else if (file === 'stimulant.html') { const s = lsGet('stimulant_standalone_v1'); if (s && Array.isArray(s.logs)) { const k = localDateKey(); const mg = s.logs.filter(l => l && localDateKey(new Date(l.t)) === k).reduce((a,l)=>a+(Number(l.mg)||0),0); if (mg>0) return { value: mg + ' mg', label: 'caffeine today' }; } }
-    else if (file === 'fitband.html') { const rec = estRecovery(health); if (rec != null) return { value: Math.round(rec) + '%', label: isEstRecovery(health) ? 'recovery · est' : 'recovery' }; }
-    else if (file === 'peak.html') { const rec = estRecovery(health); if (rec != null) return { value: Math.round(rec) + '%', label: 'readiness' }; }
+    else if (file === 'whoop.html') { if (health && health.recovery != null) return { value: Math.round(health.recovery) + '%', label: 'recovery' }; }
   } catch (e) {}
   return null;
 }
-const ART = {
-  'finance.html':'linear-gradient(135deg,#7C3AED,#22D3EE)',
-  'gym.html':'linear-gradient(135deg,#F472B6,#8B5CF6)',
-  'supplements.html':'linear-gradient(135deg,#22D3EE,#7C3AED)',
-  'stimulant.html':'linear-gradient(135deg,#7C3AED,#F59E0B)',
-  'fitband.html':'linear-gradient(135deg,#6EE7B7,#22D3EE)',
-  'water.html':'linear-gradient(135deg,#06B6D4,#3B82F6)',
-  'creator.html':'linear-gradient(135deg,#FBBF24,#F472B6)',
-  'goals.html':'linear-gradient(135deg,#A78BFA,#22D3EE)',
-  'progress.html':'linear-gradient(135deg,#34D399,#8B5CF6)',
-  'recovery.html':'linear-gradient(135deg,#22D3EE,#34D399)',
-  'macros.html':'linear-gradient(135deg,#F59E0B,#EF4444)',
-  'peak.html':'linear-gradient(135deg,#34D399,#22D3EE)',
-  'peak-standalone.html':'linear-gradient(135deg,#6EE7B7,#34D399)',
-  'meds.html':'linear-gradient(135deg,#34D399,#22D3EE)',
-  'enhancers.html':'linear-gradient(135deg,#6EE7B7,#22D3EE)',
-  'food.html':'linear-gradient(135deg,#22D3EE,#6EE7B7)',
-  'ai-avatar-2.html':'linear-gradient(135deg,#67E8F9,#A78BFA)',
-  'mentor.html':'linear-gradient(135deg,#6EE7B7,#34D399)',
-};
-function artFor(file){ return ART[file] || 'linear-gradient(135deg,#8B5CF6,#22D3EE)'; }
-/* Animated neon icons live in icons.js (window.DASH_ICONS), keyed by page. */
-function iconSvg(file){ return (window.DASH_ICONS && window.DASH_ICONS[file]) || ''; }
 function cardHtml(a){
   const st = statFor(a.file);
-  const priceVal = st ? esc(st.value) : 'Open';
-  const priceLabel = st ? esc(st.label) : 'launch';
-  return '<a class="card' + (a.wide ? ' tileWide' : '') + '" href="' + a.file + '" style="--art:' + artFor(a.file) + '">'
-    + '<div class="cardArt"><span class="cardArtIcon" aria-hidden>' + iconSvg(a.file) + '</span></div>'
-    + '<div class="cardBody"><span class="cardName">' + esc(a.name) + '</span><span class="cardDesc">' + esc(a.tag) + '</span>'
-    + '<div class="cardFoot"><div class="cardPrice"><span class="cardPriceLabel">' + priceLabel + '</span><span class="cardPriceVal">' + priceVal + '</span></div>'
-    + '<button class="cardHeart" type="button" aria-label="Favorite" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle(\'on\')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg></button></div>'
-    + '</div></a>';
+  const tail = st
+    ? '<div class="cardStat"><span class="cardStatValue">' + esc(st.value) + '</span><span class="cardStatLabel">' + esc(st.label) + '</span></div>'
+    : '<p class="cardTag">' + esc(a.tag) + '</p>';
+  return '<a class="card' + (a.wide ? ' tileWide' : '') + '" href="' + a.file + '">'
+    + '<span class="cardArrow" aria-hidden>↗</span>'
+    + '<div class="cardTop"><span class="cardIcon" aria-hidden>' + a.icon + '</span><span class="cardName">' + esc(a.name) + '</span></div>'
+    + tail + '</a>';
 }
 
 /* ============================================================
@@ -639,7 +479,7 @@ function tickerMetrics(){
   const add = (label, value, unit, tone, delta) => out.push({ label, value, unit: unit || '', tone: tone || 'brand', delta: delta || '' });
   const h = health;
   if (h){
-    { const rec = estRecovery(h); if (rec != null) add('REC', Math.round(rec), '%', recTone(rec)); }
+    if (h.recovery != null) add('REC', Math.round(h.recovery), '%', recTone(h.recovery));
     if (h.sleepHours != null){ const hh = Math.floor(h.sleepHours), mm = Math.round((h.sleepHours - hh) * 60); add('SLP', hh + 'h' + String(mm).padStart(2,'0'), '', h.sleepPerf != null ? (h.sleepPerf >= 85 ? 'good' : h.sleepPerf >= 60 ? 'watch' : 'low') : 'brand'); }
     if (h.strain != null) add('STR', (Math.round(h.strain * 10) / 10).toFixed(1), '', 'brand');
     if (h.hrv != null) add('HRV', Math.round(h.hrv), 'ms', 'good');
@@ -695,37 +535,6 @@ function render(){
   renderModal();
 }
 
-/* ---- Manual (no-band) self-report form: 1–5 ratings → readiness score ---- */
-function manualSel(id, label, opts, cur){
-  return '<div class="field"><label class="fieldLabel" for="' + id + '">' + label + '</label>'
-    + '<select id="' + id + '" class="fieldInput">'
-    + '<option value="">—</option>'
-    + opts.map((t, i) => { const val = i + 1; return '<option value="' + val + '"' + (String(cur) === String(val) ? ' selected' : '') + '>' + val + ' · ' + t + '</option>'; }).join('')
-    + '</select></div>';
-}
-function manualFormHtml(h){
-  const g = (k) => (h && h[k] != null ? h[k] : '');
-  const subj = '<div class="fieldGrid">'
-    + manualSel('f-sq', 'Sleep quality', ['Terrible','Poor','OK','Good','Great'], g('sleepQ'))
-    + manualSel('f-en', 'Energy',        ['Drained','Low','OK','Good','Buzzing'], g('energy'))
-    + manualSel('f-mo', 'Mood',          ['Low','Meh','OK','Good','Great'], g('mood'))
-    + manualSel('f-so', 'Muscle soreness',['None','Mild','Some','Sore','Wrecked'], g('soreness'))
-    + manualSel('f-st', 'Stress',        ['Calm','Low','OK','High','Frazzled'], g('stress'))
-    + '</div>';
-  const measured = '<div class="fieldGrid">'
-    + '<div class="field"><label class="fieldLabel" for="f-sleep">Sleep (hours)</label><input id="f-sleep" class="fieldInput" type="number" min="0" max="24" step="0.1" inputmode="decimal" placeholder="7.5" value="' + esc(g('sleepHours')) + '" /></div>'
-    + '<div class="field"><label class="fieldLabel" for="f-rhr">Resting pulse (bpm)</label><input id="f-rhr" class="fieldInput" type="number" min="20" max="150" inputmode="numeric" placeholder="optional" value="' + esc(g('rhr')) + '" /></div>'
-    + '<div class="field"><label class="fieldLabel" for="f-bed">Bedtime</label><input id="f-bed" class="fieldInput" type="time" value="' + esc(g('bedtime')) + '" /></div>'
-    + '<div class="field"><label class="fieldLabel" for="f-wake">Wake time</label><input id="f-wake" class="fieldInput" type="time" value="' + esc(g('wakeTime')) + '" /></div>'
-    + '<div class="field fieldFull"><label class="fieldLabel" for="f-target">Sleep target (hours)</label><input id="f-target" class="fieldInput" type="number" min="4" max="12" step="0.5" inputmode="decimal" placeholder="8" value="' + esc(h && h.sleepTargetHours != null ? h.sleepTargetHours : 8) + '" /></div>'
-    + '</div>';
-  return '<div class="howto"><div class="howtoTitle">✍️ How you feel this morning</div>'
-    + '<p class="howtoFoot">No band needed. Rate these and we turn them into a daily <strong>readiness score (1–99)</strong> — based on athlete self-report research, where sleep, soreness, stress &amp; energy track recovery well.</p></div>'
-    + subj
-    + '<p class="howtoFoot" style="margin:var(--space-3) 0 var(--space-2)">Optional — sleep, and a pulse you count for 30s × 2 on waking, sharpen the score:</p>'
-    + measured;
-}
-
 /* ============================================================
  * Vitals modal
  * ============================================================ */
@@ -759,15 +568,8 @@ function renderModal(){
       bodyHtml = '<p class="panelNote">Connect your Fitbit account once — sleep, HRV, resting HR &amp; bed/wake times then sync automatically. You log in on fitbit.com; your tokens stay server-side. (Fitbit has no recovery score, so that ring stays blank.)</p>'
         + '<div class="srcActions"><a class="btn btn-primary" href="/api/fitbit/login">Connect Fitbit</a></div>';
     }
-  } else if (src === 'apple') {
-    bodyHtml = '<div class="howto"><div class="howtoTitle">⌚ Got an Apple Watch? Here’s the 20-second way</div>'
-      + '<ol class="howtoSteps">'
-      + '<li>Open the <strong>Health</strong> app on your iPhone.</li>'
-      + '<li>Tap <strong>Sleep</strong> and note today’s <strong>bedtime</strong> &amp; <strong>wake time</strong>, then these three numbers:<div class="howtoChips"><span class="howtoChip">Heart Rate Variability</span><span class="howtoChip">Resting Heart Rate</span><span class="howtoChip">Time Asleep</span></div></li>'
-      + '<li>Type them into the fields below and hit <strong>Save vitals</strong>.</li>'
-      + '</ol>'
-      + '<p class="howtoFoot">Apple won’t let a website read Health data directly, so this quick copy keeps it private — nothing leaves your phone. Saved as “Apple Watch.”</p></div>'
-      + '<div class="fieldGrid">'
+  } else {
+    bodyHtml = '<div class="fieldGrid">'
       + '<div class="field"><label class="fieldLabel" for="f-rec">Recovery / readiness %</label><input id="f-rec" class="fieldInput" type="number" min="0" max="100" inputmode="numeric" placeholder="—" value="' + esc(v('recovery')) + '" /></div>'
       + '<div class="field"><label class="fieldLabel" for="f-sleep">Sleep (hours)</label><input id="f-sleep" class="fieldInput" type="number" min="0" max="24" step="0.1" inputmode="decimal" placeholder="7.5" value="' + esc(v('sleepHours')) + '" /></div>'
       + '<div class="field"><label class="fieldLabel" for="f-bed">Bedtime</label><input id="f-bed" class="fieldInput" type="time" value="' + esc(v('bedtime')) + '" /></div>'
@@ -777,9 +579,15 @@ function renderModal(){
       + '<div class="field fieldFull"><label class="fieldLabel" for="f-target">Sleep target (hours)</label><input id="f-target" class="fieldInput" type="number" min="4" max="12" step="0.5" inputmode="decimal" placeholder="8" value="' + esc(h && h.sleepTargetHours != null ? h.sleepTargetHours : 8) + '" /></div>'
       + '</div>'
       + '<p class="howtoFoot" style="margin-top:var(--space-3)">Fill <strong>Bedtime</strong> + <strong>Wake time</strong> and we’ll work out hours asleep for you — or just type the hours directly.</p>';
-  } else {
-    // Manual: no-band subjective self-report → readiness score
-    bodyHtml = manualFormHtml(h);
+    if (src === 'apple') bodyHtml = '<div class="howto"><div class="howtoTitle">⌚ Got an Apple Watch? Here’s the 20-second way</div>'
+      + '<ol class="howtoSteps">'
+      + '<li>Open the <strong>Health</strong> app on your iPhone.</li>'
+      + '<li>Tap <strong>Sleep</strong> and note today’s <strong>bedtime</strong> &amp; <strong>wake time</strong>, then these three numbers:<div class="howtoChips"><span class="howtoChip">Heart Rate Variability</span><span class="howtoChip">Resting Heart Rate</span><span class="howtoChip">Time Asleep</span></div></li>'
+      + '<li>Type them into the fields below and hit <strong>Save vitals</strong>.</li>'
+      + '</ol>'
+      + '<p class="howtoFoot">Apple won’t let a website read Health data directly, so this quick copy keeps it private — nothing leaves your phone. Saved as “Apple Watch.”</p></div>'
+      + bodyHtml;
+    else bodyHtml += '<p class="panelNote">Enter whatever you track. Recovery and sleep are what drive the supplement recommendations — the rest is optional.</p>';
   }
   const canClear = !!health;
   root.innerHTML = '<div class="overlay" data-action="close-vitals"><div class="panel" data-stop="1">'
@@ -801,34 +609,6 @@ function openVitals(){
 function saveVitals(){
   const num = (id) => { const el = document.getElementById(id); if (!el || el.value === '') return null; const n = Number(el.value); return isFinite(n) ? n : null; };
   const str = (id) => { const el = document.getElementById(id); return el && el.value ? el.value : null; };
-
-  // ---- Manual self-report (no band): ratings → readiness score ----
-  if (ui.draftSource === 'manual') {
-    const rate = (id) => { const n = num(id); return (n != null && n >= 1 && n <= 5) ? n : null; };
-    const sleepQ = rate('f-sq'), energy = rate('f-en'), mood = rate('f-mo'), soreness = rate('f-so'), stress = rate('f-st');
-    const bedtime = str('f-bed'), wakeTime = str('f-wake');
-    let sleepHours = num('f-sleep');
-    if (sleepHours == null && bedtime && wakeTime) {
-      const [bh, bm] = bedtime.split(':').map(Number);
-      const [wh, wm] = wakeTime.split(':').map(Number);
-      let mins = (wh * 60 + wm) - (bh * 60 + bm);
-      if (mins <= 0) mins += 24 * 60;
-      sleepHours = Math.round((mins / 60) * 10) / 10;
-    }
-    const rhr = num('f-rhr');
-    const target = num('f-target') || 8;
-    const readiness = subjReadiness({ sleepQ, energy, mood, soreness, stress });
-    if (readiness == null && sleepHours == null && rhr == null) { alert('Rate at least how you feel — or enter sleep / bed + wake times.'); return; }
-    const sleepPerf = sleepHours != null ? Math.round(Math.min(100, (sleepHours / target) * 100)) : null;
-    health = { source: 'manual', connected: true, ts: Date.now(), recovery: readiness, subjective: readiness != null,
-      sleepQ, energy, mood, soreness, stress,
-      sleepHours, sleepPerf, sleepTargetHours: target, bedtime, wakeTime, hrv: null, rhr, strain: null };
-    saveHealth(health);
-    ui.modalOpen = false;
-    render();
-    return;
-  }
-
   const recovery = num('f-rec');
   const bedtime = str('f-bed');
   const wakeTime = str('f-wake');
@@ -1003,19 +783,10 @@ applyTheme(currentTheme);
   } catch (e) {}
   syncWhoop();
   syncFitbit();
-  syncApple();
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="db.js?v=15"></script>
 <script src="brand.js?v=16"></script>
-<script>
-(function(){
-  var root=document.getElementById('vkParticles');
-  if(root){ var N=window.innerWidth<640?14:24; for(var i=0;i<N;i++){ var s=document.createElement('span'); s.style.left=(Math.random()*100)+'%'; s.style.top=(60+Math.random()*40)+'%'; var sz=1.2+Math.random()*1.2; s.style.width=s.style.height=sz+'px'; var dur=22+Math.random()*28; s.style.animationDuration=dur+'s'; s.style.animationDelay=(-Math.random()*dur)+'s'; s.style.setProperty('--dx',(Math.random()*30-15)+'px'); s.style.setProperty('--dy',(-(60+Math.random()*50))+'vh'); root.appendChild(s);} }
-  document.addEventListener('mousemove',function(e){ var c=e.target.closest&&e.target.closest('.bento .card'); if(!c)return; var r=c.getBoundingClientRect(); var dx=(e.clientX-r.left-r.width/2)/(r.width/2), dy=(e.clientY-r.top-r.height/2)/(r.height/2); var art=c.querySelector('.cardArtIcon'); if(art)art.style.transform='translate3d('+(dx*6).toFixed(1)+'px,'+(dy*6).toFixed(1)+'px,0)'; },{passive:true});
-  document.addEventListener('mouseout',function(e){ var c=e.target.closest&&e.target.closest('.bento .card'); if(c){ var art=c.querySelector('.cardArtIcon'); if(art)art.style.transform=''; } });
-})();
-</script>
 </body>
 </html>

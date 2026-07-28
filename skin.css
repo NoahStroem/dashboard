@@ -1,0 +1,27 @@
+/* Vitality skin — shared override that recolors any suite page to the
+ * black-canvas / mint / Instrument-Serif look. Linked LAST in <head> so it
+ * wins. html[data-theme] beats per-theme blocks on specificity. */
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap');
+
+html[data-theme]{
+  --bg:#000; --bg-elevated:#0a0a0a;
+  --surface:rgba(255,255,255,.02); --surface-2:rgba(255,255,255,.04);
+  --fg:#fff; --muted:rgba(255,255,255,.5); --muted-strong:rgba(255,255,255,.7);
+  --border:rgba(255,255,255,.08); --border-strong:rgba(255,255,255,.16);
+  --brand:#6EE7B7; --brand-2:#6EE7B7; --brand-ink:#04130c;
+  --brand-soft:rgba(110,231,183,.10); --brand-line:rgba(110,231,183,.30); --brand-glow:rgba(110,231,183,.45);
+  --pos:#6EE7B7; --pos-soft:rgba(110,231,183,.14); --pos-line:rgba(110,231,183,.34);
+  --neg:#EF4444; --neg-soft:rgba(239,68,68,.14); --neg-line:rgba(239,68,68,.3);
+  --warn:#F59E0B; --track:rgba(255,255,255,.06);
+  --card-shadow:0 1px 0 rgba(110,231,183,.06) inset,0 22px 50px -28px rgba(0,0,0,.95);
+  --font-display:'Instrument Serif'; --font-ui:'Inter';
+}
+body{ background:#000 !important; font-family:'Inter',-apple-system,sans-serif; }
+/* editorial serif headline */
+.title{ text-transform:none !important; letter-spacing:-.02em !important; font-style:italic !important; font-weight:400 !important; background:none !important; -webkit-text-fill-color:currentColor !important; color:#fff !important; filter:none !important; }
+.subtitle{ font-family:'JetBrains Mono',monospace !important; letter-spacing:.14em; text-transform:uppercase; }
+.card:hover,.tile:hover{ border-color:rgba(110,231,183,.35) !important; box-shadow:0 0 40px rgba(110,231,183,.08) !important; }
+/* soft atmosphere wash behind every page */
+body::before{ content:''; position:fixed; inset:0; z-index:-1; pointer-events:none; background:
+  radial-gradient(60% 50% at 50% 22%,rgba(110,231,183,.10),transparent 60%),
+  radial-gradient(120% 80% at 50% 100%,rgba(14,38,30,.45),rgba(0,0,0,.95) 75%); }

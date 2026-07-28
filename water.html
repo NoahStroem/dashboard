@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#0C0C12" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Patron" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="icon" type="image/svg+xml" href="icon.svg" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<style id="pwa-mobile">
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+img{max-width:100%;height:auto}
+@media (max-width:480px){input,select,textarea{font-size:16px !important}}
+@supports (padding:max(0px)){body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}}
+</style>
+<title>Water · standalone</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<script>try{document.documentElement.setAttribute("data-theme",localStorage.getItem("patron_theme")||"nocturne");}catch(e){document.documentElement.setAttribute("data-theme","nocturne");}</script>
+<style>
+
+/* ============================================================
+ * Water — restyled to "Patron": soft-dark electric-violet
+ * modern-fintech skin. Same token system + 3 themes as the suite.
+ * Hydration accent = brand violet; "healthy zone" hit = green.
+ * --accent/--mint aliases repoint to brand per theme.
+ * ============================================================ */
+:root{
+  color-scheme: dark;
+  --bg:#0C0C12;--bg-elevated:#15151F;--fg:#F3F2F8;
+  --brand:#8B7CFF;--brand-2:#C7BBFF;--brand-ink:#130E2E;
+  --brand-soft:rgba(139,124,255,0.12);--brand-line:rgba(139,124,255,0.28);--brand-glow:rgba(139,124,255,0.42);
+  --accent:#8B7CFF;--mint:#8B7CFF;--mint-hover:#9d90ff;--mint-glow:rgba(139,124,255,0.42);
+  --pos:#46E0A8;--pos-soft:rgba(70,224,168,0.12);--pos-line:rgba(70,224,168,0.26);
+  --amber:#FBBF24;--red:#FB7185;
+  --muted:rgba(243,242,248,0.50);--muted-strong:rgba(243,242,248,0.74);
+  --border:rgba(255,255,255,0.08);--border-strong:rgba(255,255,255,0.17);
+  --card:rgba(255,255,255,0.028);--card-elevated:rgba(255,255,255,0.055);
+  --track:rgba(255,255,255,0.06);
+  --card-shadow:0 1px 0 rgba(255,255,255,0.04) inset, 0 18px 44px -30px rgba(0,0,0,0.85);
+  --glow-1:rgba(139,124,255,0.12);--glow-2:rgba(70,224,168,0.05);--grain-opacity:0.05;
+  --ring-track:rgba(255,255,255,0.06);
+  --space-1:.25rem;--space-2:.5rem;--space-3:.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-16:4rem;
+  --radius-sm:8px;--radius-md:11px;--radius-lg:16px;--radius-pill:999px;
+  --text-xs:.75rem;--text-sm:.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.375rem;--text-2xl:1.75rem;--text-3xl:2.5rem;
+  --ease:cubic-bezier(.2,.8,.2,1);--ease-premium:cubic-bezier(.16,1,.3,1);
+  --duration-fast:120ms;--duration:200ms;
+  --font-inter:'Hanken Grotesk';--font-serif:'Space Grotesk';--font-mono:'JetBrains Mono';
+}
+[data-theme="aurora"]{
+  color-scheme: dark;
+  --bg:#080913;--bg-elevated:#12131F;--fg:#EEF0FF;
+  --brand:#8B7BFF;--brand-2:#B9ABFF;--brand-ink:#0A0922;
+  --brand-soft:rgba(139,123,255,0.15);--brand-line:rgba(139,123,255,0.32);--brand-glow:rgba(124,107,255,0.6);
+  --accent:#8B7BFF;--mint:#8B7BFF;--mint-hover:#a59bff;--mint-glow:rgba(124,107,255,0.6);
+  --pos:#4FE3D0;--pos-soft:rgba(79,227,208,0.13);--pos-line:rgba(79,227,208,0.28);
+  --amber:#FFC65C;--red:#FF6FA5;
+  --muted:rgba(220,225,255,0.52);--muted-strong:rgba(220,225,255,0.76);
+  --border:rgba(150,160,255,0.11);--border-strong:rgba(150,160,255,0.22);
+  --card:rgba(150,160,255,0.045);--card-elevated:rgba(150,160,255,0.08);
+  --track:rgba(160,170,255,0.09);
+  --card-shadow:0 0 0 1px rgba(140,130,255,0.05) inset, 0 22px 56px -28px rgba(78,60,210,0.55);
+  --glow-1:rgba(124,107,255,0.20);--glow-2:rgba(79,227,208,0.13);--grain-opacity:0.05;
+  --ring-track:rgba(160,170,255,0.10);
+}
+[data-theme="daylight"]{
+  color-scheme: light;
+  --bg:#F3F2FA;--bg-elevated:#FFFFFF;--fg:#171622;
+  --brand:#6A45FF;--brand-2:#8E6BFF;--brand-ink:#FFFFFF;
+  --brand-soft:rgba(106,69,255,0.08);--brand-line:rgba(106,69,255,0.24);--brand-glow:rgba(106,69,255,0.28);
+  --accent:#6A45FF;--mint:#6A45FF;--mint-hover:#5a37e0;--mint-glow:rgba(106,69,255,0.28);
+  --pos:#0E9E64;--pos-soft:rgba(14,158,100,0.10);--pos-line:rgba(14,158,100,0.26);
+  --amber:#B4690E;--red:#E11D63;
+  --muted:rgba(23,22,34,0.52);--muted-strong:rgba(23,22,34,0.72);
+  --border:rgba(23,22,60,0.10);--border-strong:rgba(23,22,60,0.18);
+  --card:#FFFFFF;--card-elevated:#FAF9FF;
+  --track:rgba(23,22,60,0.08);
+  --card-shadow:0 1px 2px rgba(23,22,60,0.05), 0 16px 34px -24px rgba(23,22,60,0.24);
+  --glow-1:rgba(106,69,255,0.07);--glow-2:rgba(14,158,100,0.04);--grain-opacity:0.02;
+  --ring-track:rgba(23,22,60,0.08);
+}
+*{box-sizing:border-box}html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-inter),-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:var(--text-base);-webkit-font-smoothing:antialiased;transition:background var(--duration) var(--ease)}
+.grain-overlay{position:relative}
+.grain-overlay::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:1;opacity:var(--grain-opacity);mix-blend-mode:overlay;background-image:url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");background-size:200px 200px}
+.page{position:relative;min-height:100dvh;background:var(--bg);padding:var(--space-8) var(--space-5) var(--space-16);isolation:isolate}
+.page::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:-1;background:radial-gradient(58% 42% at 82% 6%,var(--glow-1),transparent 70%),radial-gradient(48% 38% at 12% 92%,var(--glow-2),transparent 72%)}
+.shell{max-width:720px;margin:0 auto}
+
+/* Header */
+.header{display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-4);margin-bottom:var(--space-8)}
+.headerLeft{display:flex;flex-direction:column;gap:var(--space-2)}
+.headerRight{display:flex;flex-direction:column;align-items:flex-end;gap:var(--space-2)}
+.back{display:inline-flex;align-items:center;gap:var(--space-2);align-self:flex-start;padding:6px 13px 6px 9px;background:var(--brand-soft);border:1px solid var(--brand-line);border-radius:var(--radius-pill);color:var(--brand);font-size:var(--text-xs);font-weight:600;letter-spacing:.01em;text-decoration:none;transition:background var(--duration) var(--ease-premium),border-color var(--duration) var(--ease-premium)}
+.back:hover{background:color-mix(in srgb, var(--brand) 18%, transparent);border-color:var(--brand)}
+.backArrow{font-size:14px;line-height:1}
+.dayPill{display:inline-flex;align-self:flex-start;padding:5px 11px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-pill);color:var(--muted-strong);font-family:var(--font-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:500}
+.title{font-family:var(--font-serif);font-weight:600;font-size:var(--text-3xl);line-height:1.0;letter-spacing:-0.03em;margin:0}
+.subtitle{font-family:var(--font-mono);font-size:11px;text-transform:uppercase;letter-spacing:.16em;color:var(--muted);margin:5px 0 0}
+.gearBtn{appearance:none;display:grid;place-items:center;width:40px;height:40px;border-radius:var(--radius-md);background:var(--card);border:1px solid var(--border);color:var(--muted-strong);cursor:pointer;transition:color var(--duration) var(--ease-premium),border-color var(--duration) var(--ease-premium)}
+.gearBtn:hover{color:var(--fg);border-color:var(--border-strong)}
+
+/* Theme switcher */
+.themeSeg{display:inline-flex;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-pill);padding:3px;gap:2px}
+.themeBtn{appearance:none;background:transparent;border:0;color:var(--muted);font-family:var(--font-inter);font-size:11px;font-weight:600;letter-spacing:.02em;padding:5px 11px 5px 8px;border-radius:var(--radius-pill);cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:background var(--duration) var(--ease-premium),color var(--duration) var(--ease-premium)}
+.themeBtn:hover{color:var(--muted-strong)}
+.themeSwatch{width:11px;height:11px;border-radius:50%;box-shadow:0 0 0 1px var(--border-strong) inset;flex-shrink:0}
+.themeBtnActive,.themeBtnActive:hover{background:var(--brand-soft);color:var(--fg)}
+.themeBtnActive .themeSwatch{box-shadow:0 0 0 2px var(--bg),0 0 0 3px var(--brand)}
+
+/* Eyebrow */
+.heroEyebrow{display:inline-flex;align-items:center;gap:var(--space-2);font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--muted-strong);margin-bottom:var(--space-3)}
+.heroEyebrowMark{font-family:var(--font-mono);font-size:10px;color:var(--brand)}
+.heroEyebrowRule{width:24px;height:1px;background:var(--border-strong)}
+
+/* Hero */
+.heroCard{position:relative;padding:var(--space-6) var(--space-5) var(--space-5);background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:var(--space-4);box-shadow:var(--card-shadow)}
+.heroVisual{position:relative;display:grid;place-items:center;height:300px;margin:var(--space-2) 0 var(--space-4)}
+.heroAurora{position:absolute;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,var(--brand-soft),transparent 65%);filter:blur(8px);animation:auroraPulse 6s var(--ease) infinite}
+@keyframes auroraPulse{0%,100%{transform:scale(1);opacity:.8}50%{transform:scale(1.08);opacity:1}}
+.heroParticles{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.heroParticle{position:absolute;bottom:-8px;width:4px;height:4px;border-radius:50%;background:var(--brand);opacity:.5;animation:floatUp linear infinite}
+@keyframes floatUp{0%{transform:translateY(0);opacity:0}10%{opacity:.6}90%{opacity:.3}100%{transform:translateY(-300px);opacity:0}}
+.heroRipple{position:absolute;width:120px;height:120px;border-radius:50%;border:1px solid var(--brand-line);animation:rippleOut 1.2s var(--ease-premium) forwards;pointer-events:none}
+@keyframes rippleOut{0%{transform:scale(.4);opacity:.7}100%{transform:scale(2.4);opacity:0}}
+.heroRingSvg{position:absolute;width:260px;height:260px}
+.heroRingArc{transition:stroke-dashoffset .8s var(--ease-premium)}
+.heroNumWrap{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:2px;transition:transform .36s var(--ease-premium)}
+.heroNumPunch{transform:scale(1.12)}
+.heroNum{font-family:var(--font-serif);font-weight:600;font-size:88px;line-height:1;letter-spacing:-0.04em;font-variant-numeric:tabular-nums}
+.heroTarget{font-family:var(--font-mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.zonePill{display:inline-flex;align-items:center;gap:6px;align-self:center;padding:5px 12px;background:var(--pos-soft);border:1px solid var(--pos-line);border-radius:var(--radius-pill);color:var(--pos);font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;margin:0 auto var(--space-3)}
+.zonePillCheck{font-size:12px}
+.helper{text-align:center;font-family:var(--font-inter);font-size:14px;color:var(--muted-strong);margin:0 0 var(--space-4)}
+.helperGood{color:var(--pos)}
+.actions{display:grid;grid-template-columns:auto 1fr;gap:var(--space-3)}
+.undoBtn{appearance:none;width:56px;border-radius:var(--radius-md);background:var(--card-elevated);border:1px solid var(--border-strong);color:var(--fg);font-size:22px;line-height:1;cursor:pointer;transition:background var(--duration) var(--ease-premium)}
+.undoBtn:hover:not(:disabled){background:var(--surface-2,rgba(255,255,255,.08))}
+.undoBtn:disabled{opacity:.3;cursor:not-allowed}
+.drinkBtn{appearance:none;display:flex;align-items:center;justify-content:center;gap:10px;padding:16px;border-radius:var(--radius-md);background:var(--brand);border:0;color:var(--brand-ink);font-family:inherit;font-size:16px;font-weight:700;letter-spacing:.01em;cursor:pointer;transition:filter var(--duration) var(--ease-premium),box-shadow var(--duration) var(--ease-premium),transform var(--duration-fast) var(--ease-premium)}
+.drinkBtn:hover{filter:brightness(1.08);box-shadow:0 0 28px var(--brand-glow)}
+.drinkBtn:active{transform:translateY(1px)}
+.drinkArrow{font-size:18px}
+
+/* Why */
+.whyWrap{margin-top:var(--space-4);border-top:1px solid var(--border);padding-top:var(--space-3)}
+.whyToggle{appearance:none;width:100%;display:flex;align-items:center;justify-content:space-between;background:transparent;border:0;color:var(--muted-strong);font-family:inherit;font-size:13px;cursor:pointer;padding:6px 0}
+.whyArrow{transition:transform var(--duration) var(--ease-premium)}
+.whyArrowOpen{transform:rotate(180deg)}
+.whyBody{display:flex;flex-direction:column;gap:6px;padding-top:var(--space-2)}
+.whyRow{display:flex;justify-content:space-between;gap:var(--space-3);font-size:12px;color:var(--muted)}
+.whyLabel{font-family:var(--font-mono),ui-monospace,monospace}
+.whyVal{font-variant-numeric:tabular-nums;color:var(--muted-strong);white-space:nowrap}
+.whyRowTotal{margin-top:6px;padding-top:8px;border-top:1px solid var(--border)}
+.whyRowTotal .whyLabel{color:var(--fg);font-weight:700;font-family:inherit}
+.whyRowTotal .whyVal{color:var(--brand);font-weight:700}
+
+/* History */
+.histCard{padding:var(--space-5);background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--card-shadow)}
+.sparkWrap{margin:var(--space-3) 0 var(--space-4)}
+.sparkSvg{display:block;width:100%;height:80px}
+.sparkTarget{stroke:var(--brand-line);stroke-width:1;stroke-dasharray:3 3}
+.sparkBar{transition:height .4s var(--ease-premium)}
+.sparkBarHit{fill:var(--brand)}
+.sparkBarMiss{fill:var(--track)}
+.histList{display:flex;flex-direction:column;gap:8px}
+.histRow{display:grid;grid-template-columns:64px 1fr auto;align-items:center;gap:var(--space-3)}
+.histDate{font-family:var(--font-mono),ui-monospace,monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.histBarWrap{height:6px;background:var(--track);border-radius:var(--radius-pill);overflow:hidden}
+.histBarFill{height:100%;background:var(--brand);border-radius:var(--radius-pill);transition:width .4s var(--ease-premium)}
+.histBarMiss{background:var(--border-strong)}
+.histCount{font-family:var(--font-mono),ui-monospace,monospace;font-size:11px;color:var(--muted-strong);font-variant-numeric:tabular-nums;min-width:34px;text-align:right}
+.histEmpty{font-family:var(--font-serif);color:var(--muted);text-align:center;padding:var(--space-5) 0;margin:0}
+
+/* Settings modal */
+.overlay{position:fixed;inset:0;background:var(--overlay,rgba(6,6,12,0.66));backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:1000;display:grid;place-items:center;padding:var(--space-4);animation:fade .2s var(--ease-premium)}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.modal{width:min(460px,100%);max-height:90vh;overflow-y:auto;background:var(--bg-elevated);border:1px solid var(--border-strong);border-radius:var(--radius-lg);padding:var(--space-6);box-shadow:0 28px 70px -16px rgba(0,0,0,.6)}
+.modalHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-5)}
+.modalTitle{font-family:var(--font-serif);font-weight:600;font-size:var(--text-2xl);letter-spacing:-0.02em;margin:0}
+.modalClose{appearance:none;width:34px;height:34px;border-radius:50%;background:transparent;border:1px solid var(--border);color:var(--muted-strong);font-size:20px;cursor:pointer}
+.modalClose:hover{color:var(--fg);border-color:var(--border-strong)}
+.setGroup{margin-bottom:var(--space-5)}
+.setLabel{display:block;font-family:var(--font-mono),ui-monospace,monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.seg{display:inline-flex;flex-wrap:wrap;gap:4px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-pill);padding:3px}
+.segBtn{appearance:none;background:transparent;border:0;color:var(--muted);font-family:inherit;font-size:12px;font-weight:600;padding:6px 14px;border-radius:var(--radius-pill);cursor:pointer;transition:background var(--duration) var(--ease-premium),color var(--duration) var(--ease-premium)}
+.segBtn.on{background:var(--brand);color:var(--brand-ink)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3)}
+.field{display:flex;flex-direction:column;gap:6px}
+.input{appearance:none;background:var(--card-elevated);border:1px solid var(--border-strong);border-radius:var(--radius-md);color:var(--fg);font-family:inherit;font-size:14px;padding:10px 12px;outline:none;transition:border-color var(--duration) var(--ease-premium),box-shadow var(--duration) var(--ease-premium);width:100%}
+.input:focus{border-color:var(--brand-line);box-shadow:0 0 0 3px var(--brand-soft)}
+.setHint{font-size:11px;color:var(--muted);margin:6px 0 0;font-style:italic}
+.dangerRow{display:flex;gap:var(--space-3);margin-top:var(--space-4);padding-top:var(--space-4);border-top:1px solid var(--border)}
+.btnGhost{flex:1;appearance:none;background:transparent;border:1px solid var(--border);color:var(--muted-strong);font-family:inherit;font-size:12px;padding:10px;border-radius:var(--radius-md);cursor:pointer}
+.btnGhost:hover{color:var(--red);border-color:var(--brand-line)}
+/* Stimulant search + list */
+.stimAddRow{display:grid;grid-template-columns:1fr 84px auto;gap:var(--space-2);align-items:stretch}
+.addBtn{appearance:none;background:var(--brand-soft);border:1px solid var(--brand-line);color:var(--brand);font-family:inherit;font-weight:700;font-size:13px;padding:0 16px;border-radius:var(--radius-md);cursor:pointer;white-space:nowrap;transition:background var(--duration) var(--ease-premium)}
+.addBtn:hover{background:var(--brand);color:var(--brand-ink)}
+.stimList{display:flex;flex-direction:column;gap:6px;margin-top:var(--space-3)}
+.stimItem{display:flex;align-items:center;justify-content:space-between;gap:var(--space-2);padding:8px 8px 8px 12px;background:var(--card-elevated);border:1px solid var(--border);border-radius:var(--radius-md)}
+.stimName{font-size:13px;font-weight:600;color:var(--fg)}
+.stimMg{font-family:var(--font-mono),ui-monospace,monospace;font-size:11px;font-weight:600;color:var(--brand);margin-left:8px}
+.stimDel{appearance:none;background:transparent;border:0;color:var(--muted);font-size:18px;line-height:1;cursor:pointer;padding:2px 6px;border-radius:6px;transition:color var(--duration) var(--ease-premium)}
+.stimDel:hover{color:#FB7185}
+.stimEmpty{font-size:12px;color:var(--muted);font-style:italic;margin:var(--space-3) 0 0}
+@media(prefers-reduced-motion:reduce){.heroAurora,.heroParticle,.heroRipple,.heroRingArc{animation:none!important;transition:none!important}}
+
+</style>
+<link rel="stylesheet" href="skin.css?v=1">
+</head>
+<body>
+<main class="page grain-overlay"><div class="shell" id="app"></div></main>
+<div id="modalRoot"></div>
+<script>
+/* ===================== Helpers ===================== */
+function getLocalDateKey(d){d=d||new Date();const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return y+'-'+m+'-'+day;}
+function unitVolMl(s){if(s.unit==='bottle')return s.bottleMl||500;if(s.unit==='glass')return s.glassMl||250;if(s.unit==='oz')return 30;return 1;}
+function unitLabel(s,plural){if(s.unit==='bottle')return plural?'bottles':'bottle';if(s.unit==='glass')return plural?'glasses':'glass';return s.unit;}
+function fmtMl(ml){if(ml>=1000)return (ml/1000).toFixed(1)+' L';return Math.round(ml)+' ml';}
+// Typical adult MAX therapeutic dose (mg) per drug — the anchor we scale dry-mouth/thirst-blunting risk against.
+// Sources: FDA labeling / GoodRx dosing. Used only to turn an mg into a 0-1 "fraction of a full dose".
+const STIM_DOSE_REF={concerta:72,ritalin:60,methylphenidate:72,focalin:40,dexmethylphenidate:40,
+  vyvanse:70,elvanse:70,lisdexamfetamine:70,adderall:60,'adderall xr':60,amphetamine:60,mydayis:50,
+  dexedrine:40,dexamfetamine:40,dextroamphetamine:40,modafinil:400,armodafinil:250};
+const STIM_FLOOR=200,STIM_CEIL=400,STIM_DEFAULT=300,STIM_TOTAL_CAP=600; // ml — precautionary, bounded
+function stimRef(name){const n=String(name||'').toLowerCase();let best=null;for(const k in STIM_DOSE_REF){if(n.indexOf(k)!==-1&&(!best||k.length>best.length))best=k;}return best?STIM_DOSE_REF[best]:null;}
+function stimWaterMl(stims){
+  if(!Array.isArray(stims)||!stims.length)return 0;
+  let sum=0;
+  for(const s of stims){
+    const ref=stimRef(s.name);
+    if(s.mg!=null&&ref){const frac=Math.max(0,Math.min(1,s.mg/ref));sum+=STIM_FLOOR+frac*(STIM_CEIL-STIM_FLOOR);} // dose-scaled vs a full clinical dose
+    else sum+=STIM_DEFAULT; // unknown drug or no mg: flat default
+  }
+  return Math.round(Math.min(STIM_TOTAL_CAP,sum));
+}
+function computeTarget(s){
+  // base: ~35 ml/kg/day total water (clinical 30-35 ml/kg; aligns w/ IOM 3.7 L men / 2.7 L women)
+  const base=(s.weightKg||0)*35;
+  // exercise: ~500 ml per hour of activity (ACSM during-exercise range 400-800 ml/h, mid)
+  const exercise=(s.activityHrsPerDay||0)*500;
+  // caffeine: negligible <=300 mg/day; +~1 ml/mg above that (heuristic — diuretic effect is small)
+  const caffeine=Math.max(0,(s.caffeineMgPerDay||0)-300)*1;
+  // stimulants: dose-aware precautionary allowance (200-400 ml/drug by mg vs typical max dose, capped 600).
+  // No clinical mg->water formula exists; this is a bounded heuristic for dry mouth / blunted thirst.
+  const stims=stimWaterMl(s.stims);
+  // sex/age: men need more total water (lean mass); small bump. Per-kg need does NOT rise with age.
+  let adjust=0;if(s.sex==='m')adjust+=200;if((s.age||0)>=50)adjust+=100;
+  return {base,exercise,caffeine,stims,adjust,total:base+exercise+caffeine+stims+adjust};
+}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+/* ===================== State ===================== */
+const LS='water_standalone_v1';
+// Common ADHD / wakefulness stimulants for the search box. Free text is allowed too — type anything.
+const STIM_OPTIONS=['Concerta','Ritalin','Methylphenidate','Vyvanse','Elvanse','Adderall','Adderall XR','Dexedrine','Dexamfetamine','Focalin','Mydayis','Modafinil','Armodafinil'];
+const THEMES=[{key:'nocturne',label:'Nocturne',swatch:'#8B7CFF'},{key:'aurora',label:'Aurora',swatch:'linear-gradient(135deg,#8B7BFF,#4FE3D0)'},{key:'daylight',label:'Daylight',swatch:'#6A45FF'}];
+let currentTheme=(function(){try{return localStorage.getItem('patron_theme')||'nocturne';}catch(e){return 'nocturne';}})();
+if(!THEMES.some(t=>t.key===currentTheme))currentTheme='nocturne';
+function applyTheme(name){if(!THEMES.some(t=>t.key===name))name='nocturne';currentTheme=name;document.documentElement.setAttribute('data-theme',name);try{localStorage.setItem('patron_theme',name);}catch(e){}render();}
+function themeSegHtml(){return '<div class="themeSeg" role="radiogroup" aria-label="Theme">'+THEMES.map(t=>'<button type="button" class="themeBtn '+(t.key===currentTheme?'themeBtnActive':'')+'" data-act="theme" data-theme="'+t.key+'"><span class="themeSwatch" style="background:'+t.swatch+'"></span>'+t.label+'</button>').join('')+'</div>';}
+function seed(){
+  const logs={};const samples=[6,5,6,4,6,7,3,6,5,6,2,6,4]; // last 13 days (oldest→newest), today stays 0
+  for(let i=0;i<samples.length;i++){const d=new Date();d.setDate(d.getDate()-(samples.length-i));logs[getLocalDateKey(d)]=samples[i];}
+  var _p=null;try{_p=JSON.parse(localStorage.getItem('patron_profile_v1')||'null');}catch(e){}
+  return {version:2,unit:'bottle',bottleMl:500,glassMl:250,
+    weightKg:(_p&&_p.weightKg)?_p.weightKg:70,
+    age:(_p&&(_p.age||_p.age===0))?(Number(_p.age)||25):25,
+    sex:(_p&&_p.sex)?String(_p.sex).toLowerCase():'m',
+    weightUnit:(_p&&_p.units)?(_p.units==='imperial'?'lb':'kg'):'kg',
+    activityHrsPerWeek:0,activityHrsPerDay:0,stims:[],
+    caffeineMgPerDay:(_p&&_p.caffeineMgPerDay)?(Number(_p.caffeineMgPerDay)||200):200,logs};
+}
+function load(){try{const r=localStorage.getItem(LS);if(!r)return seed();const s=Object.assign(seed(),JSON.parse(r));
+  if(!Array.isArray(s.stims))s.stims=[];
+  if(s.activityHrsPerDay==null)s.activityHrsPerDay=s.activityHrsPerWeek?Math.round((s.activityHrsPerWeek/7)*100)/100:0; // migrate old weekly value
+  return s;}catch{return seed();}}
+function save(){try{localStorage.setItem(LS,JSON.stringify(state));}catch{}}
+let state=load();
+const ui={whyOpen:false,settingsOpen:false,punch:false};
+
+/* Derived */
+function todayCount(){return state.logs[getLocalDateKey()]||0;}
+function targetUnits(){const t=computeTarget(state);return Math.max(1,Math.ceil(t.total/unitVolMl(state)));}
+
+/* Actions */
+const A={
+  drank(){const k=getLocalDateKey();state.logs[k]=(state.logs[k]||0)+1;save();ripple();render();},
+  undo(){const k=getLocalDateKey();const c=state.logs[k]||0;if(c<=1)delete state.logs[k];else state.logs[k]=c-1;save();render();},
+  set(patch){Object.assign(state,patch);save();render();},
+  addStim(){
+    const nameEl=document.getElementById('stimNameInput'),mgEl=document.getElementById('stimMgInput');
+    if(!nameEl)return;
+    const name=(nameEl.value||'').trim();if(!name){nameEl.focus();return;}
+    const mg=(mgEl&&mgEl.value!=='')?Math.max(0,Number(mgEl.value)||0):null;
+    if(!Array.isArray(state.stims))state.stims=[];
+    state.stims.push({id:Date.now()+'-'+Math.round(Math.random()*1e5),name,mg});
+    save();render();
+  },
+  delStim(id){if(Array.isArray(state.stims))state.stims=state.stims.filter(s=>String(s.id)!==String(id));save();render();},
+  reset(){if(confirm('Reset everything (history + settings)?')){state=seed();save();render();}},
+};
+
+/* ===================== Views ===================== */
+const DOW=['SUN','MON','TUE','WED','THU','FRI','SAT'],MON=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+const DOW_S=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+function headerHtml(){
+  const d=new Date();
+  return '<header class="header"><div class="headerLeft"><a class="back" href="index.html"><span class="backArrow">←</span> Liam</a>'
+    +'<span class="dayPill">'+DOW[d.getDay()]+', '+MON[d.getMonth()]+' '+d.getDate()+'</span>'
+    +'<h1 class="title">Water</h1><p class="subtitle">Daily hydration · personal target</p></div>'
+    +'<div class="headerRight">'+themeSegHtml()+'<button class="gearBtn" data-act="settings" aria-label="Settings"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></header>';
+}
+
+function whyHtml(){
+  const t=computeTarget(state),tu=targetUnits();
+  const wDisp=state.weightUnit==='lb'?Math.round(state.weightKg*2.20462):Math.round(state.weightKg);
+  let rows='<div class="whyRow"><span class="whyLabel">Base ('+wDisp+' '+state.weightUnit+' × 35 ml)</span><span class="whyVal">'+fmtMl(t.base)+'</span></div>';
+  if(t.exercise>0)rows+='<div class="whyRow"><span class="whyLabel">+ Exercise ('+state.activityHrsPerDay+' h/day × 500 ml)</span><span class="whyVal">+ '+fmtMl(t.exercise)+'</span></div>';
+  if(t.caffeine>0)rows+='<div class="whyRow"><span class="whyLabel">+ Caffeine ('+state.caffeineMgPerDay+' mg/day, over 300)</span><span class="whyVal">+ '+fmtMl(t.caffeine)+'</span></div>';
+  if(t.stims>0)rows+='<div class="whyRow"><span class="whyLabel">+ Stimulants ('+state.stims.length+', by dose)</span><span class="whyVal">+ '+fmtMl(t.stims)+'</span></div>';
+  if(t.adjust>0)rows+='<div class="whyRow"><span class="whyLabel">+ Sex / age adjustment</span><span class="whyVal">+ '+fmtMl(t.adjust)+'</span></div>';
+  rows+='<div class="whyRow whyRowTotal"><span class="whyLabel">Daily target</span><span class="whyVal">'+fmtMl(t.total)+' ≈ '+tu+' '+unitLabel(state,true)+'</span></div>';
+  return '<div class="whyWrap"><button class="whyToggle" data-act="why"><span>Why this target?</span><span class="whyArrow '+(ui.whyOpen?'whyArrowOpen':'')+'">▾</span></button>'+(ui.whyOpen?'<div class="whyBody">'+rows+'</div>':'')+'</div>';
+}
+
+function heroHtml(){
+  const tc=todayCount(),tu=targetUnits();
+  const pctRaw=tu>0?(tc/tu)*100:0,ringPct=Math.min(100,pctRaw),isOver=pctRaw>100,hit=pctRaw>=100;
+  const R=112,CIRC=2*Math.PI*R,offset=CIRC-(ringPct/100)*CIRC;
+  const lp=unitLabel(state,true),ls=unitLabel(state,false);
+  let helper,good=false;
+  if(tc===0)helper='Start the day. First one in.';
+  else if(pctRaw<50)helper='Behind pace. Drink one in the next hour.';
+  else if(pctRaw<100){helper=(tu-tc)+' to go. Pacing well.';}
+  else if(pctRaw<130){helper='Target hit. Top up if you train this evening.';good=true;}
+  else{helper='Strong. Way past target.';good=true;}
+  let particles='';for(let i=0;i<8;i++)particles+='<span class="heroParticle" style="left:'+(8+i*11)+'%;animation-delay:'+(i*.9)+'s;animation-duration:'+(5.5+(i%3)*1.2)+'s"></span>';
+  return '<section class="heroCard"><span class="heroEyebrow"><span class="heroEyebrowMark">·02</span><span class="heroEyebrowRule"></span>Hydration</span>'
+    +'<div class="heroVisual"><div class="heroAurora"></div><div class="heroParticles">'+particles+'</div>'+(ui._ripple?'<span class="heroRipple"></span>':'')
+    +'<svg class="heroRingSvg" viewBox="-130 -130 260 260" aria-hidden><defs><linearGradient id="wg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="var(--brand-2)"/><stop offset="100%" stop-color="var(--brand)"/></linearGradient><filter id="rg" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>'
+    +'<circle cx="0" cy="0" r="'+R+'" stroke="var(--ring-track)" stroke-width="3" fill="none"/>'
+    +'<circle cx="0" cy="0" r="'+R+'" stroke="'+(isOver?'var(--brand-2)':'url(#wg)')+'" stroke-width="3" fill="none" stroke-linecap="round" stroke-dasharray="'+CIRC+'" stroke-dashoffset="'+offset+'" transform="rotate(-90)" filter="url(#rg)" class="heroRingArc"/>'
+    +(ringPct>0?'<circle cx="0" cy="'+(-R)+'" r="4" fill="var(--mint)" transform="rotate('+(ringPct/100*360)+')"/>':'')+'</svg>'
+    +'<div class="heroNumWrap '+(ui.punch?'heroNumPunch':'')+'"><span class="heroNum">'+tc+'</span><span class="heroTarget">of '+tu+' '+lp+'</span></div></div>'
+    +(hit?'<div class="zonePill"><span class="zonePillCheck">✓</span> healthy zone</div>':'')
+    +'<p class="helper '+(good?'helperGood':'')+'">'+esc(helper)+'</p>'
+    +'<div class="actions"><button class="undoBtn" data-act="undo"'+(tc<=0?' disabled':'')+' aria-label="Undo">−</button>'
+    +'<button class="drinkBtn" data-act="drink"><span>Drank a '+ls+'</span><span class="drinkArrow">↑</span></button></div>'
+    +whyHtml()+'</section>';
+}
+
+function historyHtml(){
+  const tu=targetUnits();
+  const days=[];for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push({date:d,key:getLocalDateKey(d)});}
+  const counts=days.map(d=>state.logs[d.key]||0);
+  const hasData=counts.some(c=>c>0);
+  if(!hasData)return '<section class="histCard"><span class="heroEyebrow">Last 14 days</span><p class="histEmpty">Log a few days and the chart fills in.</p></section>';
+  const maxVal=Math.max(tu,...counts)||1,W=280,H=70,pad=4,colW=(W-pad*2)/counts.length,barW=colW*.7;
+  const targetY=H-pad-(tu/maxVal)*(H-pad*2);
+  let bars='';counts.forEach((v,i)=>{const x=pad+i*colW+(colW-barW)/2,h=(v/maxVal)*(H-pad*2),y=H-pad-h,hit=v>=tu&&v>0;bars+='<rect class="sparkBar '+(hit?'sparkBarHit':'sparkBarMiss')+'" x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+barW.toFixed(1)+'" height="'+Math.max(0,h).toFixed(1)+'" rx="2"/>';});
+  const todayKey=getLocalDateKey();
+  const list=days.filter(d=>d.key!==todayKey).slice(-7).map(d=>{const c=state.logs[d.key]||0,pct=Math.min(100,(c/tu)*100),hit=c>=tu&&c>0;return '<div class="histRow"><span class="histDate">'+DOW_S[d.date.getDay()]+' '+(d.date.getMonth()+1)+'/'+d.date.getDate()+'</span><div class="histBarWrap"><div class="histBarFill '+(hit?'':'histBarMiss')+'" style="width:'+pct+'%"></div></div><span class="histCount">'+c+'/'+tu+'</span></div>';}).join('');
+  return '<section class="histCard"><span class="heroEyebrow">Last 14 days</span>'
+    +'<div class="sparkWrap"><svg class="sparkSvg" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" aria-hidden><line class="sparkTarget" x1="0" x2="'+W+'" y1="'+targetY.toFixed(1)+'" y2="'+targetY.toFixed(1)+'"/>'+bars+'</svg></div>'
+    +'<div class="histList">'+list+'</div></section>';
+}
+
+function stimListHtml(){
+  const list=Array.isArray(state.stims)?state.stims:[];
+  if(!list.length)return '<p class="stimEmpty">No stimulants added.</p>';
+  return '<div class="stimList">'+list.map(s=>'<div class="stimItem"><span class="stimName">'+esc(s.name)+(s.mg!=null?'<span class="stimMg">'+esc(s.mg)+' mg</span>':'')+'</span><button class="stimDel" data-act="delStim" data-id="'+esc(s.id)+'" aria-label="Remove '+esc(s.name)+'">×</button></div>').join('')+'</div>';
+}
+function settingsHtml(){
+  if(!ui.settingsOpen)return '';
+  const units=[['bottle','Bottle'],['glass','Glass'],['oz','oz'],['ml','ml']];
+  return '<div class="overlay" data-act="closeSettings"><div class="modal" data-stop="1">'
+    +'<div class="modalHead"><h2 class="modalTitle">Settings</h2><button class="modalClose" data-act="closeSettings">×</button></div>'
+    +'<div class="setGroup"><span class="setLabel">Count drinks in</span><div class="seg">'+units.map(u=>'<button class="segBtn '+(state.unit===u[0]?'on':'')+'" data-act="setUnit" data-v="'+u[0]+'">'+u[1]+'</button>').join('')+'</div></div>'
+    +(state.unit==='bottle'?'<div class="setGroup"><span class="setLabel">Bottle size (ml)</span><input class="input" type="number" data-set="bottleMl" value="'+state.bottleMl+'"></div>':'')
+    +(state.unit==='glass'?'<div class="setGroup"><span class="setLabel">Glass size (ml)</span><input class="input" type="number" data-set="glassMl" value="'+state.glassMl+'"></div>':'')
+    +'<div class="setGroup"><span class="setLabel">Your body</span><div class="row2">'
+      +'<div class="field"><input class="input" type="number" data-set="weightKg" value="'+state.weightKg+'" placeholder="Weight"><span class="setHint">weight ('+state.weightUnit+')</span></div>'
+      +'<div class="field"><input class="input" type="number" data-set="age" value="'+state.age+'" placeholder="Age"><span class="setHint">age</span></div>'
+    +'</div><div class="row2" style="margin-top:var(--space-3)">'
+      +'<div class="field"><span class="setLabel">Sex</span><div class="seg"><button class="segBtn '+(state.sex==='m'?'on':'')+'" data-act="setSex" data-v="m">Male</button><button class="segBtn '+(state.sex==='f'?'on':'')+'" data-act="setSex" data-v="f">Female</button></div></div>'
+      +'<div class="field"><span class="setLabel">Weight unit</span><div class="seg"><button class="segBtn '+(state.weightUnit==='kg'?'on':'')+'" data-act="setWU" data-v="kg">kg</button><button class="segBtn '+(state.weightUnit==='lb'?'on':'')+'" data-act="setWU" data-v="lb">lb</button></div></div>'
+    +'</div></div>'
+    +'<div class="setGroup"><span class="setLabel">Lifestyle</span><div class="row2">'
+      +'<div class="field"><input class="input" type="number" step="0.25" min="0" data-set="activityHrsPerDay" value="'+state.activityHrsPerDay+'"><span class="setHint">exercise h / day</span></div>'
+      +'<div class="field"><input class="input" type="number" step="10" min="0" data-set="caffeineMgPerDay" value="'+state.caffeineMgPerDay+'"><span class="setHint">caffeine mg / day</span></div>'
+    +'</div></div>'
+    +'<div class="setGroup"><span class="setLabel">Stimulants</span>'
+      +'<div class="stimAddRow">'
+        +'<input class="input" id="stimNameInput" list="stimOptions" placeholder="Search… e.g. Concerta, Vyvanse" autocomplete="off">'
+        +'<input class="input" id="stimMgInput" type="number" step="1" min="0" placeholder="mg">'
+        +'<button class="addBtn" data-act="addStim">Add</button>'
+      +'</div>'
+      +'<datalist id="stimOptions">'+STIM_OPTIONS.map(n=>'<option value="'+esc(n)+'"></option>').join('')+'</datalist>'
+      +stimListHtml()
+      +'<p class="setHint">Adds <strong>~200–400 ml per drug</strong>, scaled by your mg against its typical full dose (capped at 600 ml). Stimulants commonly cause dry mouth &amp; blunt thirst — this is a precautionary estimate, not a clinical formula, so sip on a schedule rather than waiting for thirst.</p>'
+    +'</div>'
+    +'<p class="setHint">Target = weight × 35 ml/kg + 500 ml per exercise hour + caffeine over 300 mg + stimulants (by dose) + sex/age. Based on IOM, ACSM &amp; clinical guidelines. Changes apply live.</p>'
+    +'<div class="dangerRow"><button class="btnGhost" data-act="reset">Reset everything</button></div>'
+    +'</div></div>';
+}
+
+function render(){document.getElementById('app').innerHTML=headerHtml()+heroHtml()+historyHtml();document.getElementById('modalRoot').innerHTML=settingsHtml();}
+
+/* Tap punch + ripple */
+let punchT=null,rippleT=null;
+function ripple(){ui.punch=true;ui._ripple=true;if(punchT)clearTimeout(punchT);if(rippleT)clearTimeout(rippleT);punchT=setTimeout(()=>{ui.punch=false;render();},360);rippleT=setTimeout(()=>{ui._ripple=false;},1200);}
+
+/* ===================== Events ===================== */
+document.addEventListener('click',e=>{
+  const stop=e.target.closest('[data-stop]'),b=e.target.closest('[data-act]');if(!b)return;
+  const act=b.dataset.act,v=b.dataset.v;
+  if(act==='back'){e.preventDefault();return;}
+  else if(act==='theme'){applyTheme(b.dataset.theme);}
+  else if(act==='drink')A.drank();
+  else if(act==='undo')A.undo();
+  else if(act==='why'){ui.whyOpen=!ui.whyOpen;render();}
+  else if(act==='settings'){ui.settingsOpen=true;render();}
+  else if(act==='closeSettings'){if(!stop||e.target.closest('.modalClose')){ui.settingsOpen=false;render();}}
+  else if(act==='setUnit')A.set({unit:v});
+  else if(act==='setSex')A.set({sex:v});
+  else if(act==='setWU')A.set({weightUnit:v});
+  else if(act==='addStim')A.addStim();
+  else if(act==='delStim')A.delStim(b.dataset.id);
+  else if(act==='reset')A.reset();
+});
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Enter')return;const id=e.target&&e.target.id;
+  if(id==='stimNameInput'||id==='stimMgInput'){e.preventDefault();A.addStim();}
+});
+document.addEventListener('change',e=>{
+  const t=e.target;if(!t.dataset.set)return;
+  const f=t.dataset.set;let val=parseFloat(t.value);if(isNaN(val))val=0;
+  if(f==='weightKg'||f==='age')val=Math.max(0,val);
+  A.set({[f]:val});
+});
+applyTheme(currentTheme);
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="db.js?v=15"></script>
+<script src="brand.js?v=16"></script>
+</body>
+</html>

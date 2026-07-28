@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nova · AI Mentor (demo)</title>
+<!-- ============================================================
+ * NOVA — AI MENTOR · DEMO BUILD (for YouTube)
+ * Same 3D avatar + chat as the real product, but the chat plays
+ * SCRIPTED answers instead of calling an API. No keys, no backend,
+ * nothing personal — safe to deploy public and film against.
+ *   • Click a starter (or type) → Nova thinks, then answers.
+ *   • Hit "▶ Auto-play" to run a hands-free demo for the camera.
+ * Replies use illustrative numbers — swap the SCRIPT below freely.
+ * ============================================================ -->
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: #05060c; }
+body {
+  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+  color: #e9ecf5; min-height: 100vh;
+  --accent: #6EE7B7; --accent-2: #67E8F9;
+}
+.bar {
+  position: sticky; top: 0; z-index: 40;
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 22px; background: rgba(5,6,12,0.72); backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.bar .brand { font-family: 'Times New Roman', Georgia, serif; font-style: italic; font-size: 20px;
+  background: linear-gradient(90deg, #67e8f9, #a78bfa 60%, #f0abfc);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+.bar .brand-sub { font-family: ui-monospace, monospace; font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(233,236,245,0.4); }
+.bar .demo-tag { font-family: ui-monospace, monospace; font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: #04140d; background: var(--accent); padding: 4px 10px; border-radius: 999px; font-weight: 700; }
+.bar .spacer { flex: 1; }
+.bar .palettes { display: flex; gap: 8px; }
+.pal { width: 26px; height: 26px; border-radius: 8px; cursor: pointer; border: 2px solid rgba(255,255,255,0.15); transition: transform .15s, border-color .15s; }
+.pal:hover { transform: translateY(-2px); }
+.pal.active { border-color: #fff; transform: scale(1.08); }
+
+.wrap {
+  max-width: 1180px; margin: 0 auto; padding: 28px 22px 60px;
+  display: grid; grid-template-columns: 0.82fr 1.18fr; gap: 26px; align-items: stretch;
+}
+@media (max-width: 900px) { .wrap { grid-template-columns: 1fr; } }
+
+.stage {
+  position: relative; border: 1px solid rgba(255,255,255,0.08); border-radius: 22px;
+  background:
+    radial-gradient(70% 55% at 50% 38%, rgba(80,120,255,0.18), transparent 62%),
+    radial-gradient(50% 40% at 72% 74%, rgba(190,80,255,0.14), transparent 66%),
+    rgba(255,255,255,0.012);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 30px 24px 26px; min-height: 460px; isolation: isolate; overflow: hidden;
+}
+#avatarWrap { display: inline-grid; place-items: center; will-change: transform; border-radius: 50%; }
+#scene { width: min(46vh, 340px); height: min(46vh, 340px); display: block; cursor: grab; }
+#scene:active { cursor: grabbing; }
+.stage .name {
+  margin-top: 8px; font-family: 'Times New Roman', Georgia, serif; font-style: italic; font-size: clamp(28px, 4vw, 40px);
+  background: linear-gradient(90deg, #67e8f9, #a78bfa 60%, #f0abfc);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
+}
+.stage .role { margin-top: 6px; font-family: ui-monospace, monospace; font-size: 11px; letter-spacing: 0.26em; text-transform: uppercase; color: rgba(233,236,245,0.5); }
+.stage .status {
+  margin-top: 18px; display: inline-flex; align-items: center; gap: 9px;
+  font-family: ui-monospace, monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--accent); padding: 7px 14px; border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 10%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 32%, transparent);
+}
+.stage .status .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 9px var(--accent); animation: stPulse 1.6s ease-in-out infinite; }
+@keyframes stPulse { 0%,100%{ opacity:.5; transform: scale(1) } 50%{ opacity:1; transform: scale(1.25) } }
+.exprRow { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 7px; justify-content: center; max-width: 320px; }
+.exprBtn { font-family: ui-monospace, monospace; font-size: 11px; letter-spacing: .03em; color: #e9ecf5; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 999px; padding: 6px 12px; cursor: pointer; transition: .15s; }
+.exprBtn:hover { background: color-mix(in srgb, var(--accent) 22%, transparent); border-color: var(--accent); color: #fff; }
+
+.panel {
+  border: 1px solid rgba(255,255,255,0.08); border-radius: 22px;
+  background: rgba(255,255,255,0.015); padding: 22px; display: flex; flex-direction: column; gap: 14px; min-height: 460px;
+}
+.panel .head-row { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+.panel h1 { font-family: 'Times New Roman', Georgia, serif; font-style: italic; font-size: 24px; font-weight: 500; }
+.panel .sub { font-family: ui-monospace, monospace; font-size: 11px; letter-spacing: 0.1em; color: rgba(233,236,245,0.5); margin-top: 4px; }
+.autoBtn { flex-shrink:0; font-family: ui-monospace, monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); background:color-mix(in srgb, var(--accent) 10%, transparent); border:1px solid color-mix(in srgb, var(--accent) 38%, transparent); border-radius:999px; padding:8px 14px; cursor:pointer; transition:.2s; }
+.autoBtn:hover { background:color-mix(in srgb, var(--accent) 20%, transparent); color:#fff; }
+.autoBtn:disabled { opacity:.5; cursor:default; }
+.feed { flex: 1; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; max-height: 56vh; padding-right: 4px; margin-top: 6px; }
+.feed::-webkit-scrollbar { width: 8px; } .feed::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 8px; }
+
+.msg { max-width: 88%; }
+.msg.user { align-self: flex-end; }
+.msg.coach { align-self: flex-start; width: 100%; }
+.bubble { border-radius: 16px; padding: 14px 16px; font-size: 15px; line-height: 1.55; }
+.msg.user .bubble { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
+.msg.coach .bubble {
+  background: rgba(255,255,255,0.04); backdrop-filter: blur(8px);
+  border: 1px solid color-mix(in srgb, var(--accent) 42%, transparent); border-left: 3px solid var(--accent); position: relative;
+}
+.tagchip {
+  display: inline-flex; align-items: center; gap: 6px; margin-bottom: 10px;
+  font-family: ui-monospace, monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  color: #04140d; background: var(--accent); padding: 4px 10px; border-radius: 999px;
+}
+.bubble b, .bubble .hl { color: var(--accent); font-weight: 700; }
+.bubble .pill { background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--accent); padding: 1px 7px; border-radius: 6px; font-weight: 600; }
+.bubble .reply-list { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 6px; }
+.bubble .reply-list li { line-height: 1.45; }
+
+.bubble-text { animation: rvFade .5s ease both; }
+@keyframes rvFade { from{ opacity:0; transform: translateY(4px) } to{ opacity:1; transform:none } }
+
+.composer { display: flex; gap: 10px; }
+.composer input {
+  flex: 1; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+  color: #e9ecf5; border-radius: 12px; padding: 14px 16px; font-size: 15px; outline: none; transition: border-color .2s, background .2s;
+}
+.composer input:focus { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 5%, transparent); }
+.composer button { width: 52px; border: 0; border-radius: 12px; cursor: pointer; color: #04140d; background: var(--accent); font-size: 18px; transition: transform .15s, background .2s; }
+.composer button:hover { background: var(--accent-2); }
+.composer button:active { transform: scale(0.94); }
+.starters { display: flex; flex-wrap: wrap; gap: 8px; }
+.starter { font-size: 13px; color: rgba(233,236,245,0.8); background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); padding: 8px 14px; border-radius: 999px; cursor: pointer; transition: .2s; }
+.starter:hover { border-color: var(--accent); color: #fff; }
+
+.cz {
+  --tone: var(--accent); --tone-soft: color-mix(in srgb, var(--accent) 28%, transparent); --tone-ink: #06281d;
+  display: flex; gap: 14px; border: 1px solid var(--tone-soft);
+  background: rgba(255,255,255,0.02); border-radius: 14px; padding: 14px; max-width: 460px;
+}
+.cz .cz-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.cz .cz-bar { height: 4px; border-radius: 999px; background: rgba(255,255,255,0.16); overflow: hidden; }
+.cz .cz-bar span { display: block; height: 100%; width: 40%; border-radius: 999px; background: linear-gradient(90deg, transparent, var(--tone), transparent); animation: czSlide 1.4s cubic-bezier(.16,1,.3,1) infinite; }
+.cz .cz-fact { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; min-height: 3.6em; }
+.cz .cz-tag { font-family: ui-monospace, monospace; font-size: 9.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--tone-ink); background: var(--tone); border-radius: 999px; padding: 3px 10px; width: fit-content; animation: czTagPop 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+.cz .cz-text { margin: 0; font-weight: 500; font-size: 14px; line-height: 1.35; color: #eafff7; animation: czPop 0.55s cubic-bezier(0.34,1.56,0.64,1); }
+.cz .cz-hl { color: var(--tone); font-weight: 700; }
+.cz .cz-dots { display: flex; gap: 6px; }
+.cz .cz-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--tone); opacity: 0.4; animation: czDot 1.2s ease-in-out infinite; }
+.cz .cz-dots i:nth-child(2){ animation-delay:.2s } .cz .cz-dots i:nth-child(3){ animation-delay:.4s }
+@keyframes czTagPop { 0%{ opacity:0; transform: scale(.6) rotate(-6deg) } 100%{ opacity:1; transform: scale(1) rotate(0) } }
+@keyframes czPop { 0%{ opacity:0; transform: scale(.8) translateY(8px) } 60%{ opacity:1; transform: scale(1.04) } 100%{ transform: scale(1) translateY(0) } }
+@keyframes czDot { 0%,100%{ opacity:.35; transform: scale(1) } 50%{ opacity:1; transform: scale(1.5) } }
+@keyframes czSlide { from{ transform: translateX(-120%) } to{ transform: translateX(320%) } }
+@media (prefers-reduced-motion: reduce) { .cz, .cz *, .cz .cz-bar span { animation: none !important } .cz .cz-bar span { width: 100%; opacity:.5 } }
+</style>
+</head>
+<body>
+  <nav class="bar">
+    <div>
+      <div class="brand">Nova</div>
+      <div class="brand-sub">AI Mentor</div>
+    </div>
+    <span class="demo-tag">Demo</span>
+    <div class="spacer"></div>
+    <div class="palettes" id="palettes"></div>
+  </nav>
+
+  <div class="wrap">
+    <section class="stage">
+      <div id="avatarWrap"><canvas id="scene"></canvas></div>
+      <div class="name">Nova</div>
+      <div class="role">your mentor</div>
+      <div class="status"><span class="dot"></span><span id="statusText">ready when you are</span></div>
+      <div class="exprRow" id="exprRow"></div>
+    </section>
+
+    <section class="panel">
+      <div class="head-row">
+        <div>
+          <h1>Talk to your mentor</h1>
+          <div class="sub">Ask anything — Nova thinks, then answers, and reacts with her face.</div>
+        </div>
+        <button class="autoBtn" id="autoBtn">▶ Auto-play</button>
+      </div>
+      <div class="feed" id="feed"></div>
+      <div class="starters" id="starters"></div>
+      <div class="composer">
+        <input id="chatInput" placeholder="ask Nova anything…" autocomplete="off" />
+        <button id="chatSend" aria-label="Send">→</button>
+      </div>
+    </section>
+  </div>
+
+  <script type="importmap">
+  { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
+  </script>
+
+  <!-- ===== Mentor chat + cozy loader (scripted, no backend) ===== -->
+  <script>
+  const feed = document.getElementById('feed');
+  const chatInput = document.getElementById('chatInput');
+  const statusText = document.getElementById('statusText');
+  function escapeHtml(s) { return s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+  function scrollFeed() { feed.scrollTop = feed.scrollHeight; }
+  function setStatus(s) { statusText.textContent = s; }
+
+  /* ===========================================================
+   *  SCRIPTED ANSWERS — edit these freely. Numbers are illustrative.
+   *  Format mirrors the real Nova: '- ' bullets, **key bits** in pills,
+   *  and a final '- Do today:' action.
+   * =========================================================== */
+  const SCRIPT = {
+    'am I eating enough protein?':
+      "- You're at **96g**/day — your target is **140g**\n- That gap quietly stalls muscle gain\n- Easy wins: **3 eggs**, Greek yogurt, a scoop of whey\n- Do today: add **one 30g** serving at breakfast",
+    'how do I stay consistent?':
+      "- You've logged **5 of 7** days — that's already strong\n- The misses cluster on **weekends**\n- Anchor the habit to something you already do daily\n- Do today: set a **9pm** reminder for tomorrow's plan",
+    'I feel burnt out':
+      "- Readiness dropped to **61%** this week\n- Training load is up but **sleep** is down\n- This is a recovery week, not a push week\n- Do today: take a **full rest day** and sleep **8h**",
+    'help me sleep better':
+      "- You're averaging **6.2h** — aim for **7.5h**\n- Screens after **11pm** are the main leak\n- A cooler, darker room moves the needle most\n- Do today: lights out **45 min** earlier tonight",
+  };
+  const SCRIPT_DEFAULT =
+    "- Here's the honest read on that\n- Small steady moves beat big resets\n- Pick the **one lever** with the highest payoff\n- Do today: do the **smallest version** of it right now";
+
+  function scriptedReply(userText) {
+    const key = Object.keys(SCRIPT).find(k => k.toLowerCase() === userText.trim().toLowerCase());
+    return key ? SCRIPT[key] : SCRIPT_DEFAULT;
+  }
+
+  const CZ_TAGS = ['Thinking', 'One sec', 'On it'];
+  const CZ_LINES = [
+    { text: 'Reading your whole day across the dashboard.', hl: 'whole day' },
+    { text: 'Finding the one move that matters most right now.', hl: 'one move' },
+    { text: 'Keeping it honest and something you can do today.', hl: 'do today' },
+  ];
+  function czTextHtml(item) {
+    if (!item.hl) return escapeHtml(item.text);
+    const i = item.text.indexOf(item.hl);
+    if (i < 0) return escapeHtml(item.text);
+    return escapeHtml(item.text.slice(0, i)) + '<span class="cz-hl">' + escapeHtml(item.hl) + '</span>' + escapeHtml(item.text.slice(i + item.hl.length));
+  }
+  function makeCozyLoader() {
+    const el = document.createElement('div');
+    el.className = 'msg coach';
+    let i = 0, ti = 0;
+    function render() {
+      const item = CZ_LINES[i % CZ_LINES.length];
+      const tag = CZ_TAGS[ti % CZ_TAGS.length];
+      el.innerHTML =
+        '<div class="cz">' +
+          '<div class="cz-body">' +
+            '<div class="cz-bar"><span></span></div>' +
+            '<div class="cz-fact">' +
+              '<span class="cz-tag" key="' + i + '-' + ti + '">' + tag + '</span>' +
+              '<p class="cz-text">' + czTextHtml(item) + '</p>' +
+              '<div class="cz-dots"><i></i><i></i><i></i></div>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      scrollFeed();
+    }
+    render();
+    const timer = setInterval(() => { i++; ti++; render(); }, 1300);
+    return { el, stop() { clearInterval(timer); } };
+  }
+
+  function addUser(text) {
+    const el = document.createElement('div');
+    el.className = 'msg user';
+    el.innerHTML = '<div class="bubble">' + escapeHtml(text) + '</div>';
+    feed.appendChild(el); scrollFeed();
+  }
+  function revealMarkup(html) { return '<div class="bubble-text">' + html + '</div>'; }
+  function inlineMarks(s) { return escapeHtml(s).replace(/\*\*(.+?)\*\*/g, '<span class="pill">$1</span>'); }
+  function highlightReply(text) {
+    const lines = String(text).split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    const items = [], loose = [];
+    for (const l of lines) {
+      if (/^[-•*]\s+/.test(l)) items.push('<li>' + inlineMarks(l.replace(/^[-•*]\s+/, '')) + '</li>');
+      else loose.push(inlineMarks(l));
+    }
+    let html = loose.join('<br>');
+    if (items.length) html += (html ? '<br>' : '') + '<ul class="reply-list">' + items.join('') + '</ul>';
+    return html;
+  }
+
+  let busy = false;
+  function respond(text) {
+    return new Promise(resolve => {
+      busy = true;
+      if (window.Nova) window.Nova.setExpression('surprised');
+      setStatus('looking…');
+      const loader = makeCozyLoader();
+      feed.appendChild(loader.el); scrollFeed();
+      setTimeout(() => { if (window.Nova) window.Nova.setExpression('thinking'); setStatus('thinking…'); }, 550);
+
+      // scripted "thinking" delay so the cozy loader gets its moment on camera
+      setTimeout(() => {
+        const replyText = scriptedReply(text);
+        loader.stop();
+        loader.el.innerHTML = '<div class="bubble"><span class="tagchip">Nova</span>' + revealMarkup(highlightReply(replyText)) + '</div>';
+        setStatus('talking…');
+        if (window.Nova) window.Nova.setExpression('happy', 4);
+        scrollFeed();
+        setTimeout(() => { setStatus('ready when you are'); busy = false; resolve(); }, 2600);
+      }, 2200);
+    });
+  }
+
+  function send(text) {
+    if (!text.trim() || busy) return;
+    addUser(text.trim());
+    respond(text.trim());
+    chatInput.value = '';
+  }
+  document.getElementById('chatSend').addEventListener('click', () => send(chatInput.value));
+  chatInput.addEventListener('keydown', e => { if (e.key === 'Enter') send(chatInput.value); });
+
+  const STARTERS = ['am I eating enough protein?', 'how do I stay consistent?', 'I feel burnt out', 'help me sleep better'];
+  const startersEl = document.getElementById('starters');
+  STARTERS.forEach(s => {
+    const b = document.createElement('button'); b.className = 'starter'; b.textContent = s;
+    b.addEventListener('click', () => send(s));
+    startersEl.appendChild(b);
+  });
+
+  /* ---- AUTO-PLAY: types a question, sends it, waits, repeats. Great for filming. ---- */
+  const autoBtn = document.getElementById('autoBtn');
+  function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+  function typeInto(text){
+    return new Promise(resolve => {
+      chatInput.value = ''; let i = 0;
+      const t = setInterval(() => {
+        chatInput.value = text.slice(0, ++i);
+        if (i >= text.length) { clearInterval(t); resolve(); }
+      }, 45);
+    });
+  }
+  let autoRunning = false;
+  async function autoPlay(){
+    if (autoRunning) return; autoRunning = true; autoBtn.disabled = true; autoBtn.textContent = '● Playing…';
+    const tour = ['help me sleep better', 'am I eating enough protein?', 'I feel burnt out'];
+    for (const q of tour){
+      await typeInto(q); await sleep(350);
+      addUser(q); chatInput.value = '';
+      await respond(q);
+      await sleep(900);
+    }
+    setStatus('showing her faces…');
+    await exprTour();            // run through all 9 expressions for the camera
+    setStatus('ready when you are');
+    autoRunning = false; autoBtn.disabled = false; autoBtn.textContent = '▶ Auto-play';
+  }
+  autoBtn.addEventListener('click', autoPlay);
+
+  /* ---- palettes (recolor Nova + chat accent) ---- */
+  const PALETTES = [
+    ['Mint',   '#6EE7B7', '#34D399', '#A7F3D0', '#67E8F9'],
+    ['Nebula', '#67E8F9', '#A78BFA', '#F0ABFC', '#A78BFA'],
+    ['Ember',  '#FBBF24', '#F472B6', '#FB7185', '#F472B6'],
+    ['Ocean',  '#38BDF8', '#22D3EE', '#818CF8', '#22D3EE'],
+    ['Rose',   '#F472B6', '#FB7185', '#FDA4AF', '#FB7185'],
+  ];
+  const palHost = document.getElementById('palettes');
+  PALETTES.forEach(([name, a, b, c, accent], i) => {
+    const el = document.createElement('div');
+    el.className = 'pal' + (i === 0 ? ' active' : '');
+    el.title = name;
+    el.style.background = 'linear-gradient(135deg, ' + a + ', ' + b + ' 55%, ' + c + ')';
+    el.addEventListener('click', () => {
+      if (window.Nova && window.Nova.setPalette) window.Nova.setPalette(a, b, c);
+      document.body.style.setProperty('--accent', accent);
+      document.body.style.setProperty('--accent-2', a);
+      palHost.querySelectorAll('.pal').forEach(x => x.classList.toggle('active', x === el));
+    });
+    palHost.appendChild(el);
+  });
+
+  /* ---- expression picker: all 9 faces from the avatar lab (incl. sleep) ---- */
+  const EXPRESSIONS = [
+    ['neutral', 'Neutral', 0], ['happy', 'Happy', 4], ['sad', 'Sad', 4],
+    ['surprised', 'Surprised', 4], ['thinking', 'Thinking', 4], ['sleepy', '💤 Sleep', 4],
+    ['wink', 'Wink', 3], ['love', '♥ Love', 4], ['star', '★ Star', 4],
+  ];
+  const exprRow = document.getElementById('exprRow');
+  EXPRESSIONS.forEach(([name, label, hold]) => {
+    const b = document.createElement('button'); b.className = 'exprBtn'; b.textContent = label;
+    b.addEventListener('click', () => { if (window.Nova) window.Nova.setExpression(name, hold); });
+    exprRow.appendChild(b);
+  });
+
+  /* ---- expression tour: cycle every face for the camera ---- */
+  async function exprTour(){
+    for (const [name, , hold] of EXPRESSIONS){
+      if (window.Nova) window.Nova.setExpression(name, hold || 2);
+      await sleep(1600);
+    }
+    if (window.Nova) window.Nova.setExpression('neutral');
+  }
+
+  (function welcome() {
+    const el = document.createElement('div');
+    el.className = 'msg coach';
+    el.innerHTML = '<div class="bubble"><span class="tagchip">Nova</span><div class="bubble-text">Hey — I am <b>Nova</b>, your mentor. Ask me about food, training, sleep, or just where to start. I will keep it real and give you <b>one thing to act on</b>.</div></div>';
+    feed.appendChild(el);
+  })();
+  </script>
+
+  <!-- ===== Nova 3D avatar engine ===== -->
+  <script type="module">
+  import * as THREE from 'three'
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  function buildNova(canvas) {
+  const CYAN = new THREE.Color('#6EE7B7'), VIOLET = new THREE.Color('#34D399'), PINK = new THREE.Color('#A7F3D0')
+  let renderer
+  try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true }) }
+  catch (e) { throw e }
+  renderer.setClearColor(0x000000, 0)
+  renderer.outputColorSpace = THREE.SRGBColorSpace
+  renderer.toneMapping = THREE.ACESFilmicToneMapping
+  renderer.toneMappingExposure = 1.15
+
+  const scene = new THREE.Scene()
+  const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100)
+  camera.position.set(0, 0.1, 5.2); camera.lookAt(0, 0, 0)
+
+  function makeEnv() {
+    const c = document.createElement('canvas'); c.width = 64; c.height = 64
+    const x = c.getContext('2d'); const g = x.createLinearGradient(0, 0, 0, 64)
+    g.addColorStop(0, '#0a1030'); g.addColorStop(0.5, '#243a8a'); g.addColorStop(0.75, '#7a4adf'); g.addColorStop(1, '#f0abfc')
+    x.fillStyle = g; x.fillRect(0, 0, 64, 64)
+    const tex = new THREE.CanvasTexture(c); tex.mapping = THREE.EquirectangularReflectionMapping
+    const pm = new THREE.PMREMGenerator(renderer); const env = pm.fromEquirectangular(tex).texture
+    tex.dispose(); pm.dispose(); return env
+  }
+  scene.environment = makeEnv()
+
+  const avatar = new THREE.Group(); scene.add(avatar)
+
+  const R = 1.45
+  const coreGeo = new THREE.IcosahedronGeometry(R, 0)
+  const core = new THREE.Mesh(
+    coreGeo,
+    new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color('#dfe8ff'), metalness: 0, roughness: 0.06,
+      transmission: 0.9, thickness: 2.0, ior: 1.6, clearcoat: 1, clearcoatRoughness: 0.1,
+      iridescence: 1, iridescenceIOR: 1.6, iridescenceThicknessRange: [120, 520],
+      attenuationColor: VIOLET.clone(), attenuationDistance: 2.4, envMapIntensity: 1.4,
+    })
+  )
+  avatar.add(core)
+
+  core.add(new THREE.LineSegments(
+    new THREE.EdgesGeometry(coreGeo),
+    new THREE.LineBasicMaterial({ color: new THREE.Color('#eafcff'), transparent: true, opacity: 0.85 })
+  ))
+
+  const glow = new THREE.Mesh(
+    new THREE.SphereGeometry(R * 0.47, 32, 32),
+    new THREE.MeshBasicMaterial({ color: VIOLET, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending })
+  )
+  avatar.add(glow)
+
+  const fc = document.createElement('canvas'); fc.width = fc.height = 256
+  const fx = fc.getContext('2d'); const faceTex = new THREE.CanvasTexture(fc)
+
+  function strokeStyle(lw = 13) {
+    fx.strokeStyle = '#eafcff'; fx.fillStyle = '#eafcff';
+    fx.lineCap = 'round'; fx.lineJoin = 'round';
+    fx.shadowColor = '#a78bfa'; fx.shadowBlur = 18; fx.lineWidth = lw;
+  }
+  let gx = 0, gy = 0;
+  function eye(cx, cy, open, type, noPupil) {
+    strokeStyle()
+    fx.beginPath()
+    if (type === 'happy')      fx.ellipse(cx, cy + 6, 26, 22, 0, Math.PI * 1.05, Math.PI * 1.95)
+    else if (type === 'sad')   fx.ellipse(cx, cy - 6, 26, 22, 0, Math.PI * 0.05, Math.PI * 0.95)
+    else if (type === 'closed')fx.ellipse(cx, cy, 24, 2, 0, 0, Math.PI * 2)
+    else if (type === 'wide')  fx.ellipse(cx, cy, 22, 24 * open, 0, 0, Math.PI * 2)
+    else                       fx.ellipse(cx, cy, 22, Math.max(1.5, 22 * open), 0, 0, Math.PI * 2)
+    fx.stroke()
+    if ((type === 'wide' || type === 'neutral') && !noPupil && open > 0.55) { fx.beginPath(); fx.arc(cx + gx, cy + gy, 5, 0, Math.PI * 2); fx.fill() }
+  }
+  function symbol(kind) {
+    strokeStyle(11); fx.beginPath()
+    if (kind === 'heart') {
+      fx.fillStyle = '#ff8fcf'; fx.shadowColor = '#ff8fcf'
+      fx.moveTo(128, 150)
+      fx.bezierCurveTo(70, 100, 90, 60, 128, 96)
+      fx.bezierCurveTo(166, 60, 186, 100, 128, 150)
+      fx.fill()
+    } else if (kind === 'star') {
+      fx.fillStyle = '#ffe08a'; fx.shadowColor = '#ffe08a'
+      for (let i = 0; i < 10; i++) {
+        const r = i % 2 ? 16 : 38, a = -Math.PI / 2 + i * Math.PI / 5
+        const px = 128 + Math.cos(a) * r, py = 118 + Math.sin(a) * r
+        i ? fx.lineTo(px, py) : fx.moveTo(px, py)
+      }
+      fx.closePath(); fx.fill()
+    }
+    faceTex.needsUpdate = true
+  }
+
+  const EXPR = {
+    neutral:   { eye: 'neutral', mouth: null },
+    happy:     { eye: 'happy',   mouth: 'smile' },
+    sad:       { eye: 'sad',     mouth: 'frown' },
+    surprised: { eye: 'wide',    mouth: 'o' },
+    thinking:  { eye: 'neutral', mouth: null, dots: true },
+    sleepy:    { eye: 'closed',  mouth: null, zzz: true },
+    wink:      { eye: 'wink',    mouth: 'smile' },
+    love:      { symbol: 'heart' },
+    star:      { symbol: 'star' },
+  }
+
+  function drawFace(open = 1, expr = 'neutral', rightOpen = null, time = 0) {
+    fx.clearRect(0, 0, 256, 256)
+    const e = EXPR[expr] || EXPR.neutral
+    if (e.symbol) { symbol(e.symbol); return }
+    if (rightOpen == null) rightOpen = open
+    if (e.eye === 'wink') {
+      eye(86, 110, open, 'neutral')
+      eye(170, 110, rightOpen, 'neutral', true)
+    } else {
+      eye(86, 110, open, e.eye)
+      eye(170, 110, open, e.eye)
+    }
+    strokeStyle(10)
+    if (e.mouth === 'smile') { fx.beginPath(); fx.arc(128, 158, 30, Math.PI * 0.12, Math.PI * 0.88); fx.stroke() }
+    else if (e.mouth === 'frown') { fx.beginPath(); fx.arc(128, 196, 30, Math.PI * 1.12, Math.PI * 1.88); fx.stroke() }
+    else if (e.mouth === 'o') { fx.beginPath(); fx.arc(128, 168, 13, 0, Math.PI * 2); fx.stroke() }
+    if (e.dots) {
+      fx.fillStyle = '#eafcff'
+      ;[108, 128, 148].forEach((x, i) => {
+        fx.beginPath(); fx.arc(x, 172, 4, 0, Math.PI * 2)
+        fx.globalAlpha = 0.3 + 0.6 * (0.5 + 0.5 * Math.sin(time * 4 - i * 0.9))
+        fx.fill()
+      })
+      fx.globalAlpha = 1
+    }
+    if (e.zzz) {
+      const f = (time * 0.55) % 1
+      fx.fillStyle = '#eafcff'; fx.globalAlpha = 1 - f
+      fx.font = 'italic 22px serif'; fx.fillText('z', 176, 86 - f * 16)
+      fx.font = 'italic 16px serif'; fx.fillText('z', 196, 70 - f * 16)
+      fx.globalAlpha = 1
+    }
+    faceTex.needsUpdate = true
+  }
+  drawFace(1, 'neutral')
+  const face = new THREE.Mesh(new THREE.PlaneGeometry(R * 0.9, R * 0.9),
+    new THREE.MeshBasicMaterial({ map: faceTex, transparent: true, opacity: 0.98, depthTest: false, depthWrite: false }))
+  face.position.set(0, 0, R + 0.07)
+  face.renderOrder = 999
+  avatar.add(face)
+
+  const N = 70, pPos = new Float32Array(N * 3)
+  for (let i = 0; i < N; i++) {
+    const r = 2.0 + Math.random() * 0.9, t = Math.random() * Math.PI * 2, p = Math.acos(2 * Math.random() - 1)
+    pPos[i*3] = r*Math.sin(p)*Math.cos(t); pPos[i*3+1] = r*Math.cos(p)*0.6; pPos[i*3+2] = r*Math.sin(p)*Math.sin(t)
+  }
+  const pGeo = new THREE.BufferGeometry(); pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3))
+  const halo = new THREE.Points(pGeo, new THREE.PointsMaterial({ color: CYAN, size: 0.03, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false }))
+  avatar.add(halo)
+
+  const key = new THREE.DirectionalLight(CYAN, 2.2); key.position.set(2, 3, 4); scene.add(key)
+  const rim = new THREE.DirectionalLight(VIOLET, 1.8); rim.position.set(-3, 1, -2); scene.add(rim)
+  const fill = new THREE.PointLight(PINK, 6, 12); fill.position.set(0, -2, 2); scene.add(fill)
+  scene.add(new THREE.AmbientLight(0x223066, 0.6))
+
+  function setPalette(a, b, c) {
+    CYAN.set(a); VIOLET.set(b); PINK.set(c)
+    key.color.set(a); rim.color.set(b); fill.color.set(c)
+    halo.material.color.set(a)
+    glow.material.color.set(b)
+    core.material.attenuationColor.set(b)
+    core.material.needsUpdate = true
+  }
+
+  const target = { x: 0, y: 0 }, cur = { x: 0, y: 0 }
+  addEventListener('pointermove', e => { target.x = (e.clientX / innerWidth - 0.5) * 2; target.y = (e.clientY / innerHeight - 0.5) * 2 })
+
+  function resize() {
+    const s = canvas.clientWidth || 340
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.setSize(s, s, false)
+    camera.aspect = 1; camera.updateProjectionMatrix()
+  }
+  new ResizeObserver(resize).observe(canvas); resize()
+
+  let expr = 'neutral', exprHold = -1, pop = 0, winkT = 0, prevExpr = 'neutral', transT = -1
+  const TRANS_DUR = 0.36
+  function setExpression(name, holdSec = 0) {
+    if (!EXPR[name]) return
+    if (name !== expr) { prevExpr = expr; transT = 0 }
+    expr = name; pop = 1; exprHold = holdSec > 0 ? holdSec : -1
+    winkT = 0
+  }
+
+  const clock = new THREE.Clock(); let nextBlink = 2.5, blinkT = -1
+  function frame() {
+    requestAnimationFrame(frame)
+    const t = clock.getElapsedTime(), dt = Math.min(clock.getDelta(), 0.05)
+    if (!reduce) {
+      cur.x += (target.x - cur.x) * 0.06; cur.y += (target.y - cur.y) * 0.06
+      avatar.rotation.y = cur.x * 0.5 + Math.sin(t * 0.25) * 0.15
+      avatar.rotation.x = cur.y * 0.35 + Math.sin(t * 0.4) * 0.05
+      core.rotation.y = t * 0.35; core.rotation.x = Math.sin(t * 0.5) * 0.2
+      pop = Math.max(0, pop - dt * 2.2)
+      const breathe = 1 + Math.sin(t * 1.4) * 0.025 + pop * 0.12
+      core.scale.setScalar(breathe)
+      glow.material.opacity = 0.4 + Math.sin(t * 1.4) * 0.12 + pop * 0.3
+      glow.scale.setScalar(1 + Math.sin(t * 1.4) * 0.06 + pop * 0.15)
+      halo.rotation.y = t * 0.08
+      gx = Math.max(-6, Math.min(6, cur.x * 5 + Math.sin(t * 0.7) * 2))
+      gy = Math.max(-5, Math.min(5, cur.y * 4 + Math.cos(t * 0.9) * 1.5))
+      let open = 1, shownExpr = expr
+      const sym = (EXPR[expr] || {}).symbol
+      if (transT >= 0) {
+        transT += dt
+        const k = Math.min(1, transT / TRANS_DUR)
+        shownExpr = k < 0.5 ? prevExpr : expr
+        const h = k < 0.5 ? 1 - k * 2 : (k - 0.5) * 2
+        open = k < 0.5 ? h : h * (1 + 0.14 * Math.sin(h * Math.PI))
+        if (transT >= TRANS_DUR) transT = -1
+      } else if (!sym) {
+        if (blinkT >= 0) { const k = blinkT / 0.18; open = Math.abs(k - 0.5) * 2; blinkT += dt; if (blinkT > 0.18) blinkT = -1 }
+        else if (t > nextBlink) { blinkT = 0; nextBlink = t + 2.4 + Math.random() * 3.4 }
+        else open = 0.93 + 0.07 * Math.sin(t * 2.0)
+      }
+      if (exprHold > 0) { exprHold -= dt; if (exprHold <= 0) { setExpression('neutral'); exprHold = -1 } }
+      winkT += dt
+      const rightOpen = shownExpr === 'wink' ? Math.max(0, 1 - winkT / 0.32) : open
+      drawFace(open, shownExpr, rightOpen, t)
+      face.rotation.y = -avatar.rotation.y * 0.6; face.rotation.x = -avatar.rotation.x * 0.6
+    }
+    renderer.render(scene, camera)
+  }
+  frame()
+  return { setExpression, setPalette, expressions: Object.keys(EXPR) }
+  }
+
+  window.Nova = buildNova(document.getElementById('scene'))
+  </script>
+</body>
+</html>

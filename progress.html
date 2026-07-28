@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#0C0C12" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Patron" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="icon" type="image/svg+xml" href="icon.svg" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<style id="pwa-mobile">
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+img{max-width:100%;height:auto}
+@media (max-width:480px){input,select,textarea{font-size:16px !important}}
+@supports (padding:max(0px)){body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}}
+</style>
+<title>Progress · standalone</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<script>try{document.documentElement.setAttribute("data-theme",localStorage.getItem("patron_theme")||"nocturne");}catch(e){document.documentElement.setAttribute("data-theme","nocturne");}</script>
+<style>
+/* ============================================================
+ * Progress — standalone artifact.
+ * Port of Liam /app/fitness/progress: weight log (chart +
+ * delta + streak), lift PR ticker, composition phase card,
+ * progress photos. Vanilla CSS+JS, localStorage.
+ * Weight log + photos are fully interactive. Lifts + composition
+ * are seeded demo (they read your workout logs in the hosted app).
+ * ============================================================ */
+:root{
+  color-scheme:dark;
+  --bg:#0C0C12;--bg-elevated:#15151F;
+  --surface:rgba(255,255,255,0.028);--surface-2:rgba(255,255,255,0.055);
+  --fg:#F3F2F8;--muted:rgba(243,242,248,.50);--muted-strong:rgba(243,242,248,.74);
+  --border:rgba(255,255,255,.08);--border-strong:rgba(255,255,255,.17);
+  --brand:#8B7CFF;--brand-2:#C7BBFF;--brand-ink:#130E2E;--brand-soft:rgba(139,124,255,.12);--brand-line:rgba(139,124,255,.28);--brand-glow:rgba(139,124,255,.42);
+  --pos:#46E0A8;--neg:#FB7185;--warn:#FBBF24;
+  --mint:var(--brand);--mint-hover:var(--brand-2);--mint-glow:var(--brand-glow);--amber:var(--warn);--red:var(--neg);
+  --card:var(--surface);--card-elevated:var(--surface-2);
+  --space-1:.25rem;--space-2:.5rem;--space-3:.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-16:4rem;
+  --radius-sm:8px;--radius-md:11px;--radius-lg:18px;--radius-pill:999px;
+  --text-xs:.75rem;--text-sm:.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.375rem;--text-2xl:1.75rem;--text-3xl:2.5rem;
+  --ease:cubic-bezier(.2,.8,.2,1);--ease-premium:cubic-bezier(.16,1,.3,1);
+  --duration-fast:120ms;--duration:200ms;
+  --font-inter:'Hanken Grotesk';--font-serif:'Space Grotesk';--font-mono:'JetBrains Mono';
+}
+[data-theme="aurora"]{color-scheme:dark;--bg:#080913;--bg-elevated:#12131F;--surface:rgba(150,160,255,.045);--surface-2:rgba(150,160,255,.08);--fg:#EEF0FF;--muted:rgba(220,225,255,.52);--muted-strong:rgba(220,225,255,.76);--border:rgba(150,160,255,.11);--border-strong:rgba(150,160,255,.22);--brand:#8B7BFF;--brand-2:#B9ABFF;--brand-ink:#0A0922;--brand-soft:rgba(139,123,255,.15);--brand-line:rgba(139,123,255,.32);--brand-glow:rgba(124,107,255,.6);--pos:#4FE3D0;--neg:#FF6FA5;--warn:#FFC65C;}
+[data-theme="daylight"]{color-scheme:light;--bg:#F3F2FA;--bg-elevated:#FFFFFF;--surface:#FFFFFF;--surface-2:#FAF9FF;--fg:#171622;--muted:rgba(23,22,34,.52);--muted-strong:rgba(23,22,34,.72);--border:rgba(23,22,60,.10);--border-strong:rgba(23,22,60,.18);--brand:#6A45FF;--brand-2:#8E6BFF;--brand-ink:#FFFFFF;--brand-soft:rgba(106,69,255,.08);--brand-line:rgba(106,69,255,.24);--brand-glow:rgba(106,69,255,.28);--pos:#0E9E64;--neg:#E11D63;--warn:#B4690E;}
+*{box-sizing:border-box}html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-inter),-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased}
+.grain-overlay{position:relative}
+.grain-overlay::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.035;mix-blend-mode:overlay;background-image:url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");background-size:200px 200px}
+.page{position:relative;min-height:100dvh;background:var(--bg);padding:var(--space-6) var(--space-5) var(--space-16);isolation:isolate}
+.page::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:-1;background:radial-gradient(60% 40% at 80% 8%,color-mix(in srgb,var(--brand) 6%,transparent),transparent 70%),radial-gradient(50% 35% at 12% 92%,color-mix(in srgb,var(--brand) 4%,transparent),transparent 70%)}
+.shell{max-width:720px;margin:0 auto}
+
+/* Header */
+.header{display:flex;flex-direction:column;gap:var(--space-2);margin-bottom:var(--space-6)}
+.back{display:inline-flex;align-items:center;gap:var(--space-2);align-self:flex-start;padding:6px 12px 6px 8px;background:color-mix(in srgb,var(--brand) 8%,transparent);border:1px solid color-mix(in srgb,var(--brand) 20%,transparent);border-radius:var(--radius-pill);color:var(--mint);font-size:var(--text-xs);font-weight:500;text-decoration:none;transition:background var(--duration) var(--ease-premium),border-color var(--duration) var(--ease-premium)}
+.back:hover{background:color-mix(in srgb,var(--brand) 14%,transparent);border-color:color-mix(in srgb,var(--brand) 32%,transparent)}
+.backArrow{font-size:14px;line-height:1}
+.headerRow{display:flex;align-items:center;justify-content:space-between;gap:var(--space-4)}
+.title{font-family:var(--font-serif);font-style:normal;font-size:var(--text-3xl);font-weight:600;line-height:1.05;margin:0}
+.subtitle{font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:0}
+.unitSeg{display:inline-flex;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:var(--radius-pill);padding:3px;gap:2px}
+.unitBtn{appearance:none;background:transparent;border:0;color:var(--muted);font-family:inherit;font-size:12px;font-weight:500;padding:5px 14px;border-radius:var(--radius-pill);cursor:pointer;transition:background var(--duration) var(--ease-premium),color var(--duration) var(--ease-premium)}
+.unitBtnActive{background:var(--mint);color:#042a1c}
+
+/* Hero card */
+.heroCard{padding:var(--space-5);background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:var(--space-4)}
+.heroNumRow{display:flex;align-items:baseline;gap:8px}
+.heroNum{font-family:var(--font-serif);font-style:normal;font-size:64px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.heroUnit{font-size:18px;color:var(--muted);font-weight:500}
+.chipRow{display:flex;flex-wrap:wrap;gap:8px;margin-top:var(--space-3)}
+.deltaChip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;padding:5px 11px;border-radius:var(--radius-pill);border:1px solid transparent}
+.deltaChip.down{background:color-mix(in srgb,var(--brand) 10%,transparent);border-color:color-mix(in srgb,var(--brand) 24%,transparent);color:var(--mint)}
+.deltaChip.up{background:rgba(245,158,11,.10);border-color:rgba(245,158,11,.24);color:var(--amber)}
+.chipWindow{font-weight:400;font-size:10px;letter-spacing:.06em;text-transform:uppercase;opacity:.65}
+.streakChip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;padding:5px 11px;border-radius:var(--radius-pill);background:rgba(255,255,255,.04);color:var(--muted-strong)}
+.streakDot{width:6px;height:6px;border-radius:50%;background:var(--mint);box-shadow:0 0 8px var(--mint-glow)}
+.heroEmpty{font-family:var(--font-serif);font-style:italic;color:var(--muted);line-height:1.5;padding:var(--space-4) 0}
+
+/* Chart */
+.chartWrap{position:relative;margin:var(--space-5) 0 var(--space-4);padding-left:34px}
+.chartYAxis{position:absolute;left:0;top:14px;bottom:38px;display:flex;flex-direction:column;justify-content:space-between;font-family:var(--font-mono),ui-monospace,monospace;font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums}
+.chart{display:block;width:100%;height:150px}
+.chartGrid{stroke:rgba(255,255,255,.04);stroke-width:.5}
+.chartArea{stroke:none}
+.chartLine{fill:none;stroke:var(--mint);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 5px var(--mint-glow))}
+.chartAvg{fill:none;stroke:rgba(255,255,255,.4);stroke-width:1.2;stroke-dasharray:4 4;stroke-linecap:round}
+.dot{fill:var(--mint);opacity:.45}
+.dotToday{fill:var(--mint);filter:drop-shadow(0 0 6px var(--mint))}
+.chartMeta{text-align:center;font-size:11px;color:var(--muted);margin-top:6px}
+.chartLegend{display:flex;justify-content:center;gap:var(--space-4);margin-top:8px}
+.legendItem{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono),ui-monospace,monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.legendDot{width:14px;height:2px;border-radius:2px}
+.legendDotLine{background:var(--mint)}
+.legendDotAvg{background:rgba(255,255,255,.4);height:0;border-top:2px dashed rgba(255,255,255,.5)}
+
+/* Logged / input */
+.locked{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);padding:var(--space-4);background:var(--card-elevated);border:1px solid var(--border);border-radius:var(--radius-md);margin-top:var(--space-4)}
+.lockedLeft{display:flex;align-items:center;gap:var(--space-3)}
+.lockedCheck{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:color-mix(in srgb,var(--brand) 12%,transparent);color:var(--mint);font-size:15px;font-weight:700}
+.lockedLabel{font-family:var(--font-mono),ui-monospace,monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.lockedValue{font-size:18px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:2px}
+.editBtn{appearance:none;background:transparent;border:1px solid var(--border-strong);color:var(--muted-strong);font-family:inherit;font-size:12px;padding:7px 16px;border-radius:var(--radius-pill);cursor:pointer}
+.editBtn:hover{color:var(--fg);border-color:var(--mint)}
+.inputRow{display:flex;align-items:center;gap:8px;margin-top:var(--space-4)}
+.input{flex:1;appearance:none;background:rgba(0,0,0,.3);border:1px solid var(--border-strong);border-radius:var(--radius-md);color:var(--fg);font-family:inherit;font-size:16px;padding:12px 14px;outline:none;transition:border-color var(--duration) var(--ease-premium)}
+.input:focus{border-color:var(--mint)}
+.inputUnit{color:var(--muted);font-size:14px}
+.saveBtn{appearance:none;background:var(--mint);border:0;color:#042a1c;font-family:inherit;font-weight:600;font-size:14px;padding:12px 20px;border-radius:var(--radius-md);cursor:pointer;transition:background var(--duration) var(--ease-premium)}
+.saveBtn:hover:not(:disabled){background:var(--mint-hover)}
+.saveBtn:disabled{opacity:.4;cursor:not-allowed}
+.errorText{color:var(--red);font-size:12px;margin:8px 0 0}
+
+/* Sections */
+.section{margin-bottom:var(--space-6)}
+.sectionEyebrow{font-family:var(--font-mono),ui-monospace,monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:var(--space-3)}
+.sectionEyebrowRow{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:var(--space-3)}
+.sectionEyebrowMeta{font-family:var(--font-mono),ui-monospace,monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.noteLine{font-size:11px;color:var(--muted);margin:var(--space-3) 0 0;font-style:italic}
+
+/* Lift ticker */
+.ticker{display:flex;align-items:stretch;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-pill);overflow:hidden}
+.tickerBadge{display:inline-flex;align-items:center;gap:7px;flex-shrink:0;padding:0 14px;font-family:var(--font-mono),ui-monospace,monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mint);border-right:1px solid var(--border);background:color-mix(in srgb,var(--brand) 4%,transparent)}
+.tickerBadgeDot{width:6px;height:6px;border-radius:50%;background:var(--mint);box-shadow:0 0 8px var(--mint-glow);animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.tickerViewport{flex:1;overflow:hidden;position:relative;min-width:0;mask-image:linear-gradient(90deg,transparent,#000 24px,#000 calc(100% - 24px),transparent);-webkit-mask-image:linear-gradient(90deg,transparent,#000 24px,#000 calc(100% - 24px),transparent)}
+.tickerTrack{display:inline-flex;align-items:center;gap:var(--space-6);padding:10px var(--space-4);white-space:nowrap;animation:scroll 30s linear infinite;will-change:transform}
+@keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.ticker:hover .tickerTrack{animation-play-state:paused}
+.tickerItem{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-variant-numeric:tabular-nums}
+.tickerArrow{font-weight:700}
+.tickerItemUp .tickerArrow{color:var(--mint)}
+.tickerItemDown .tickerArrow{color:var(--amber)}
+.tickerName{font-family:var(--font-serif);font-style:italic;color:var(--fg)}
+.tickerSep{color:var(--muted);opacity:.5}
+.tickerBody{color:var(--muted-strong)}
+.tickerBody strong{color:var(--fg);font-weight:700}
+.tickerAt{color:var(--muted)}
+@media(prefers-reduced-motion:reduce){.tickerTrack,.tickerBadgeDot{animation:none}}
+
+/* Composition */
+.compCard{padding:var(--space-5);background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg)}
+.compPhaseWord{font-family:var(--font-serif);font-style:italic;font-size:34px;line-height:1}
+.compPhaseSub{font-size:14px;color:var(--muted-strong);margin:var(--space-3) 0 var(--space-4);line-height:1.45}
+.compPillRow{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:var(--space-4)}
+.compPill{display:inline-flex;align-items:center;gap:8px;padding:7px 13px;border-radius:var(--radius-pill);background:rgba(255,255,255,.04);border:1px solid var(--border)}
+.compPillLabel{font-family:var(--font-mono),ui-monospace,monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.compPillValue{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+.compPillGood{background:color-mix(in srgb,var(--brand) 8%,transparent);border-color:color-mix(in srgb,var(--brand) 22%,transparent)}
+.compPillGood .compPillValue{color:var(--mint)}
+.compPillBad{background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.22)}
+.compPillBad .compPillValue{color:var(--amber)}
+.compPillNeutral .compPillValue{color:var(--muted-strong)}
+.compCaveat{font-size:11px;color:var(--muted);font-style:italic;margin:0}
+
+/* Photos */
+.photosEmptyTrigger,.photoPreview{width:100%;cursor:pointer;font-family:inherit}
+.photosEmptyTrigger{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-4);background:var(--card);border:1px dashed var(--border);border-radius:var(--radius-lg);color:var(--fg);text-align:left;transition:border-color var(--duration) var(--ease-premium)}
+.photosEmptyTrigger:hover{border-color:color-mix(in srgb,var(--brand) 35%,transparent)}
+.photosTriggerIcon{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:color-mix(in srgb,var(--brand) 10%,transparent);color:var(--mint);font-size:20px;flex-shrink:0}
+.photosEmptyTriggerText{flex:1}
+.photosTriggerLabel{font-size:14px;font-weight:600}
+.photosTriggerCount{font-size:12px;color:var(--muted)}
+.photosTriggerArrow{color:var(--mint);font-size:18px}
+.photoPreview{position:relative;display:block;border:0;padding:0;border-radius:var(--radius-lg);overflow:hidden;aspect-ratio:4/3;background:var(--card-elevated)}
+.photoPreview img{width:100%;height:100%;object-fit:cover;display:block}
+.photoPreviewGradient{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.7),transparent 50%)}
+.photoPreviewMeta{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:flex-end;justify-content:space-between;padding:var(--space-4)}
+.photoPreviewDate{font-family:var(--font-mono),ui-monospace,monospace;font-size:10px;letter-spacing:.14em;color:var(--fg)}
+.photoPreviewWeight{font-family:var(--font-serif);font-style:italic;font-size:18px;margin-top:2px}
+.photoPreviewArrow{color:var(--fg);font-size:18px}
+.photoActionsRow{display:flex;gap:8px;margin-top:var(--space-3)}
+.photoActionBtn{flex:1;appearance:none;font-family:inherit;font-size:13px;font-weight:600;padding:11px;border-radius:var(--radius-md);cursor:pointer;border:1px solid var(--border-strong);background:transparent;color:var(--fg)}
+.photoActionPrimary{background:var(--mint);color:#042a1c;border-color:var(--mint)}
+.photoActionPrimary:hover{background:var(--mint-hover)}
+.photoActionSecondary:hover:not(:disabled){border-color:var(--mint)}
+.photoActionSecondary:disabled{opacity:.4;cursor:not-allowed}
+
+/* Overlays */
+.overlay{position:fixed;inset:0;background:var(--bg);z-index:1000;overflow-y:auto;animation:fade .2s var(--ease-premium)}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.overlayInner{max-width:720px;margin:0 auto;padding:var(--space-6) var(--space-5)}
+.overlayHead{display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-5)}
+.overlayBack{appearance:none;width:36px;height:36px;border-radius:50%;background:transparent;border:1px solid var(--border);color:var(--fg);font-size:18px;cursor:pointer}
+.overlayEyebrow{font-family:var(--font-mono),ui-monospace,monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--mint)}
+.overlayTitle{font-family:var(--font-serif);font-style:italic;font-size:var(--text-2xl);margin:2px 0 0}
+.overlayActions{display:flex;gap:8px;margin-bottom:var(--space-5)}
+.overlayAction{flex:1;appearance:none;font-family:inherit;font-size:13px;font-weight:600;padding:12px;border-radius:var(--radius-md);cursor:pointer;border:1px solid var(--border-strong);background:transparent;color:var(--fg)}
+.overlayPrimary{background:var(--mint);color:#042a1c;border-color:var(--mint)}
+.hiddenInput{display:none}
+.photoGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.photoCard{position:relative;appearance:none;border:0;padding:0;border-radius:var(--radius-md);overflow:hidden;aspect-ratio:3/4;cursor:pointer;background:var(--card-elevated)}
+.photoCard img{width:100%;height:100%;object-fit:cover}
+.photoOverlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.7),transparent 45%)}
+.photoMeta{position:absolute;left:0;right:0;bottom:0;padding:10px;display:flex;justify-content:space-between;align-items:flex-end}
+.photoDate{font-family:var(--font-mono),ui-monospace,monospace;font-size:10px;color:var(--fg)}
+.photoWeight{font-family:var(--font-serif);font-style:italic;font-size:13px;color:var(--fg)}
+.photosEmpty{text-align:center;padding:var(--space-12) var(--space-4)}
+.photosEmptyLine{font-family:var(--font-serif);font-style:italic;font-size:var(--text-xl);color:var(--muted-strong)}
+.photosEmptyHint{font-size:12px;color:var(--muted)}
+.viewer{position:fixed;inset:0;background:rgba(0,0,0,.94);z-index:1100;display:flex;flex-direction:column;padding:var(--space-5);animation:fade .2s var(--ease-premium)}
+.viewerStage{flex:1;display:grid;place-items:center;min-height:0}
+.viewerStage img{max-width:100%;max-height:100%;border-radius:var(--radius-md);object-fit:contain}
+.viewerMeta{text-align:center;padding:var(--space-3) 0}
+.viewerDate{font-family:var(--font-mono),ui-monospace,monospace;font-size:11px;letter-spacing:.14em;color:var(--muted-strong)}
+.viewerWeight{font-family:var(--font-serif);font-style:italic;font-size:var(--text-xl);margin-top:2px}
+.viewerActions{display:flex;gap:8px;justify-content:center}
+.viewerBtn{appearance:none;background:transparent;border:1px solid var(--border-strong);color:var(--fg);font-family:inherit;font-size:13px;padding:10px 18px;border-radius:var(--radius-pill);cursor:pointer}
+.viewerBtn:disabled{opacity:.4;cursor:not-allowed}
+.viewerDelete:hover{border-color:var(--red);color:var(--red)}
+.viewerConfirm{border-color:var(--red);color:var(--red);background:rgba(239,68,68,.1)}
+.compareStage{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:8px;min-height:0}
+.compareSide{position:relative;border:0;padding:0;background:var(--card-elevated);border-radius:var(--radius-md);overflow:hidden;display:grid;place-items:center;cursor:default}
+.compareOther{cursor:pointer}
+.compareSide img{width:100%;height:100%;object-fit:cover}
+.compareMeta{position:absolute;left:0;right:0;bottom:0;padding:8px;font-family:var(--font-mono),ui-monospace,monospace;font-size:10px;color:var(--fg);background:linear-gradient(to top,rgba(0,0,0,.7),transparent);text-align:center}
+.compareHeadline{text-align:center;font-family:var(--font-serif);font-style:italic;font-size:var(--text-lg);padding:var(--space-3) 0}
+.themeSeg{display:inline-flex;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-pill);padding:3px;gap:2px}
+.themeBtn{appearance:none;background:transparent;border:0;padding:5px 7px;border-radius:var(--radius-pill);cursor:pointer;display:inline-flex;align-items:center}
+.themeSwatch{width:12px;height:12px;border-radius:50%;box-shadow:0 0 0 1px var(--border-strong) inset}
+.themeBtnActive{background:var(--brand-soft)}
+.themeBtnActive .themeSwatch{box-shadow:0 0 0 2px var(--bg),0 0 0 3px var(--brand)}
+.headerRow{flex-wrap:wrap;gap:var(--space-3)}
+</style>
+<link rel="stylesheet" href="skin.css?v=1">
+</head>
+<body>
+<main class="page grain-overlay"><div class="shell" id="app"></div></main>
+<div id="modalRoot"></div>
+<input id="fileInput" type="file" accept="image/*" class="hiddenInput" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="db.js?v=15"></script>
+<script>
+/* ===================== Helpers ===================== */
+function getLocalDateKey(d){d=d||new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function parseKey(k){const p=k.split('-').map(Number);return new Date(p[0],(p[1]||1)-1,p[2]||1);}
+function kgToDisplay(kg,u){return u==='lb'?kg*2.20462:kg;}
+function displayToKg(v,u){return u==='lb'?v/2.20462:v;}
+function fmtDisp(kg,u){return kgToDisplay(kg,u).toFixed(1);}
+function photoDate(k){const d=parseKey(k);const m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return m[d.getMonth()]+' '+d.getDate();}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function smoothPath(pts){
+  if(!pts.length)return '';if(pts.length===1)return 'M '+pts[0].x+' '+pts[0].y;
+  let d='M '+pts[0].x.toFixed(2)+' '+pts[0].y.toFixed(2);
+  for(let i=1;i<pts.length;i++){const pr=pts[i-1],cu=pts[i],cx=(pr.x+cu.x)/2;d+=' Q '+cx.toFixed(2)+' '+pr.y.toFixed(2)+', '+cx.toFixed(2)+' '+((pr.y+cu.y)/2).toFixed(2);d+=' T '+cu.x.toFixed(2)+' '+cu.y.toFixed(2);}
+  return d;
+}
+function compress(dataUrl,maxDim,q){return new Promise(res=>{const img=new Image();img.onload=()=>{let w=img.naturalWidth||img.width,h=img.naturalHeight||img.height;if(w>maxDim||h>maxDim){if(w>=h){h=Math.round(h*(maxDim/w));w=maxDim;}else{w=Math.round(w*(maxDim/h));h=maxDim;}}const c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d');if(ctx)ctx.drawImage(img,0,0,w,h);try{res(c.toDataURL('image/jpeg',q));}catch(e){res(dataUrl);}};img.onerror=()=>res(dataUrl);img.src=dataUrl;});}
+
+const CHART_WINDOW=30,AVG_WINDOW=7;
+
+/* ===================== Real training data (from the Gym app) =====================
+ * Gym (gym.html) stores its whole state under localStorage 'po_coach_v1'; the
+ * whole-device snapshot in db.js mirrors it onto this page too. Lifts + composition
+ * are derived from it — no Gym data → those sections hide themselves. */
+function loadGym(){
+  try{ const r=localStorage.getItem('po_coach_v1'); if(!r)return null; const g=JSON.parse(r);
+    if(!g||typeof g!=='object'||!g.logs||typeof g.logs!=='object')return null; return g; }
+  catch(e){ return null; }
+}
+function gymToKg(w,gu){ return gu==='lb'?w/2.20462:w; }
+function gymLifts(){
+  const g=loadGym(); if(!g)return [];
+  const gu=g.units||'kg',cutoff=Date.now()-90*86400000,byId={},out=[];
+  (g.exercises||[]).forEach(e=>{byId[e.id]=e;});
+  for(const id in g.logs){
+    const ex=byId[id]; if(!ex)continue;
+    const logs=(g.logs[id]||[]).filter(l=>l&&typeof l.weight==='number'&&typeof l.reps==='number'&&l.date);
+    if(logs.length<2)continue;
+    logs.sort((a,b)=>new Date(a.date)-new Date(b.date));
+    const cur=logs[logs.length-1]; if(new Date(cur.date).getTime()<cutoff)continue;
+    const prev=logs[logs.length-2];
+    let kind;
+    if(cur.weight>prev.weight)kind='pr_weight';
+    else if(cur.weight===prev.weight&&cur.reps>prev.reps)kind='pr_reps';
+    else if(cur.weight<prev.weight)kind='regress_weight';
+    else continue;
+    out.push({id:id,exerciseName:ex.name,kind:kind,currentReps:cur.reps,previousReps:prev.reps,
+      currentWeightKg:gymToKg(cur.weight,gu),previousWeightKg:gymToKg(prev.weight,gu)});
+  }
+  out.sort((a,b)=>(a.kind.indexOf('pr_')===0?0:1)-(b.kind.indexOf('pr_')===0?0:1));
+  return out;
+}
+function gymVolumeTrendPct(windowDays){
+  const g=loadGym(); if(!g)return null;
+  const now=Date.now(),W=windowDays*86400000; let recent=0,prior=0;
+  for(const id in g.logs){
+    for(const l of (g.logs[id]||[])){
+      if(!l||typeof l.weight!=='number'||typeof l.reps!=='number'||!l.date)continue;
+      const t=new Date(l.date).getTime(); if(!t)continue;
+      const age=now-t,vol=Math.max(l.weight,1)*l.reps;
+      if(age<=W)recent+=vol; else if(age<=2*W)prior+=vol;
+    }
+  }
+  if(prior<=0)return null;
+  return (recent-prior)/prior*100;
+}
+function gymSessionCount(windowDays){
+  const g=loadGym(); if(!g)return 0;
+  const now=Date.now(),W=windowDays*86400000,days=new Set();
+  for(const id in g.logs){ for(const l of (g.logs[id]||[])){ if(l&&l.date){const t=new Date(l.date).getTime(); if(t&&now-t<=W)days.add(String(l.date).slice(0,10));} } }
+  return days.size;
+}
+function weightSlopeKgPerWeek(windowDays){
+  const s=sortedEntries(); if(s.length<2)return null;
+  const cutoff=Date.now()-windowDays*86400000;
+  const win=s.filter(e=>parseKey(e.dateKey).getTime()>=cutoff);
+  if(win.length<2)return null;
+  const a=win[0],b=win[win.length-1];
+  const days=(parseKey(b.dateKey)-parseKey(a.dateKey))/86400000; if(days<1)return null;
+  return (b.weightKg-a.weightKg)/days*7;
+}
+const PHASE_LABEL={recomp:'Recomping',bulking:'Bulking',fat_gain:'Fat gain',cutting:'Cutting',losing:'Losing both',holding:'Holding',insufficient:'Calibrating'};
+const PHASE_SUB={recomp:'lifts up, weight steady, likely swapping fat for muscle',bulking:'weight up, lifts up. the gains are mostly muscle',fat_gain:'weight up, lifts flat. most of the gain is fat',cutting:'weight down, lifts preserved. fat loss with muscle held',losing:'weight down, lifts down. losing both',holding:'weight + lifts both steady. maintenance phase',insufficient:'log a few more weeks of weight + training to unlock this'};
+function derivePhase(slope,volPct){
+  const wUp=slope!=null&&slope>0.15,wDown=slope!=null&&slope<-0.15;
+  const vUp=volPct!=null&&volPct>3,vDown=volPct!=null&&volPct<-3;
+  if(slope==null&&volPct==null)return 'insufficient';
+  if(wUp&&vUp)return 'bulking';
+  if(wUp)return 'fat_gain';
+  if(wDown&&!vDown)return 'cutting';
+  if(wDown)return 'losing';
+  if(vUp)return 'recomp';
+  return 'holding';
+}
+function gymComposition(){
+  const g=loadGym(); if(!g)return null;
+  const windowDays=28;
+  const volPct=gymVolumeTrendPct(windowDays);
+  const slope=weightSlopeKgPerWeek(windowDays);
+  const sessions=gymSessionCount(windowDays);
+  const wEntries=sortedEntries().filter(e=>parseKey(e.dateKey).getTime()>=Date.now()-windowDays*86400000).length;
+  return {phase:derivePhase(slope,volPct),weightSlopeKgPerWeek:slope||0,volumeTrendPct:volPct,
+    estimatedLeanKgPerWeek:null,estimatedFatKgPerWeek:null,windowDays:windowDays,confidence:Math.min(90,(wEntries+sessions)*8)};
+}
+
+/* ===================== State ===================== */
+const LS='progress_standalone_v1',PHOTOS='progress_standalone_photos_v1';
+function seed(){
+  // 3 entries → "3 entries · last 3 days", axis 70.5–72.4, 71.2 today, ↓0.7 / 7d
+  const e=[];const add=(off,kg)=>{const d=new Date();d.setDate(d.getDate()-off);e.push({dateKey:getLocalDateKey(d),weightKg:kg});};
+  add(7,71.9);add(3,71.0);add(0,71.2);
+  return {units:'kg',entries:e};
+}
+function load(){try{const r=localStorage.getItem(LS);if(!r)return seed();const p=JSON.parse(r);return {units:p.units||'kg',entries:Array.isArray(p.entries)?p.entries:seed().entries};}catch{return seed();}}
+function save(){try{localStorage.setItem(LS,JSON.stringify({units:state.units,entries:state.entries}));}catch{} if(window.PatronDB&&PatronDB.isCloud())PatronDB.set('patron-progress',{units:state.units,entries:state.entries});}
+function loadPhotos(){try{const r=localStorage.getItem(PHOTOS);return r?JSON.parse(r):[];}catch{return [];}}
+function savePhotos(){try{localStorage.setItem(PHOTOS,JSON.stringify(photos));}catch{} if(window.PatronDB&&PatronDB.isCloud())PatronDB.set('patron-progress-photos',photos);}
+let state=load();
+let photos=loadPhotos();
+const ui={draft:'',editing:false,error:null,photosOpen:false,viewerId:null,compareId:null,confirmDelete:false};
+
+/* Derived */
+function sortedEntries(){return state.entries.slice().sort((a,b)=>a.dateKey.localeCompare(b.dateKey));}
+function latest(){const s=sortedEntries();return s[s.length-1]||null;}
+function todayEntry(){return state.entries.find(e=>e.dateKey===getLocalDateKey())||null;}
+
+/* Actions */
+function saveWeight(){
+  const parsed=parseFloat(ui.draft);
+  if(!isFinite(parsed)||parsed<=0){ui.error='enter a valid weight';render();return;}
+  const kg=displayToKg(parsed,state.units);const k=getLocalDateKey();
+  state.entries=state.entries.filter(e=>e.dateKey!==k).concat([{dateKey:k,weightKg:kg}]);
+  ui.draft='';ui.editing=false;ui.error=null;save();render();
+}
+function startEdit(){ui.editing=true;ui.error=null;const t=todayEntry();ui.draft=t?fmtDisp(t.weightKg,state.units):'';render();}
+function changeUnits(u){if(ui.draft){const p=parseFloat(ui.draft);if(isFinite(p)){const kg=displayToKg(p,state.units);ui.draft=kgToDisplay(kg,u).toFixed(1);}}state.units=u;save();render();}
+
+/* ===================== Render: hero ===================== */
+function chartData(){
+  const recent=sortedEntries().slice(-CHART_WINDOW);
+  if(recent.length<2)return null;
+  const kgs=recent.map(e=>e.weightKg),min=Math.min.apply(null,kgs),max=Math.max.apply(null,kgs);
+  const pad=Math.max((max-min)*0.15,0.5),yMin=min-pad,yMax=max+pad;
+  const W=320,H=130,xL=8,xR=W-8,yT=20,yB=H-20,xRange=xR-xL,yRange=yB-yT;
+  const xFor=i=>recent.length===1?xR:xL+(i/(recent.length-1))*xRange;
+  const yFor=kg=>yB-((kg-yMin)/(yMax-yMin))*yRange;
+  const points=recent.map((e,i)=>({x:xFor(i),y:yFor(e.weightKg)}));
+  const avgPoints=recent.map((_,i)=>{const st=Math.max(0,i-(AVG_WINDOW-1));const win=recent.slice(st,i+1);const a=win.reduce((s,p)=>s+p.weightKg,0)/win.length;return {x:xFor(i),y:yFor(a)};});
+  return {W,H,yB,yMin:kgToDisplay(yMin,state.units),yMax:kgToDisplay(yMax,state.units),
+    linePath:smoothPath(points),areaPath:smoothPath(points)+' L '+points[points.length-1].x.toFixed(2)+' '+yB+' L '+points[0].x.toFixed(2)+' '+yB+' Z',
+    avgPath:smoothPath(avgPoints),points,recentCount:recent.length,totalCount:state.entries.length};
+}
+function delta(){
+  const s=sortedEntries(),l=latest();if(s.length<2||!l)return null;
+  const cutoff=parseKey(l.dateKey);cutoff.setDate(cutoff.getDate()-7);
+  const base=s.find(e=>parseKey(e.dateKey)>=cutoff)||s[0];
+  const diff=l.weightKg-base.weightKg;
+  if(Math.abs(diff)<0.05)return {diffKg:0,dir:'flat'};
+  return {diffKg:diff,dir:diff>0?'up':'down'};
+}
+function streak(){
+  if(!state.entries.length)return 0;const set=new Set(state.entries.map(e=>e.dateKey));const cur=new Date();
+  if(!set.has(getLocalDateKey(cur)))cur.setDate(cur.getDate()-1);
+  let c=0;while(set.has(getLocalDateKey(cur))){c++;cur.setDate(cur.getDate()-1);}return c;
+}
+function heroHtml(){
+  const l=latest(),u=state.units,d=delta(),st=streak(),cd=chartData(),te=todayEntry();
+  let chips='';
+  if(d&&d.dir!=='flat')chips+='<span class="deltaChip '+(d.dir==='down'?'down':'up')+'">'+(d.dir==='down'?'↓':'↑')+' '+Math.abs(kgToDisplay(d.diffKg,u)).toFixed(1)+' '+u+'<span class="chipWindow">· 7d</span></span>';
+  if(st>=2)chips+='<span class="streakChip"><span class="streakDot"></span>'+st+' day streak</span>';
+  let chart='';
+  if(cd){
+    let dots='';cd.points.forEach((p,i)=>{const last=i===cd.points.length-1;dots+='<circle class="'+(last?'dotToday':'dot')+'" cx="'+p.x+'" cy="'+p.y+'" r="'+(last?5:3)+'"/>';});
+    chart='<div class="chartWrap"><div class="chartYAxis"><span>'+cd.yMax.toFixed(1)+'</span><span>'+cd.yMin.toFixed(1)+'</span></div>'
+      +'<svg class="chart" viewBox="0 0 '+cd.W+' '+cd.H+'" preserveAspectRatio="none" aria-hidden><defs><linearGradient id="pcf" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--mint)" stop-opacity=".28"/><stop offset="100%" stop-color="var(--mint)" stop-opacity="0"/></linearGradient></defs>'
+      +'<line class="chartGrid" x1="0" y1="20" x2="'+cd.W+'" y2="20"/><line class="chartGrid" x1="0" y1="'+(cd.H/2)+'" x2="'+cd.W+'" y2="'+(cd.H/2)+'"/><line class="chartGrid" x1="0" y1="'+(cd.H-20)+'" x2="'+cd.W+'" y2="'+(cd.H-20)+'"/>'
+      +'<path class="chartAvg" d="'+cd.avgPath+'"/><path class="chartArea" d="'+cd.areaPath+'" fill="url(#pcf)"/><path class="chartLine" d="'+cd.linePath+'"/>'+dots+'</svg>'
+      +'<div class="chartMeta">'+cd.totalCount+' '+(cd.totalCount===1?'entry':'entries')+' · last '+cd.recentCount+' days</div>'
+      +'<div class="chartLegend"><span class="legendItem"><span class="legendDot legendDotLine"></span>Daily</span><span class="legendItem"><span class="legendDot legendDotAvg"></span>7-day avg</span></div></div>';
+  }
+  let foot;
+  if(te&&!ui.editing){
+    foot='<div class="locked"><div class="lockedLeft"><span class="lockedCheck">✓</span><div><div class="lockedLabel">logged today</div><div class="lockedValue">'+fmtDisp(te.weightKg,u)+' '+u+'</div></div></div><button class="editBtn" data-act="edit">edit</button></div>';
+  }else{
+    foot='<form class="inputRow" data-act="saveForm"><input id="wInput" class="input" type="number" step="0.1" inputmode="decimal" value="'+esc(ui.draft)+'" placeholder="weight ('+u+')" autocomplete="off"><span class="inputUnit">'+u+'</span><button type="submit" class="saveBtn">'+(te?'update':'save')+'</button></form>';
+  }
+  return '<section class="heroCard"><div class="heroNumRow"><span class="heroNum">'+(l?fmtDisp(l.weightKg,u):'—')+'</span><span class="heroUnit">'+u+'</span></div>'
+    +(chips?'<div class="chipRow">'+chips+'</div>':'')
+    +(!state.entries.length?'<div class="heroEmpty">Log your first weight to start tracking.</div>':'')
+    +chart+foot+(ui.error?'<p class="errorText">'+esc(ui.error)+'</p>':'')+'</section>';
+}
+
+/* ===================== Render: lifts + composition ===================== */
+function liftItem(s){
+  const u=state.units,isPR=s.kind==='pr_weight'||s.kind==='pr_reps',arrow=isPR?'↑':'↓';
+  let body;
+  if(s.kind==='pr_reps')body=s.previousReps+' → <strong>'+s.currentReps+'</strong> reps<span class="tickerAt"> @ '+fmtDisp(s.currentWeightKg,u)+' '+u+'</span>';
+  else body=fmtDisp(s.previousWeightKg,u)+' → <strong>'+fmtDisp(s.currentWeightKg,u)+'</strong> '+u;
+  return '<span class="tickerItem '+(isPR?'tickerItemUp':'tickerItemDown')+'"><span class="tickerArrow">'+arrow+'</span><span class="tickerName">'+esc(s.exerciseName)+'</span><span class="tickerSep">·</span><span class="tickerBody">'+body+'</span></span>';
+}
+function trainingHtml(){
+  const lifts=gymLifts();
+  if(!lifts.length)return ''; // no Gym workout data yet → hide instead of showing samples
+  const items=lifts.map(s=>liftItem(s)).join('');
+  return '<section class="section"><div class="sectionEyebrow">training · last 90 days</div>'
+    +'<div class="ticker"><div class="tickerBadge"><span class="tickerBadgeDot"></span>lifts</div><div class="tickerViewport"><div class="tickerTrack">'+items+items+'</div></div></div></section>';
+}
+function compHtml(){
+  const c=gymComposition();
+  if(!c)return ''; // no Gym workout data yet → hide instead of showing samples
+  const u=state.units;
+  const wDisp=kgToDisplay(c.weightSlopeKgPerWeek,u);
+  const lean=c.estimatedLeanKgPerWeek==null?null:kgToDisplay(c.estimatedLeanKgPerWeek,u);
+  const fat=c.estimatedFatKgPerWeek==null?null:kgToDisplay(c.estimatedFatKgPerWeek,u);
+  function fmtKg(v){if(v==null)return '—';if(Math.abs(v)<0.02)return '±0';return (v>0?'+':'−')+Math.abs(v).toFixed(2);}
+  function fmtPct(v){if(v==null)return '—';if(Math.abs(v)<0.5)return 'flat';return (v>0?'+':'−')+Math.abs(v).toFixed(0)+'%';}
+  const pills=[
+    {label:'weight',value:fmtKg(wDisp)+' '+u+'/wk',tone:c.weightSlopeKgPerWeek>0.15?'up':c.weightSlopeKgPerWeek<-0.15?'down':'flat'},
+    {label:'lifts',value:fmtPct(c.volumeTrendPct),tone:c.volumeTrendPct==null?'flat':c.volumeTrendPct>3?'up':c.volumeTrendPct<-3?'down':'flat',preferUp:true},
+    {label:'muscle',value:fmtKg(lean)+' '+u+'/wk',tone:lean==null?'flat':lean>0.02?'up':lean<-0.02?'down':'flat',preferUp:true},
+    {label:'fat',value:fmtKg(fat)+' '+u+'/wk',tone:fat==null?'flat':fat>0.02?'down':fat<-0.02?'up':'flat'},
+  ];
+  const pillHtml=pills.map(p=>{const good=p.preferUp?'up':'down';const cls=(p.tone==='flat'||p.value.indexOf('—')>=0)?'compPillNeutral':p.tone===good?'compPillGood':'compPillBad';return '<div class="compPill '+cls+'"><span class="compPillLabel">'+p.label+'</span><span class="compPillValue">'+esc(p.value)+'</span></div>';}).join('');
+  return '<section class="section"><div class="sectionEyebrow">composition · last '+c.windowDays+' days</div>'
+    +'<div class="compCard"><div><span class="compPhaseWord">'+PHASE_LABEL[c.phase]+'</span></div><p class="compPhaseSub">'+PHASE_SUB[c.phase]+'</p>'
+    +(c.phase!=='insufficient'?'<div class="compPillRow">'+pillHtml+'</div>':'')
+    +'<p class="compCaveat">estimate · not a body-fat measurement'+(c.confidence<35?' · low data':'')+'</p></div>'
+    +'<p class="noteLine">Lifts + composition are read from your real workout logs in the Gym app.</p></section>';
+}
+
+/* ===================== Render: photos ===================== */
+function photosHtml(){
+  const count=photos.length,latestP=photos[0]||null;
+  const curWeightLabel=latest()?(fmtDisp(latest().weightKg,state.units)+' '+state.units):null;
+  let body;
+  if(!latestP){
+    body='<button class="photosEmptyTrigger" data-act="openGallery"><span class="photosTriggerIcon">◐</span><div class="photosEmptyTriggerText"><div class="photosTriggerLabel">Add your first photo</div><div class="photosTriggerCount">start a private timeline of your progress</div></div><span class="photosTriggerArrow">→</span></button>';
+  }else{
+    body='<button class="photoPreview" data-act="view" data-id="'+latestP.id+'"><img src="'+latestP.dataUrl+'" alt="latest progress photo"><div class="photoPreviewGradient"></div><div class="photoPreviewMeta"><div><div class="photoPreviewDate">'+photoDate(latestP.dateKey).toUpperCase()+'</div>'+(latestP.weightLabel?'<div class="photoPreviewWeight">'+esc(latestP.weightLabel)+'</div>':'')+'</div><span class="photoPreviewArrow">↗</span></div></button>'
+      +'<div class="photoActionsRow"><button class="photoActionBtn photoActionPrimary" data-act="openGallery">Open gallery</button><button class="photoActionBtn photoActionSecondary" data-act="compareLatest"'+(photos.length<2?' disabled':'')+'>Compare</button></div>';
+  }
+  return '<section class="section"><div class="sectionEyebrowRow"><span class="sectionEyebrow">photos'+(count>0?' · '+count:'')+'</span>'+(latestP?'<span class="sectionEyebrowMeta">latest '+photoDate(latestP.dateKey)+'</span>':'')+'</div>'+body+'</section>';
+}
+
+const THEMES=[{key:'nocturne',label:'Nocturne',swatch:'#8B7CFF'},{key:'aurora',label:'Aurora',swatch:'linear-gradient(135deg,#8B7BFF,#4FE3D0)'},{key:'daylight',label:'Daylight',swatch:'#6A45FF'}];
+let currentTheme=(function(){try{return localStorage.getItem('patron_theme')||'nocturne';}catch(e){return 'nocturne';}})();
+if(!THEMES.some(t=>t.key===currentTheme))currentTheme='nocturne';
+function applyTheme(name){if(!THEMES.some(t=>t.key===name))name='nocturne';currentTheme=name;document.documentElement.setAttribute('data-theme',name);try{localStorage.setItem('patron_theme',name);}catch(e){}render();}
+function themeSegHtml(){return '<div class="themeSeg" role="radiogroup" aria-label="Theme">'+THEMES.map(t=>'<button type="button" class="themeBtn '+(t.key===currentTheme?'themeBtnActive':'')+'" data-act="theme" data-theme="'+t.key+'" title="'+t.label+'"><span class="themeSwatch" style="background:'+t.swatch+'"></span></button>').join('')+'</div>';}
+function render(){
+  document.getElementById('app').innerHTML=
+    '<header class="header"><a class="back" href="index.html"><span class="backArrow">←</span> Liam</a>'
+    +'<div class="headerRow"><h1 class="title">Progress</h1><div class="unitSeg"><button class="unitBtn '+(state.units==='kg'?'unitBtnActive':'')+'" data-act="units" data-u="kg">kg</button><button class="unitBtn '+(state.units==='lb'?'unitBtnActive':'')+'" data-act="units" data-u="lb">lb</button></div>'+themeSegHtml()+'</div>'
+    +'<p class="subtitle">weight log · progress photos</p></header>'
+    +heroHtml()+trainingHtml()+compHtml()+photosHtml();
+  renderModals();
+  const inp=document.getElementById('wInput');if(inp&&ui.editing)inp.focus();
+}
+
+/* ===================== Modals: gallery + viewer ===================== */
+function renderModals(){
+  const root=document.getElementById('modalRoot');let html='';
+  if(ui.photosOpen){
+    const gallery=photos.slice().reverse();
+    html+='<div class="overlay"><div class="overlayInner"><div class="overlayHead"><button class="overlayBack" data-act="closeGallery">←</button><div><div class="overlayEyebrow">memory</div><h2 class="overlayTitle">Progress</h2></div></div>'
+      +'<div class="overlayActions"><button class="overlayAction overlayPrimary" data-act="addPhoto">Add photo</button></div>'
+      +(photos.length===0?'<div class="photosEmpty"><p class="photosEmptyLine"><em>The first one is the hardest.</em></p><p class="photosEmptyHint">tap add photo to start a private timeline.</p></div>'
+        :'<div class="photoGrid">'+gallery.map(p=>'<button class="photoCard" data-act="view" data-id="'+p.id+'"><img src="'+p.dataUrl+'" alt=""><div class="photoOverlay"></div><div class="photoMeta"><span class="photoDate">'+photoDate(p.dateKey)+'</span>'+(p.weightLabel?'<span class="photoWeight">'+esc(p.weightLabel)+'</span>':'')+'</div></button>').join('')+'</div>')
+      +'</div></div>';
+  }
+  if(ui.viewerId){
+    const p=photos.find(x=>x.id===ui.viewerId);
+    if(p){
+      const cmp=ui.compareId?photos.find(x=>x.id===ui.compareId):null;
+      const delLabel=ui.confirmDelete?'Confirm?':'Delete';const delCls='viewerBtn viewerDelete'+(ui.confirmDelete?' viewerConfirm':'');
+      if(cmp){
+        html+='<div class="viewer"><div class="compareStage"><div class="compareSide"><img src="'+p.dataUrl+'"><div class="compareMeta">'+photoDate(p.dateKey)+(p.weightLabel?' · '+esc(p.weightLabel):'')+'</div></div>'
+          +'<button class="compareSide compareOther" data-act="cycleCompare"><img src="'+cmp.dataUrl+'"><div class="compareMeta">'+photoDate(cmp.dateKey)+(cmp.weightLabel?' · '+esc(cmp.weightLabel):'')+'</div></button></div>'
+          +'<div class="compareHeadline">'+photoDate(p.dateKey)+' → '+photoDate(cmp.dateKey)+'</div>'
+          +'<div class="viewerActions"><button class="viewerBtn" data-act="backCompare">← Back</button><button class="viewerBtn" data-act="closeViewer">Close</button><button class="'+delCls+'" data-act="del">'+delLabel+'</button></div></div>';
+      }else{
+        html+='<div class="viewer"><div class="viewerStage"><img src="'+p.dataUrl+'"></div><div class="viewerMeta"><div class="viewerDate">'+photoDate(p.dateKey).toUpperCase()+'</div>'+(p.weightLabel?'<div class="viewerWeight">'+esc(p.weightLabel)+'</div>':'')+'</div>'
+          +'<div class="viewerActions"><button class="viewerBtn" data-act="startCompare"'+(photos.length<2?' disabled':'')+'>Compare</button><button class="viewerBtn" data-act="closeViewer">Close</button><button class="'+delCls+'" data-act="del">'+delLabel+'</button></div></div>';
+      }
+    }
+  }
+  root.innerHTML=html;
+}
+
+/* ===================== Photo add ===================== */
+const fileInput=document.getElementById('fileInput');
+fileInput.addEventListener('change',e=>{
+  const file=e.target.files&&e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async ev=>{
+    if(typeof ev.target.result!=='string')return;
+    let c=ev.target.result;try{c=await compress(ev.target.result,1080,.75);}catch(err){}
+    const curWeightLabel=latest()?(fmtDisp(latest().weightKg,state.units)+' '+state.units):null;
+    const id='p_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7);
+    const next={id,dataUrl:c,dateKey:getLocalDateKey(),weightLabel:curWeightLabel};
+    // Cloud sync on? Upload the image to Supabase Storage and keep only the URL —
+    // this is the fix for photos filling up / never sticking.
+    if(window.PatronDB&&PatronDB.isCloud()){
+      const url=await PatronDB.uploadImage('progress-photos','progress/'+id+'.jpg',c,'image/jpeg');
+      if(url){next.dataUrl=url;next.storagePath='progress/'+id+'.jpg';next.remote=true;}
+    }
+    photos=[next].concat(photos);
+    if(next.remote){savePhotos();}
+    else{ // local-only: keep base64 in this browser (with the storage-full guard)
+      try{localStorage.setItem(PHOTOS,JSON.stringify(photos));}
+      catch(err){try{const sm=await compress(ev.target.result,800,.6);next.dataUrl=sm;localStorage.setItem(PHOTOS,JSON.stringify(photos));}
+      catch(e2){photos=photos.filter(x=>x.id!==next.id);alert('This device’s storage is full — delete some older photos. (When the app is connected to the cloud, photos upload automatically and this won’t happen.)');}}}
+    render();
+  };
+  reader.readAsDataURL(file);
+  e.target.value='';
+});
+
+/* ===================== Events ===================== */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');if(!b)return;const act=b.dataset.act;if(act==='theme'){applyTheme(b.dataset.theme);return;}
+  if(act==='back'){e.preventDefault();}
+  else if(act==='units')changeUnits(b.dataset.u);
+  else if(act==='edit')startEdit();
+  else if(act==='openGallery'){ui.photosOpen=true;render();}
+  else if(act==='closeGallery'){ui.photosOpen=false;render();}
+  else if(act==='addPhoto')fileInput.click();
+  else if(act==='view'){ui.viewerId=b.dataset.id;ui.compareId=null;ui.confirmDelete=false;render();}
+  else if(act==='closeViewer'){ui.viewerId=null;ui.compareId=null;ui.confirmDelete=false;render();}
+  else if(act==='startCompare'){const others=photos.filter(p=>p.id!==ui.viewerId);if(others.length){ui.compareId=others[0].id;ui.confirmDelete=false;render();}}
+  else if(act==='backCompare'){ui.compareId=null;ui.confirmDelete=false;render();}
+  else if(act==='cycleCompare'){const others=photos.filter(p=>p.id!==ui.viewerId);if(others.length){const idx=others.findIndex(p=>p.id===ui.compareId);ui.compareId=others[(idx+1)%others.length].id;render();}}
+  else if(act==='compareLatest'){if(photos.length>=2){ui.viewerId=photos[0].id;ui.compareId=photos.find(p=>p.id!==photos[0].id).id;ui.confirmDelete=false;render();}}
+  else if(act==='del'){if(!ui.confirmDelete){ui.confirmDelete=true;render();}else{const victim=photos.find(p=>p.id===ui.viewerId);photos=photos.filter(p=>p.id!==ui.viewerId);if(victim&&victim.storagePath&&window.PatronDB&&PatronDB.deleteImage)PatronDB.deleteImage('progress-photos',victim.storagePath);savePhotos();ui.viewerId=null;ui.compareId=null;ui.confirmDelete=false;render();}}
+});
+document.addEventListener('submit',e=>{const f=e.target.closest('[data-act="saveForm"]');if(f){e.preventDefault();const inp=document.getElementById('wInput');if(inp)ui.draft=inp.value;saveWeight();}});
+document.addEventListener('input',e=>{if(e.target.id==='wInput'){ui.draft=e.target.value;ui.error=null;}});
+document.addEventListener('keydown',e=>{if(e.target.id==='wInput'&&e.key==='Escape'){ui.editing=false;ui.error=null;render();}});
+
+applyTheme(currentTheme);
+
+/* ===================== Cloud hydrate (if Supabase keys are set) =====================
+ * Render locally first (above), then pull cloud copies and re-render. If the cloud
+ * is empty (just connected), seed it with what's already on this device. */
+(async function cloudHydrate(){
+  if(!window.PatronDB||!PatronDB.isCloud())return;
+  try{
+    const cs=await PatronDB.get('patron-progress');
+    if(cs&&Array.isArray(cs.entries)){state={units:cs.units||state.units,entries:cs.entries};try{localStorage.setItem(LS,JSON.stringify(state));}catch{}}
+    else{PatronDB.set('patron-progress',{units:state.units,entries:state.entries});} // seed cloud from this device
+    const cp=await PatronDB.get('patron-progress-photos');
+    if(Array.isArray(cp)){photos=cp;try{localStorage.setItem(PHOTOS,JSON.stringify(photos));}catch{}}
+    else if(photos.length){PatronDB.set('patron-progress-photos',photos);}
+    render();
+  }catch(_){}
+})();
+</script>
+<script src="brand.js?v=16"></script>
+</body>
+</html>

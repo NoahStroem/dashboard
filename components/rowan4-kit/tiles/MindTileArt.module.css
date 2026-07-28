@@ -1,0 +1,53 @@
+/*
+ * Mind tile background — "Sonar radar". A self-contained radar disc: concentric
+ * rings + crosshair + a centre dot in a rimmed disc with an inner vignette.
+ *
+ * Behaviour (driven by MindTileArt.tsx): the radar is IDLE almost all the time.
+ * Every 25-45s (random, rare) it does ONE single sweep spin, then goes quiet
+ * again. No blips/dots — just the calm scope and the occasional sweep. Minimal.
+ */
+
+.root { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+.base { position:absolute; inset:0; background:radial-gradient(circle 60% at 50% 47%, #0c1813 0%, #081009 60%, #04080a 100%); }
+
+.radar {
+  position:absolute; left:50%; top:46%; transform:translate(-50%,-50%);
+  /* Size the disc off the tile's HEIGHT (the limiting dimension — the Mind
+     tile is wider than tall, so a width-based square overflowed top/bottom).
+     height-driven + aspect-ratio keeps it a circle; max-width caps it on
+     narrow/stacked layouts. So it always fits the frame, any tile shape. */
+  height:68%; width:auto; aspect-ratio:1; max-width:80%;
+  border-radius:50%; overflow:hidden;
+  border:1px solid rgba(110,231,183,.16); box-shadow:0 0 22px rgba(110,231,183,.07) inset;
+}
+.radar svg { position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
+.rings circle { fill:none; stroke:rgba(110,231,183,.22); stroke-width:.6; vector-effect:non-scaling-stroke; }
+.cross line { stroke:rgba(110,231,183,.14); stroke-width:.6; vector-effect:non-scaling-stroke; }
+
+/* sweep wedge + leading arm — share .spinning, added by JS for one rotation */
+.sweep {
+  position:absolute; inset:0; transform-origin:50% 50%; opacity:0;
+  background:conic-gradient(from 0deg at 50% 50%,
+    rgba(110,231,183,.30) 0deg, rgba(110,231,183,.10) 16deg, rgba(110,231,183,0) 52deg, transparent 360deg);
+}
+.arm {
+  position:absolute; left:50%; top:0; width:1px; height:50%; transform-origin:50% 100%; opacity:0;
+  background:linear-gradient(to top, rgba(110,231,183,.7), transparent);
+}
+/* one full revolution, ~2.4s, soft ease in/out at the ends */
+.spinning { animation: mindSweep 2.4s cubic-bezier(0.4,0,0.4,1) forwards; }
+@keyframes mindSweep {
+  0%   { transform:rotate(0deg);   opacity:0 }
+  8%   { opacity:1 }
+  92%  { opacity:1 }
+  100% { transform:rotate(360deg); opacity:0 }
+}
+
+.centerDot {
+  position:absolute; left:50%; top:50%; width:5px; height:5px; transform:translate(-50%,-50%);
+  border-radius:50%; background:#A7F3D0; box-shadow:0 0 8px rgba(167,243,208,.9);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sweep, .arm { animation:none; opacity:0 }
+}

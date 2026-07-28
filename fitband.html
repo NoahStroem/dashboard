@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#000000" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Liam" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="icon" type="image/svg+xml" href="icon.svg" />
+<title>Fitness Band · Liam</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<!-- The Rowan4 kit: tokens, grain, canvas + the atmospheric backdrop -->
+<link rel="stylesheet" href="components/rowan4-kit/rowan4-kit.css" />
+
+<style>
+:root{ --vk-font-serif:'Instrument Serif'; --en-mono:'JetBrains Mono',ui-monospace,monospace; }
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; }
+body{ background:var(--vk-bg); color:var(--vk-fg); font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; -webkit-font-smoothing:antialiased; }
+
+/* ---------- shared shell (matches Food & Water / Enhancers) ---------- */
+.en-shell{ max-width:760px; gap:var(--vk-space-6); }
+.en-header{ flex-direction:row; align-items:flex-end; justify-content:space-between; gap:var(--vk-space-4); flex-wrap:wrap; }
+.en-header .vk-date{ margin-top:6px; }
+.en-back{ font-family:var(--en-mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--vk-mint); text-decoration:none; border:1px solid var(--vk-border-strong); border-radius:var(--vk-radius-pill); padding:8px 15px; transition:background var(--vk-duration) var(--vk-ease), border-color var(--vk-duration) var(--vk-ease); white-space:nowrap; }
+.en-back:hover{ background:rgba(110,231,183,.08); border-color:rgba(110,231,183,.4); }
+
+.en-tabs{ display:inline-flex; gap:4px; padding:4px; border:1px solid var(--vk-border); border-radius:var(--vk-radius-pill); background:var(--vk-card); align-self:flex-start; opacity:0; animation:vk-fade-up 700ms var(--vk-ease-premium) .1s forwards; }
+.en-tab{ appearance:none; background:transparent; border:0; cursor:pointer; color:var(--vk-muted); font-family:var(--en-mono); font-size:11.5px; letter-spacing:.12em; text-transform:uppercase; padding:9px 18px; border-radius:var(--vk-radius-pill); transition:color var(--vk-duration) var(--vk-ease), background var(--vk-duration) var(--vk-ease); }
+.en-tab:hover{ color:var(--vk-muted-strong); }
+.en-tab.on{ background:var(--vk-mint); color:#04130c; font-weight:600; }
+
+#panel{ display:flex; flex-direction:column; }
+.fb-band, .fb-rec{ display:flex; flex-direction:column; }
+.fb-band > section, .fb-rec > section{ opacity:0; transform:translateY(10px); animation:vk-tile-in 600ms var(--vk-ease-premium) forwards; margin-bottom:14px; }
+.fb-band > section:nth-child(1),.fb-rec > section:nth-child(1){ animation-delay:60ms; }
+.fb-band > section:nth-child(2),.fb-rec > section:nth-child(2){ animation-delay:130ms; }
+.fb-band > section:nth-child(3),.fb-rec > section:nth-child(3){ animation-delay:200ms; }
+.fb-band > section:nth-child(4),.fb-rec > section:nth-child(4){ animation-delay:270ms; }
+.fb-band > section:nth-child(5){ animation-delay:340ms; }
+
+.en-card{ border:1px solid var(--vk-border); border-radius:18px; background:var(--vk-card); padding:20px; }
+.en-eyebrow{ font-family:var(--en-mono); font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--vk-mint); margin:0 0 14px; display:flex; align-items:center; gap:8px; }
+.en-eyebrow::before{ content:''; width:20px; height:1px; background:linear-gradient(90deg,var(--vk-mint),transparent); }
+.en-input{ width:100%; appearance:none; background:rgba(255,255,255,.04); border:1px solid var(--vk-border-strong); border-radius:13px; color:var(--vk-fg); font-family:inherit; font-size:15px; padding:12px 14px; outline:none; transition:border-color var(--vk-duration) var(--vk-ease); }
+.en-input:focus{ border-color:var(--vk-mint); box-shadow:0 0 0 3px rgba(110,231,183,.1); }
+.en-btn{ appearance:none; cursor:pointer; border:0; border-radius:13px; padding:12px 18px; font-family:var(--en-mono); font-size:12px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:#04130c; background:var(--vk-mint); transition:filter var(--vk-duration) var(--vk-ease); }
+.en-btn:hover{ filter:brightness(1.08); }
+.en-btn:disabled{ opacity:.45; cursor:not-allowed; }
+.en-ghost{ appearance:none; cursor:pointer; background:rgba(110,231,183,.06); border:1px solid var(--vk-border-strong); border-radius:var(--vk-radius-pill); color:var(--vk-mint); font-family:var(--en-mono); font-size:11px; letter-spacing:.06em; padding:8px 14px; transition:background var(--vk-duration) var(--vk-ease); }
+.en-ghost:hover{ background:rgba(110,231,183,.13); }
+.en-link{ appearance:none; cursor:pointer; background:transparent; border:0; color:var(--vk-muted-strong); font-family:var(--en-mono); font-size:11px; letter-spacing:.06em; padding:8px 10px; }
+.en-link:hover{ color:var(--vk-fg); }
+.en-muted{ font-size:13px; color:var(--vk-muted); padding:8px 2px; line-height:1.5; }
+.en-foot{ text-align:center; font-family:var(--en-mono); font-size:10px; color:var(--vk-muted); margin-top:4px; opacity:.7; line-height:1.6; }
+
+/* ---------- source segment (Whoop / Fitbit / Apple Health) ---------- */
+.srcSeg{ display:inline-flex; flex-wrap:wrap; align-self:flex-start; background:var(--vk-card); border:1px solid var(--vk-border); border-radius:var(--vk-radius-pill); padding:3px; gap:2px; }
+.srcTab{ appearance:none; background:transparent; border:0; color:var(--vk-muted); font-family:var(--en-mono); font-size:11px; letter-spacing:.06em; font-weight:600; padding:8px 14px; border-radius:var(--vk-radius-pill); cursor:pointer; display:inline-flex; align-items:center; gap:7px; transition:background var(--vk-duration) var(--vk-ease-premium), color var(--vk-duration) var(--vk-ease-premium); }
+.srcTab:hover{ color:var(--vk-muted-strong); }
+.srcTabActive,.srcTabActive:hover{ background:rgba(110,231,183,.13); color:var(--vk-fg); }
+
+/* ---------- connect / manual-entry panel ---------- */
+.connectIntro{ font-size:16px; line-height:1.5; color:var(--vk-fg); margin:0 0 6px; }
+.connectIntro em{ font-style:normal; color:var(--vk-mint); font-weight:600; }
+.connectSub{ font-size:12.5px; color:var(--vk-muted); margin:0 0 14px; line-height:1.5; }
+.connectCta{ align-self:flex-start; margin-top:6px; text-decoration:none; display:inline-flex; }
+.setupNote{ margin:14px 0 0; padding:10px 14px; border-left:2px solid var(--vk-border-strong); background:rgba(245,158,11,.07); border-radius:0 8px 8px 0; font-size:12px; line-height:1.55; color:var(--vk-muted-strong); }
+.setupNote strong{ color:var(--vk-amber); font-weight:600; }
+.setupNote em{ font-style:italic; color:var(--vk-fg); }
+.statusChip{ display:inline-flex; align-items:center; gap:8px; margin:0 0 14px; padding:6px 13px; border:1px solid var(--vk-border-strong); border-radius:var(--vk-radius-pill); background:rgba(110,231,183,.08); color:var(--vk-mint); font-family:var(--en-mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; }
+.statusChip.sample{ border-style:dashed; color:var(--vk-amber); background:rgba(245,158,11,.08); }
+.statusChip .pulse{ width:6px; height:6px; border-radius:50%; background:currentColor; box-shadow:0 0 8px currentColor; animation:fbPulse 1.6s ease-in-out infinite; }
+@keyframes fbPulse{ 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.35;transform:scale(.8)} }
+
+.fieldGrid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.field{ display:flex; flex-direction:column; gap:6px; }
+.fieldFull{ grid-column:1 / -1; }
+.fieldLabel{ font-family:var(--en-mono); font-size:10px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--vk-muted-strong); }
+.formActions{ display:flex; align-items:center; justify-content:flex-end; gap:10px; margin-top:14px; }
+
+/* ---------- live ticker ---------- */
+.ticker{ display:flex; align-items:center; gap:12px; padding:8px 12px; border:1px solid var(--vk-border); border-radius:var(--vk-radius-pill); background:var(--vk-card); overflow:hidden; }
+.tickerEyebrow{ display:inline-flex; align-items:center; gap:8px; font-family:var(--en-mono); font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--vk-mint); white-space:nowrap; padding-right:12px; border-right:1px solid var(--vk-border); flex-shrink:0; }
+.tickerPulse{ width:6px; height:6px; border-radius:50%; background:var(--vk-mint); box-shadow:0 0 8px var(--vk-mint-glow); animation:fbPulse 1.6s ease-in-out infinite; }
+.tickerScroll{ flex:1; overflow:hidden; position:relative; min-width:0; -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 28px,#000 calc(100% - 28px),transparent 100%); mask-image:linear-gradient(90deg,transparent 0,#000 28px,#000 calc(100% - 28px),transparent 100%); }
+.tickerTrack{ display:inline-flex; align-items:center; gap:32px; animation:tickerScroll 38s linear infinite; white-space:nowrap; padding-left:16px; will-change:transform; }
+@keyframes tickerScroll{ from{transform:translateX(0)} to{transform:translateX(-50%)} }
+.ticker:hover .tickerTrack{ animation-play-state:paused; }
+.tickerCell{ display:inline-flex; align-items:center; gap:8px; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.tickerCell[data-tone="good"]{ color:var(--vk-mint); }
+.tickerCell[data-tone="watch"]{ color:var(--vk-amber); }
+.tickerCell[data-tone="urgent"]{ color:var(--vk-red); }
+.tickerSymbol{ font-family:var(--en-mono); font-size:10px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--vk-muted-strong); }
+.tickerValue{ font-family:var(--en-mono); font-size:13px; font-weight:600; color:var(--vk-fg); display:inline-flex; align-items:baseline; gap:2px; }
+.tickerUnit{ font-size:9px; font-weight:500; color:var(--vk-muted); }
+.tickerSpark{ width:56px; height:16px; flex-shrink:0; color:var(--vk-mint); }
+.tickerSpark[data-tone="watch"]{ color:var(--vk-amber); }
+.tickerSpark[data-tone="urgent"]{ color:var(--vk-red); }
+.tickerDelta{ font-family:var(--en-mono); font-size:11px; font-weight:600; }
+
+/* ---------- recovery hero (Band tab) ---------- */
+.heroCard{ display:grid; grid-template-columns:minmax(240px,320px) 1fr; gap:24px; align-items:center; }
+@media (max-width:720px){ .heroCard{ grid-template-columns:1fr; gap:18px; } }
+.recoveryWrap{ display:flex; justify-content:center; }
+.recoveryRing{ position:relative; width:clamp(200px,30vw,260px); aspect-ratio:1; display:grid; place-items:center; }
+.ringSvg{ position:absolute; inset:0; width:100%; height:100%; transform:rotate(-90deg); }
+.ringTrack{ fill:none; stroke:rgba(255,255,255,.07); stroke-width:8; }
+.ringFill{ fill:none; stroke:currentColor; stroke-width:8; stroke-linecap:round; transition:stroke-dashoffset 720ms var(--vk-ease-premium); filter:drop-shadow(0 0 12px currentColor); }
+.recoveryRing[data-tone="good"] .ringFill{ color:var(--vk-mint); }
+.recoveryRing[data-tone="watch"] .ringFill{ color:var(--vk-amber); }
+.recoveryRing[data-tone="low"] .ringFill{ color:var(--vk-red); }
+.recoveryRing[data-tone="muted"] .ringFill{ color:var(--vk-muted); }
+.recoveryInner{ position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:2px; }
+.recoveryValue{ font-family:var(--vk-font-serif),Georgia,serif; font-weight:400; font-size:clamp(3.6rem,7vw,5rem); line-height:1; letter-spacing:-0.03em; color:var(--vk-fg); font-variant-numeric:tabular-nums; }
+.recoveryUnit{ font-family:var(--vk-font-serif),serif; font-size:var(--text-xl,1.375rem); color:var(--vk-muted-strong); margin-top:-6px; }
+.recoveryLabel{ margin-top:8px; font-family:var(--en-mono); font-size:10px; font-weight:600; letter-spacing:.2em; text-transform:uppercase; color:var(--vk-muted-strong); }
+.recoveryTier{ margin-top:3px; font-family:var(--vk-font-serif),serif; font-size:1.1rem; color:var(--vk-fg); }
+
+.trendWrap{ display:flex; flex-direction:column; gap:12px; }
+.trendHead{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; }
+.serifTitle{ font-family:var(--vk-font-serif),serif; font-size:1.25rem; color:var(--vk-fg); letter-spacing:-0.01em; }
+.trendDelta{ font-family:var(--en-mono); font-size:12px; font-weight:600; font-variant-numeric:tabular-nums; }
+.trendUp{ color:var(--vk-mint); } .trendDown{ color:var(--vk-amber); }
+.trendSvg{ width:100%; height:clamp(64px,11vw,84px); overflow:visible; }
+.trendLine{ fill:none; stroke:var(--vk-mint); stroke-width:1.6; stroke-linejoin:round; stroke-linecap:round; filter:drop-shadow(0 0 5px var(--vk-mint-glow)); }
+.trendArea{ stroke:none; }
+.trendDot{ fill:var(--vk-mint); opacity:.4; }
+.trendDotLast{ fill:var(--vk-mint); filter:drop-shadow(0 0 5px var(--vk-mint)); }
+
+/* ---------- stat grid (Band tab) ---------- */
+.grid{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
+@media (max-width:620px){ .grid{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
+.stat{ display:flex; flex-direction:column; gap:8px; padding:16px; border:1px solid var(--vk-border); border-radius:13px; background:var(--vk-card-elevated); transition:border-color var(--vk-duration) var(--vk-ease), transform var(--vk-duration) var(--vk-ease); }
+.stat:hover{ border-color:var(--vk-border-strong); transform:translateY(-1px); }
+.statLabel{ font-family:var(--en-mono); font-size:10px; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:var(--vk-muted-strong); }
+.statValueRow{ display:flex; align-items:baseline; gap:6px; }
+.statValue{ font-family:var(--vk-font-serif),serif; font-size:2.1rem; line-height:1; letter-spacing:-0.02em; color:var(--vk-fg); font-variant-numeric:tabular-nums; }
+.statUnit{ font-family:var(--vk-font-serif),serif; font-size:1rem; color:var(--vk-muted-strong); }
+.statSub{ font-size:12px; color:var(--vk-muted); }
+.statDelta{ font-family:var(--en-mono); font-size:11px; font-weight:600; font-variant-numeric:tabular-nums; padding:3px 9px; border-radius:var(--vk-radius-pill); align-self:flex-start; border:1px solid var(--vk-border); }
+.statDelta[data-tone="good"]{ color:var(--vk-mint); border-color:rgba(110,231,183,.26); }
+.statDelta[data-tone="watch"]{ color:var(--vk-amber); border-color:rgba(245,158,11,.26); }
+.statDelta[data-tone="low"]{ color:var(--vk-red); border-color:rgba(239,68,68,.26); }
+.statDelta[data-tone="neutral"]{ color:var(--vk-muted-strong); }
+
+/* ---------- sleep debt + coach ---------- */
+.cardHead{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:16px; }
+.debtTotal{ font-family:var(--vk-font-serif),serif; font-size:1.2rem; font-variant-numeric:tabular-nums; }
+.debtTotal em{ font-family:var(--en-mono); font-style:normal; font-size:11px; letter-spacing:.06em; color:var(--vk-muted); margin-left:6px; }
+.debtTotal[data-tone="watch"]{ color:var(--vk-red); }
+.debtTotal[data-tone="good"]{ color:var(--vk-mint); }
+.debtBars{ display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:8px; }
+.debtCol{ display:flex; flex-direction:column; align-items:center; gap:8px; }
+.debtTrack{ position:relative; width:100%; height:96px; display:flex; align-items:center; }
+.debtBaseline{ position:absolute; left:0; right:0; top:50%; height:1px; background:var(--vk-border-strong); z-index:0; }
+.debtBarSurplus,.debtBarDeficit{ position:absolute; left:18%; right:18%; border-radius:4px 4px 0 0; z-index:1; }
+.debtBarSurplus{ bottom:50%; background:linear-gradient(180deg,var(--vk-mint) 0%,rgba(110,231,183,.12) 100%); box-shadow:0 0 8px -2px rgba(110,231,183,.26); }
+.debtBarDeficit{ top:50%; border-radius:0 0 4px 4px; background:linear-gradient(180deg,var(--vk-red) 0%,rgba(239,68,68,.12) 100%); }
+.debtLabel{ font-family:var(--en-mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--vk-muted); }
+
+.coachList{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:16px; }
+.coachList li{ display:grid; grid-template-columns:auto 1fr; gap:12px; align-items:flex-start; padding-left:12px; border-left:1px solid var(--vk-border); transition:border-color var(--vk-duration) var(--vk-ease); }
+.coachList li:hover{ border-left-color:var(--vk-mint); }
+.coachMark{ color:var(--vk-mint); font-size:1.1rem; line-height:1.2; filter:drop-shadow(0 0 5px var(--vk-mint-glow)); }
+.coachList strong{ display:block; font-weight:600; color:var(--vk-fg); margin-bottom:4px; font-size:13.5px; line-height:1.4; }
+.coachList li span:not(.coachMark){ color:var(--vk-muted-strong); font-size:13.5px; line-height:1.55; }
+
+/* ---------- footer ---------- */
+.footer{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; padding-top:4px; }
+.legend{ display:flex; align-items:center; gap:14px; font-family:var(--en-mono); font-size:11px; color:var(--vk-muted-strong); letter-spacing:.06em; }
+.legendDot{ display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; vertical-align:middle; }
+.legendDot[data-tone="good"]{ background:var(--vk-mint); box-shadow:0 0 8px rgba(110,231,183,.4); }
+.legendDot[data-tone="watch"]{ background:var(--vk-amber); }
+.legendDot[data-tone="low"]{ background:var(--vk-red); }
+.footerActions{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.synced{ font-family:var(--en-mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--vk-muted); }
+@media (max-width:560px){ .footer{ flex-direction:column; align-items:flex-start; } }
+
+/* ---------- Recovery tab (rc-*) ---------- */
+.rc-hero{ display:flex; align-items:center; justify-content:center; gap:32px; flex-wrap:wrap; }
+.rc-ringWrap{ display:flex; flex-direction:column; align-items:center; gap:10px; }
+.rc-ring{ position:relative; width:150px; height:150px; display:grid; place-items:center; flex-shrink:0; overflow:visible; }
+.rc-ring[data-tone="good"]{ color:var(--vk-mint); } .rc-ring[data-tone="watch"]{ color:var(--vk-amber); } .rc-ring[data-tone="low"]{ color:var(--vk-red); } .rc-ring[data-tone="muted"]{ color:var(--vk-muted); }
+.rc-ring::before{ content:''; position:absolute; inset:-18px; border-radius:50%; background:radial-gradient(closest-side,currentColor,transparent 70%); opacity:.3; filter:blur(14px); pointer-events:none; z-index:0; animation:rcPulse 3.6s var(--vk-ease) infinite; }
+.rc-ring[data-tone="muted"]::before{ opacity:.1; animation:none; }
+@keyframes rcPulse{ 0%,100%{opacity:.24} 50%{opacity:.42} }
+.rc-ring svg{ position:absolute; inset:0; transform:rotate(-90deg); overflow:visible; z-index:1; }
+.rc-track{ fill:none; stroke:rgba(255,255,255,.07); stroke-width:10; }
+.rc-fill{ fill:none; stroke:currentColor; stroke-width:10; stroke-linecap:round; transition:stroke-dashoffset 800ms var(--vk-ease-premium); filter:drop-shadow(0 0 4px currentColor) drop-shadow(0 0 13px currentColor); }
+.rc-inner{ position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; justify-content:center; max-width:120px; }
+.rc-num{ color:var(--vk-fg); font-family:var(--vk-font-serif),serif; font-size:2.6rem; line-height:1; font-variant-numeric:tabular-nums; }
+.rc-num small{ font-size:1.1rem; color:var(--vk-muted-strong); }
+.rc-cap{ font-family:var(--en-mono); font-size:8px; letter-spacing:.1em; text-transform:uppercase; color:var(--vk-muted); margin-top:5px; white-space:nowrap; }
+.rc-sub{ font-family:var(--vk-font-serif),serif; font-size:1.15rem; font-variant-numeric:tabular-nums; color:var(--vk-fg); }
+.rc-status{ text-align:center; margin-top:20px; }
+.rc-word{ font-family:var(--vk-font-serif),serif; font-size:1.5rem; }
+.rc-word[data-tone="good"]{ color:var(--vk-mint); } .rc-word[data-tone="watch"]{ color:var(--vk-amber); } .rc-word[data-tone="low"]{ color:var(--vk-red); }
+.rc-line{ font-size:14px; color:var(--vk-muted-strong); line-height:1.5; margin:6px auto 0; max-width:44ch; }
+.rc-statRow{ display:flex; gap:10px; flex-wrap:wrap; margin-top:20px; }
+.rc-stat{ flex:1; min-width:96px; background:var(--vk-card-elevated); border:1px solid var(--vk-border); border-radius:13px; padding:12px 14px; }
+.rc-statLabel{ font-family:var(--en-mono); font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:var(--vk-muted); }
+.rc-statVal{ font-family:var(--vk-font-serif),serif; font-size:1.5rem; margin-top:4px; font-variant-numeric:tabular-nums; }
+.rc-statVal small{ font-size:11px; color:var(--vk-muted); font-family:'Inter',sans-serif; }
+.rc-srcBadge{ float:right; font-family:var(--en-mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase; padding:5px 11px; border-radius:var(--vk-radius-pill); border:1px solid var(--vk-border); background:var(--vk-card); color:var(--vk-muted-strong); }
+.rc-chartHead{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.rc-seg{ display:inline-flex; background:var(--vk-card); border:1px solid var(--vk-border); border-radius:var(--vk-radius-pill); padding:3px; gap:2px; }
+.rc-segBtn{ appearance:none; background:transparent; border:0; color:var(--vk-muted); font-family:var(--en-mono); font-size:10px; letter-spacing:.08em; padding:6px 12px; border-radius:var(--vk-radius-pill); cursor:pointer; }
+.rc-segBtn.on{ background:rgba(110,231,183,.13); color:var(--vk-mint); }
+.rc-chart{ width:100%; height:130px; display:block; overflow:visible; margin-top:16px; }
+.rc-legend{ display:flex; gap:16px; margin-top:8px; }
+.rc-legItem{ display:inline-flex; align-items:center; gap:6px; font-family:var(--en-mono); font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:var(--vk-muted); }
+.rc-legDot{ width:12px; height:3px; border-radius:2px; }
+.rc-tip{ display:flex; gap:12px; padding:13px 14px; border-radius:13px; background:var(--vk-card-elevated); border:1px solid var(--vk-border); margin-bottom:10px; }
+.rc-tip:last-child{ margin-bottom:0; }
+.rc-tipIcon{ font-size:18px; flex-shrink:0; }
+.rc-tipText{ font-size:13.5px; line-height:1.5; color:var(--vk-muted-strong); }
+.rc-tipText b{ color:var(--vk-fg); }
+.rc-note{ font-size:11px; color:var(--vk-muted); font-style:italic; margin-top:12px; }
+.rc-empty{ text-align:center; padding:24px 16px; }
+.rc-emptyTitle{ font-family:var(--vk-font-serif),serif; font-size:1.3rem; }
+.rc-emptyBody{ font-size:13.5px; color:var(--vk-muted-strong); line-height:1.55; margin-top:8px; }
+
+@media (prefers-reduced-motion:reduce){
+  .en-tabs,.fb-band>section,.fb-rec>section{ animation:none !important; opacity:1 !important; transform:none !important; }
+  .ringFill,.rc-fill,.trendLine,.tickerTrack,.tickerPulse,.statusChip .pulse,.rc-ring::before{ animation:none !important; transition:none !important; }
+}
+</style>
+</head>
+<body class="vk-grain">
+
+<div class="vk-atmosphere" aria-hidden="true"></div>
+<div class="vk-mountains" aria-hidden="true">
+  <svg viewBox="0 0 1600 420" preserveAspectRatio="none">
+    <defs>
+      <linearGradient id="vk-mt-far" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#0d1a17" stop-opacity="0" /><stop offset="55%" stop-color="#0d1a17" stop-opacity=".55" /><stop offset="100%" stop-color="#0d1a17" stop-opacity=".95" />
+      </linearGradient>
+      <linearGradient id="vk-mt-near" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#050a09" stop-opacity=".4" /><stop offset="60%" stop-color="#050a09" stop-opacity=".95" /><stop offset="100%" stop-color="#050a09" stop-opacity="1" />
+      </linearGradient>
+    </defs>
+    <path d="M0,300 L120,230 L210,260 L320,180 L430,220 L560,150 L680,210 L820,170 L960,220 L1100,180 L1240,240 L1380,200 L1500,250 L1600,220 L1600,420 L0,420 Z" fill="url(#vk-mt-far)" />
+    <path d="M0,360 L100,320 L220,340 L340,290 L460,330 L590,300 L720,340 L860,310 L1000,350 L1140,310 L1280,355 L1420,320 L1540,360 L1600,340 L1600,420 L0,420 Z" fill="url(#vk-mt-near)" />
+  </svg>
+</div>
+<div class="vk-particles" id="fbParticles" aria-hidden="true"></div>
+
+<main class="vk-page">
+  <div class="vk-shell en-shell">
+    <header class="vk-header en-header">
+      <div>
+        <h1 class="vk-greeting">Fitness <span class="vk-greeting-name">band</span></h1>
+        <p class="vk-date">recovery · sleep · strain · trends</p>
+      </div>
+      <a class="en-back" href="index.html">← Liam</a>
+    </header>
+
+    <nav class="en-tabs" id="fbTabs" role="tablist">
+      <button class="en-tab" data-tab="band" role="tab">Band</button>
+      <button class="en-tab" data-tab="recovery"  role="tab">Recovery</button>
+    </nav>
+
+    <div id="panel"></div>
+  </div>
+</main>
+
+<script>
+/* =====================================================================
+ * FITNESS BAND — Whoop/Fitbit/Apple-Watch dashboard (the old "Fitness
+ * Band" page) + Recovery trends (the old "Recovery" page) merged into
+ * one Rowan4-kit page with two tabs. Same localStorage keys as before:
+ *   patron_health_v1 (suite vitals) · patron_whoop_data_v1 ·
+ *   recovery_standalone_v1 (trend history) · whoop_standalone_connected_v1
+ * ===================================================================== */
+(function(){
+'use strict';
+
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function readLS(k){ try{ const r=localStorage.getItem(k); return r?JSON.parse(r):null; }catch(e){ return null; } }
+const HEALTH_KEY = 'patron_health_v1';
+const WHOOP_SHARE_KEY = 'patron_whoop_data_v1';
+const SLEEP_TARGET = 8;
+
+let activeTab='band';
+const panel=document.getElementById('panel');
+function renderPanel(){
+  const active=document.activeElement; const aid=active?active.id:null;
+  const caret=(active&&typeof active.selectionStart==='number')?active.selectionStart:null;
+  panel.innerHTML=MODULES[activeTab].html();
+  if(MODULES[activeTab].after)MODULES[activeTab].after();
+  if(aid){ const el=document.getElementById(aid); if(el){ try{ el.focus(); if(caret!=null&&el.setSelectionRange)el.setSelectionRange(caret,caret); }catch(e){} } }
+}
+
+/* =====================================================================
+ * MODULE: BAND — sources (Whoop / Fitbit / Apple Health) + today's
+ * dashboard (recovery hero, stats, sleep debt, coach, ticker).
+ * Ported from the standalone whoop.html, restyled to the Rowan4 kit.
+ * ===================================================================== */
+const BAND=(function(){
+  const SAMPLE = {
+    date:'today', recovery:92, hrv:218, rhr:32, sleepPerf:85, sleepHours:7+40/60, strain:4.0,
+    hrvBaseline:null, rhrBaseline:null, sleepPerfBaseline:null, strainWeeklyAvg:7.8, hrvAnomalous:true,
+    recoveryTrend:[78,92],
+    sleepDebt7d:[{day:'Sun',hours:6.7},{day:'Tue',hours:7+40/60}],
+    sleepTargetHours:SLEEP_TARGET, vitalityScore:73, vitalityTier:'Solid', lastSyncedMinutes:12, daysAvailable:2,
+  };
+
+  function recoveryTone(r){ if(r==null)return 'muted'; if(r>=67)return 'good'; if(r>=34)return 'watch'; return 'low'; }
+  function formatHM(h){ if(h==null)return '—'; const hh=Math.floor(h),mm=Math.round((h-hh)*60); return hh+'h '+String(mm).padStart(2,'0')+'m'; }
+  function formatDebt(minutes){ const sign=minutes<0?'-':'+'; const abs=Math.abs(minutes); const h=Math.floor(abs/60); const m=abs%60; return sign+h+'h '+String(m).padStart(2,'0')+'m'; }
+
+  /* ---- ticker ---- */
+  function buildItems(d){
+    const items=[];
+    if(d.recovery!=null){ const trend=d.recoveryTrend.length>=2?d.recoveryTrend:[d.recovery,d.recovery]; const prior=trend.length>1?trend.slice(0,-1).reduce((a,b)=>a+b,0)/(trend.length-1):d.recovery; const delta=Math.round(d.recovery-prior); const tone=d.recovery>=67?'good':d.recovery>=34?'watch':'urgent'; items.push({symbol:'REC',value:String(Math.round(d.recovery)),unit:'%',spark:trend,delta,deltaUnit:'%',tone}); }
+    if(d.hrv!=null){ const baseline=d.hrvBaseline!=null?d.hrvBaseline:d.hrv; const delta=(d.hrvBaseline!=null&&!d.hrvAnomalous)?Math.round(d.hrv-d.hrvBaseline):null; const tone=d.hrvAnomalous?'urgent':delta==null?'watch':delta>=-2?'good':delta>=-8?'watch':'urgent'; items.push({symbol:'HRV',value:String(Math.round(d.hrv)),unit:'ms',spark:[baseline,d.hrv],delta,deltaUnit:'ms',tone}); }
+    if(d.rhr!=null){ const baseline=d.rhrBaseline!=null?d.rhrBaseline:d.rhr; const delta=d.rhrBaseline!=null?Math.round(d.rhr-d.rhrBaseline):null; const tone=delta==null?'watch':delta<=0?'good':delta<=3?'watch':'urgent'; items.push({symbol:'RHR',value:String(Math.round(d.rhr)),unit:'bpm',spark:[baseline,d.rhr],delta,deltaUnit:'bpm',inverse:true,tone}); }
+    if(d.sleepHours!=null){ const spark=d.sleepDebt7d.length>=2?d.sleepDebt7d.map(n=>n.hours):[d.sleepTargetHours,d.sleepHours]; const delta=Math.round((d.sleepHours-d.sleepTargetHours)*10)/10; const tone=d.sleepHours>=d.sleepTargetHours-0.5?'good':d.sleepHours>=d.sleepTargetHours-1.5?'watch':'urgent'; const h=Math.floor(d.sleepHours); const m=Math.round((d.sleepHours-h)*60); items.push({symbol:'SLP',value:h+'h'+String(m).padStart(2,'0'),unit:'',spark,delta,deltaUnit:'h',tone}); }
+    if(d.strain!=null){ const baseline=d.strainWeeklyAvg!=null?d.strainWeeklyAvg:d.strain; const delta=d.strainWeeklyAvg!=null?Math.round((d.strain-d.strainWeeklyAvg)*10)/10:null; const tone=delta!=null&&delta>2?'watch':'good'; items.push({symbol:'STR',value:d.strain.toFixed(1),unit:'',spark:[baseline,d.strain],delta,deltaUnit:'',tone}); }
+    if(d.sleepDebt7d.length>0){ const debtH=d.sleepDebt7d.reduce((a,n)=>a+(n.hours-d.sleepTargetHours),0); const debtRounded=Math.round(debtH*10)/10; const tone=debtH>-1?'good':debtH>-3?'watch':'urgent'; items.push({symbol:'DBT',value:(debtH>=0?'+':'')+debtRounded.toFixed(1),unit:'h',spark:d.sleepDebt7d.map(n=>n.hours-d.sleepTargetHours),delta:null,deltaUnit:'',tone}); }
+    return items;
+  }
+  function sparklineSvg(values,tone){
+    if(values.length<2)return ''; const W=56,H=16,pad=1.5; const min=Math.min.apply(null,values),max=Math.max.apply(null,values); const range=Math.max(0.0001,max-min); const stepX=(W-pad*2)/(values.length-1);
+    const pts=values.map((v,i)=>(pad+i*stepX).toFixed(1)+','+(H-pad-((v-min)/range)*(H-pad*2)).toFixed(1)).join(' '); const last=values[values.length-1]; const lastX=pad+(values.length-1)*stepX; const lastY=H-pad-((last-min)/range)*(H-pad*2);
+    return '<svg viewBox="0 0 '+W+' '+H+'" class="tickerSpark" aria-hidden data-tone="'+tone+'"><polyline points="'+pts+'" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round" /><circle cx="'+lastX.toFixed(1)+'" cy="'+lastY.toFixed(1)+'" r="1.6" fill="currentColor" /></svg>';
+  }
+  function tickerHtml(d){
+    const items=buildItems(d); if(items.length===0)return ''; const rolled=items.concat(items);
+    const cells=rolled.map(item=>{ const arrow=item.delta==null?'':item.inverse?(item.delta<=0?'↗':'↘'):(item.delta>=0?'↗':'↘'); const deltaText=item.delta==null?'':(item.delta>=0?'+':'')+item.delta+item.deltaUnit; return '<span class="tickerCell" data-tone="'+item.tone+'"><span class="tickerSymbol">'+item.symbol+'</span><span class="tickerValue">'+esc(item.value)+(item.unit?'<span class="tickerUnit">'+item.unit+'</span>':'')+'</span>'+sparklineSvg(item.spark,item.tone)+(deltaText?'<span class="tickerDelta">'+arrow+' '+deltaText+'</span>':'')+'</span>'; }).join('');
+    return '<section class="ticker" role="status" aria-label="Liam live insights"><div class="tickerEyebrow"><span class="tickerPulse" aria-hidden></span>Liam · Live</div><div class="tickerScroll"><div class="tickerTrack">'+cells+'</div></div></section>';
+  }
+
+  /* ---- recovery hero ---- */
+  function recoveryHeroHtml(d){
+    const tone=recoveryTone(d.recovery); const r=d.recovery; const trend=d.recoveryTrend; const hasTrend=trend.length>=2;
+    const min=hasTrend?Math.min.apply(null,trend):0; const max=hasTrend?Math.max.apply(null,trend):100; const range=Math.max(1,max-min);
+    const w=220,h=60; const stepX=hasTrend?w/(trend.length-1):0;
+    const pts=trend.map((v,i)=>(i*stepX).toFixed(1)+','+(h-((v-min)/range)*h*0.85-h*0.075).toFixed(1)).join(' ');
+    const trendDelta=hasTrend?trend[trend.length-1]-trend[0]:0;
+    const recoveryTier=r!=null?(r>=67?'Recovered':r>=34?'Building':'Drained'):'—'; const circ=2*Math.PI*92;
+    let dots=''; trend.forEach((v,i)=>{ const x=i*stepX; const y=h-((v-min)/range)*h*0.85-h*0.075; const isLast=i===trend.length-1; dots+='<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="'+(isLast?3.2:1.6)+'" class="'+(isLast?'trendDotLast':'trendDot')+'" />'; });
+    const trendSvg=hasTrend
+      ? '<svg viewBox="0 0 '+w+' '+h+'" class="trendSvg" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="trendFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--vk-mint)" stop-opacity="0.32" /><stop offset="100%" stop-color="var(--vk-mint)" stop-opacity="0" /></linearGradient></defs><polyline class="trendArea" points="0,'+h+' '+pts+' '+w+','+h+'" fill="url(#trendFill)" /><polyline class="trendLine" points="'+pts+'" />'+dots+'</svg>'
+      : '<div style="color:var(--vk-muted); font-size:13px;">Need a few more days of data for the trend.</div>';
+    return '<section class="en-card"><div class="heroCard" data-tone="'+tone+'">'
+      + '<div class="recoveryWrap"><div class="recoveryRing" data-tone="'+tone+'">'
+      +   '<svg viewBox="0 0 200 200" class="ringSvg" aria-hidden="true"><circle cx="100" cy="100" r="92" class="ringTrack" />'
+      +     (r!=null?'<circle cx="100" cy="100" r="92" class="ringFill" style="stroke-dasharray: '+circ+'; stroke-dashoffset: '+(circ*(1-r/100))+';" />':'')
+      +   '</svg>'
+      +   '<div class="recoveryInner"><div class="recoveryValue">'+(r!=null?Math.round(r):'—')+'</div><div class="recoveryUnit">'+(r!=null?'%':'')+'</div><div class="recoveryLabel">Recovery</div><div class="recoveryTier">'+recoveryTier+'</div></div>'
+      + '</div></div>'
+      + '<div class="trendWrap"><div class="trendHead"><span class="serifTitle">'+trend.length+'-day trend</span>'
+      +   (hasTrend?'<span class="trendDelta '+(trendDelta>=0?'trendUp':'trendDown')+'">'+(trendDelta>=0?'↑':'↓')+' '+Math.abs(Math.round(trendDelta))+'</span>':'')
+      + '</div>'+trendSvg+'</div></div></section>';
+  }
+
+  /* ---- stat grid ---- */
+  function statHtml(label,value,unit,sub,delta,deltaTone){
+    return '<div class="stat"><div class="statLabel">'+label+'</div><div class="statValueRow"><span class="statValue">'+esc(value)+'</span>'+(unit?'<span class="statUnit">'+unit+'</span>':'')+'</div><div class="statSub">'+esc(sub)+'</div>'+(delta?'<div class="statDelta" data-tone="'+deltaTone+'">'+esc(delta)+'</div>':'')+'</div>';
+  }
+  function statGridHtml(d){
+    const hrvDelta=(d.hrv!=null&&d.hrvBaseline!=null)?Math.round(d.hrv-d.hrvBaseline):null;
+    const rhrDelta=(d.rhr!=null&&d.rhrBaseline!=null)?Math.round(d.rhr-d.rhrBaseline):null;
+    const sleepDelta=(d.sleepPerf!=null&&d.sleepPerfBaseline!=null)?Math.round((d.sleepPerf-d.sleepPerfBaseline)*10)/10:null;
+    return '<section class="en-card"><p class="en-eyebrow">Today</p><div class="grid">'
+      + statHtml('Sleep',formatHM(d.sleepHours),'',d.sleepPerf!=null?Math.round(d.sleepPerf)+'% efficiency':'—', sleepDelta!=null?(sleepDelta>=0?'↗ +'+sleepDelta+'%':'↘ '+sleepDelta+'%'):null, sleepDelta!=null&&sleepDelta>=0?'good':'watch')
+      + statHtml('Strain',d.strain!=null?d.strain.toFixed(1):'—','','today', d.strainWeeklyAvg!=null?'wk avg '+d.strainWeeklyAvg.toFixed(1):null, (d.strainWeeklyAvg!=null&&d.strain!=null&&d.strain>d.strainWeeklyAvg+1)?'watch':'neutral')
+      + statHtml('HRV',d.hrv!=null?String(Math.round(d.hrv)):'—','ms',d.hrvAnomalous?'reading flagged':'rmssd', hrvDelta!=null?(hrvDelta>=0?'↑ +'+hrvDelta+' ms':'↓ '+hrvDelta+' ms'):null, hrvDelta!=null&&hrvDelta>=0?'good':'watch')
+      + statHtml('RHR',d.rhr!=null?String(Math.round(d.rhr)):'—','bpm','resting', rhrDelta!=null?(rhrDelta<=0?'↓ '+rhrDelta+' bpm':'↑ +'+rhrDelta+' bpm'):null, rhrDelta!=null&&rhrDelta<=0?'good':'watch')
+      + '</div></section>';
+  }
+
+  /* ---- sleep debt ---- */
+  function sleepDebtHtml(d){
+    if(d.sleepDebt7d.length===0)return ''; const nights=d.sleepDebt7d,target=d.sleepTargetHours; const totalMinutes=nights.reduce((acc,x)=>acc+(x.hours-target),0)*60; const maxAbs=1.5;
+    let bars=''; nights.forEach((n)=>{ const delta=n.hours-target; const pct=Math.min(Math.abs(delta)/maxAbs,1)*100; const surplus=delta>=0; const title=n.day+': '+n.hours.toFixed(1)+'h ('+(surplus?'+':'')+delta.toFixed(1)+'h)'; bars+='<div class="debtCol"><div class="debtTrack"><div class="debtBaseline"></div><div class="'+(surplus?'debtBarSurplus':'debtBarDeficit')+'" style="height: '+pct+'%" title="'+esc(title)+'"></div></div><div class="debtLabel">'+esc(n.day)+'</div></div>'; });
+    return '<section class="en-card"><div class="cardHead"><span class="serifTitle">Sleep debt</span><span class="debtTotal" data-tone="'+(totalMinutes<0?'watch':'good')+'">'+formatDebt(Math.round(totalMinutes))+' <em>last '+nights.length+' nights</em></span></div><div class="debtBars">'+bars+'</div></section>';
+  }
+
+  /* ---- coach ---- */
+  function coachHtml(d){
+    const tips=[];
+    if(d.hrv!=null&&d.hrvBaseline!=null&&!d.hrvAnomalous){ const delta=Math.round(d.hrv-d.hrvBaseline); if(delta<=-5)tips.push({strong:'Your HRV is '+Math.round(d.hrv)+'ms, '+Math.abs(delta)+'ms under your '+Math.round(d.hrvBaseline)+'ms baseline.',rest:' Aim for 8h sleep tonight and skip caffeine after 2pm. HRV usually rebounds inside 48h once the inputs reset.'}); else if(delta>=5)tips.push({strong:'HRV is '+Math.round(d.hrv)+'ms, '+delta+'ms above baseline.',rest:' Strong recovery signal. This is a green-light day to push the hardest session.'}); }
+    if(d.strain!=null&&d.strainWeeklyAvg!=null&&d.strain>d.strainWeeklyAvg+2){ tips.push({strong:'Strain '+d.strain.toFixed(1)+' today, above your '+d.strainWeeklyAvg.toFixed(1)+' weekly avg.',rest:' One recovery day (Z2 only, target under 10 strain) lets HRV climb back without sacrificing the block.'}); }
+    if(d.sleepDebt7d.length>0){ const debtMin=d.sleepDebt7d.reduce((acc,x)=>acc+(x.hours-d.sleepTargetHours),0)*60; if(debtMin<-90)tips.push({strong:'Sleep debt '+formatDebt(Math.round(debtMin))+' across the week.',rest:' Add 30 minutes tonight to stay ahead of the cognitive cost. The cheapest training intervention you can make is going to bed earlier.'}); }
+    if(d.recovery!=null&&d.recovery<34){ tips.unshift({strong:'Recovery '+Math.round(d.recovery)+'%. Your ceiling is lower today.',rest:' Cut caffeine ~30% and skip a second hard session. Trying to brute-force a red day costs you tomorrow.'}); }
+    else if(d.recovery!=null&&d.recovery>=80){ tips.unshift({strong:'Recovery '+Math.round(d.recovery)+'%. Green light to push.',rest:' Stack the hardest training or cognitive session inside the peak window.'}); }
+    if(tips.length===0)tips.push({strong:'Building your baseline.',rest:" Need 7+ days of valid readings before personalized coaching kicks in. You're at "+d.daysAvailable+' now.'});
+    const lis=tips.slice(0,3).map(t=>'<li><span class="coachMark" aria-hidden>✦</span><div><strong>'+esc(t.strong)+'</strong><span>'+esc(t.rest)+'</span></div></li>').join('');
+    return '<section class="en-card"><div class="cardHead"><span class="serifTitle">How to improve today</span></div><ul class="coachList">'+lis+'</ul></section>';
+  }
+
+  /* ---- suite publish (only ever publish real live data) ---- */
+  function publishWhoopData(d){ const snap={ source:'whoop',connected:true,ts:Date.now(),recovery:d.recovery,hrv:d.hrv,rhr:d.rhr,sleepPerf:d.sleepPerf,sleepHours:d.sleepHours,sleepTargetHours:d.sleepTargetHours,strain:d.strain,vitalityScore:d.vitalityScore }; try{localStorage.setItem(WHOOP_SHARE_KEY,JSON.stringify(snap));}catch(e){} try{localStorage.setItem(HEALTH_KEY,JSON.stringify(snap));}catch(e){} }
+  function clearWhoopData(){ try{localStorage.removeItem(WHOOP_SHARE_KEY);}catch(e){} try{ const cur=JSON.parse(localStorage.getItem(HEALTH_KEY)||'null'); if(cur&&cur.source==='whoop')localStorage.removeItem(HEALTH_KEY); }catch(e){} }
+  function publishFitbitData(d){ const snap={ source:'fitbit',connected:true,ts:Date.now(),recovery:d.recovery,hrv:d.hrv,rhr:d.rhr,sleepPerf:d.sleepPerf,sleepHours:d.sleepHours,sleepTargetHours:d.sleepTargetHours,strain:d.strain,bedtime:d.bedtime,wakeTime:d.wakeTime,vitalityScore:d.vitalityScore }; try{localStorage.setItem(HEALTH_KEY,JSON.stringify(snap));}catch(e){} }
+  function clearFitbitData(){ try{ const cur=JSON.parse(localStorage.getItem(HEALTH_KEY)||'null'); if(cur&&cur.source==='fitbit')localStorage.removeItem(HEALTH_KEY); }catch(e){} }
+
+  /* ---- Apple Health (manual entry, tagged Apple Watch) ---- */
+  let appleData=null, editingApple=false;
+  function loadApple(){ try{ const cur=JSON.parse(localStorage.getItem(HEALTH_KEY)||'null'); if(cur&&cur.source==='apple')appleData=cur; }catch(e){} }
+  function clearApple(){ appleData=null; try{ const cur=JSON.parse(localStorage.getItem(HEALTH_KEY)||'null'); if(cur&&cur.source==='apple')localStorage.removeItem(HEALTH_KEY); }catch(e){} }
+  function saveAppleEntry(){
+    const num=(id)=>{ const el=document.getElementById(id); if(!el||el.value==='')return null; const n=Number(el.value); return isFinite(n)?n:null; };
+    const recovery=num('a-rec'), sleepHours=num('a-sleep'), hrv=num('a-hrv'), rhr=num('a-rhr'), strain=num('a-strain'); const target=num('a-target')||8;
+    if(recovery==null&&sleepHours==null&&hrv==null&&rhr==null&&strain==null){ alert('Enter at least one reading (recovery or sleep).'); return; }
+    const sleepPerf=sleepHours!=null?Math.round(Math.min(100,(sleepHours/target)*100)):null;
+    const snap={ source:'apple',connected:true,ts:Date.now(),recovery,hrv,rhr,sleepPerf,sleepHours,sleepTargetHours:target,strain,vitalityScore:null };
+    appleData=snap; try{localStorage.setItem(HEALTH_KEY,JSON.stringify(snap));}catch(e){} editingApple=false; refresh();
+  }
+
+  /* ---- connection state ---- */
+  const LS_KEY='whoop_standalone_connected_v1';
+  let connected=false; try{ connected=localStorage.getItem(LS_KEY)==='1'; }catch(e){}
+  let syncing=false; let connectSource='whoop';
+  function setConnected(v){ connected=v; try{localStorage.setItem(LS_KEY,v?'1':'0');}catch(e){} refresh(); }
+
+  const ON_SERVER=location.protocol==='http:'||location.protocol==='https:';
+  let liveData=null, liveConnected=false, fitbitData=null, fitbitConnected=false, activeKind=null;
+  function buildLiveData(j){
+    const trend=Array.isArray(j.recoveryTrend)&&j.recoveryTrend.length?j.recoveryTrend:(j.recovery!=null?[j.recovery]:[]);
+    return { date:'today', recovery:j.recovery,hrv:j.hrv,rhr:j.rhr, sleepPerf:j.sleepPerf,sleepHours:j.sleepHours,strain:j.strain, hrvBaseline:null,rhrBaseline:null,sleepPerfBaseline:null, strainWeeklyAvg:j.strainWeeklyAvg!=null?j.strainWeeklyAvg:null, hrvAnomalous:false, recoveryTrend:trend, sleepDebt7d:Array.isArray(j.sleepDebt7d)?j.sleepDebt7d:[], sleepTargetHours:j.sleepTargetHours||8, vitalityScore:null,vitalityTier:'', lastSyncedMinutes:0, daysAvailable:trend.length };
+  }
+  async function syncWhoopLive(){ if(!ON_SERVER)return; syncing=true; refresh(); try{ const r=await fetch('/api/whoop/data',{cache:'no-store'}); const j=await r.json(); if(j&&j.connected){ liveData=buildLiveData(j); liveConnected=true; } else { liveData=null; liveConnected=false; } }catch(e){ liveData=null; liveConnected=false; } syncing=false; refresh(); }
+  async function syncFitbitLive(){ if(!ON_SERVER)return; syncing=true; refresh(); try{ const r=await fetch('/api/fitbit/data',{cache:'no-store'}); const j=await r.json(); if(j&&j.connected){ fitbitData=buildLiveData(j); fitbitData.bedtime=j.bedtime; fitbitData.wakeTime=j.wakeTime; fitbitConnected=true; } else { fitbitData=null; fitbitConnected=false; } }catch(e){ fitbitData=null; fitbitConnected=false; } syncing=false; refresh(); }
+
+  /* ---- source segment + connect / form ---- */
+  function sourceTabsHtml(){
+    const tab=(key,emoji,label)=>'<button type="button" class="srcTab '+(connectSource===key?'srcTabActive':'')+'" data-action="src-tab" data-src="'+key+'"><span aria-hidden>'+emoji+'</span>'+label+'</button>';
+    return '<div class="srcSeg" role="tablist" aria-label="Data source">'+tab('whoop','🔋','Whoop')+tab('fitbit','💠','Fitbit')+tab('apple','⌚','Apple Health')+'</div>';
+  }
+  function whoopConnectBodyHtml(){
+    const cta=ON_SERVER
+      ? '<a class="en-btn connectCta" href="/api/whoop/login">Connect Whoop</a><p class="setupNote"><strong>Setup note:</strong> needs your WHOOP API keys set on the host (see <em>WHOOP_SETUP.md</em>). Then this is a real one-tap sign-in — recovery, sleep &amp; strain sync automatically.</p>'
+      : '<button type="button" class="en-btn connectCta" data-action="connect">Preview with sample data</button><p class="setupNote"><strong>Setup note:</strong> live WHOOP sync runs on the deployed app. Opened locally, tap above to preview the dashboard with sample numbers — these are <em>not</em> saved into the suite.</p>';
+    return '<p class="connectIntro">Bring your <em>recovery</em>, <em>sleep</em>, and <em>strain</em> into Liam. One tap. Sign in with Whoop, allow access, you’re back here.</p><p class="connectSub">We never see your Whoop password. You can disconnect anytime.</p>'+cta;
+  }
+  function fitbitConnectBodyHtml(){
+    const cta=ON_SERVER
+      ? '<a class="en-btn connectCta" href="/api/fitbit/login">Connect Fitbit</a><p class="setupNote"><strong>Setup note:</strong> needs your Fitbit API keys set on the host (see <em>FITBIT_SETUP.md</em>). Then this is a real one-tap sign-in — sleep, HRV, resting HR &amp; your bed/wake times sync automatically.</p>'
+      : '<p class="setupNote"><strong>Setup note:</strong> live Fitbit sync runs on the deployed app (Vercel) with your Fitbit keys. Opened locally, use <strong>Apple Health</strong> to enter numbers by hand.</p>';
+    return '<p class="connectIntro">Bring your <em>sleep</em>, <em>HRV</em>, and <em>resting HR</em> into Liam. One tap. Sign in with Fitbit, allow access, you’re back here.</p><p class="connectSub">We never see your Fitbit password. Fitbit has no recovery score, so that ring stays blank — everything else fills in.</p>'+cta;
+  }
+  function appleFieldHtml(id,label,ph,val,attrs,full){ return '<div class="field'+(full?' fieldFull':'')+'"><label class="fieldLabel" for="'+id+'">'+label+'</label><input id="'+id+'" class="en-input" type="number" placeholder="'+esc(ph)+'" value="'+esc(val)+'" '+attrs+' /></div>'; }
+  function appleFormHtml(){
+    const a=appleData||{}; const v=(k)=>(a[k]!=null?a[k]:''); const savedNote=appleData?'<p class="connectSub">Editing your saved Apple Watch readings.</p>':'';
+    return '<p class="connectIntro">Add today’s <em>recovery</em>, <em>sleep</em> &amp; <em>HRV</em> from Apple Health. They feed the same dashboard and supplement picks as Whoop.</p>'+savedNote
+      + '<div class="fieldGrid">'
+      + appleFieldHtml('a-rec','Recovery / readiness %','—',v('recovery'),'min="0" max="100" inputmode="numeric"')
+      + appleFieldHtml('a-sleep','Sleep (hours)','7.5',v('sleepHours'),'min="0" max="24" step="0.1" inputmode="decimal"')
+      + appleFieldHtml('a-hrv','HRV (ms)','—',v('hrv'),'min="0" max="300" inputmode="numeric"')
+      + appleFieldHtml('a-rhr','Resting HR (bpm)','—',v('rhr'),'min="20" max="150" inputmode="numeric"')
+      + appleFieldHtml('a-strain','Strain (0–21, optional)','—',v('strain'),'min="0" max="21" step="0.1" inputmode="decimal"')
+      + appleFieldHtml('a-target','Sleep target (hours)','8',(a.sleepTargetHours!=null?a.sleepTargetHours:8),'min="4" max="12" step="0.5" inputmode="decimal"',true)
+      + '</div>'
+      + '<p class="setupNote"><strong>Setup note:</strong> Apple Health has no web API — a browser can’t read HealthKit directly. Open the Health app, copy today’s <em>HRV</em>, <em>resting HR</em> &amp; <em>time asleep</em> in here. Saved into the suite tagged <strong>Apple Watch</strong>.</p>'
+      + '<div class="formActions">'+(appleData?'<button type="button" class="en-link" data-action="remove-apple">remove</button>':'')+'<button type="button" class="en-btn" data-action="save-apple">Save readings</button></div>';
+  }
+  function connectPanelHtml(){
+    const body=connectSource==='apple'?appleFormHtml():connectSource==='fitbit'?fitbitConnectBodyHtml():whoopConnectBodyHtml();
+    return '<section class="en-card"><p class="en-eyebrow">Connect a source</p>'+sourceTabsHtml()+'<div style="margin-top:16px">'+body+'</div></section>';
+  }
+
+  function dataPanelFooter(d,kind){
+    const actions=kind==='apple'
+      ? '<span class="synced">entered manually · Apple Watch</span><button type="button" class="en-ghost" data-action="edit-apple">edit readings</button><button type="button" class="en-link" data-action="remove-apple">remove</button>'
+      : '<span class="synced">'+(d.lastSyncedMinutes!=null?'last synced '+d.lastSyncedMinutes+'m ago':'sync time unknown')+'</span><button type="button" class="en-ghost" data-action="sync"'+(syncing?' disabled':'')+'>'+(syncing?'syncing…':'sync now')+'</button><button type="button" class="en-link" data-action="disconnect">disconnect</button>';
+    return '<section class="en-card"><div class="footer"><div class="legend"><span class="legendDot" data-tone="good"></span> Good<span class="legendDot" data-tone="watch"></span> Watch<span class="legendDot" data-tone="low"></span> Low</div><div class="footerActions">'+actions+'</div></div></section>';
+  }
+
+  /* ---- resolve active source + publish (runs even off the Band tab) ---- */
+  function resolve(){
+    let d=null,kind=null;
+    if(liveData){ d=liveData; kind='whoop-live'; }
+    else if(fitbitData){ d=fitbitData; kind='fitbit-live'; }
+    else if(appleData&&!editingApple){ d=buildLiveData(appleData); kind='apple'; }
+    else if(!ON_SERVER&&connected){ d=SAMPLE; kind='sample'; }
+    activeKind=kind;
+    if(kind==='whoop-live')publishWhoopData(liveData);
+    else if(kind==='fitbit-live')publishFitbitData(fitbitData);
+    return { d, kind };
+  }
+  /* re-resolve + publish, then repaint whichever tab is open */
+  function refresh(){ resolve(); renderPanel(); }
+
+  function html(){
+    const { d, kind }=resolve();
+    let out='<div class="fb-band">'+sourceTabsHtml();
+    if(d){
+      if(kind==='sample')out+='<div class="statusChip sample"><span class="pulse" aria-hidden></span>Sample data · connect WHOOP for live numbers</div>';
+      else if(kind==='apple')out+='<div class="statusChip"><span class="pulse" aria-hidden></span>Apple Health · entered manually</div>';
+      else if(kind==='fitbit-live')out+='<div class="statusChip"><span class="pulse" aria-hidden></span>Fitbit · live (no recovery score)</div>';
+      else out+='<div class="statusChip"><span class="pulse" aria-hidden></span>Whoop · live</div>';
+      out+=tickerHtml(d)+recoveryHeroHtml(d)+statGridHtml(d)+sleepDebtHtml(d)+coachHtml(d)+dataPanelFooter(d,kind);
+    } else {
+      out+=connectPanelHtml();
+    }
+    return out+'</div>';
+  }
+  function after(){
+    // the source seg lives outside the connect card too — keep them in sync
+    document.querySelectorAll('.fb-band .srcTab').forEach(b=>b.classList.toggle('srcTabActive', b.dataset.src===connectSource));
+  }
+
+  /* events (scoped to the Band tab) */
+  document.addEventListener('click',e=>{
+    if(activeTab!=='band')return; const btn=e.target.closest('[data-action]'); if(!btn)return; const action=btn.getAttribute('data-action');
+    if(action==='src-tab'){ connectSource=btn.getAttribute('data-src'); renderPanel(); return; }
+    if(action==='save-apple'){ saveAppleEntry(); return; }
+    if(action==='edit-apple'){ editingApple=true; connectSource='apple'; renderPanel(); return; }
+    if(action==='remove-apple'){ if(confirm('Remove your Apple Health readings from the suite?')){ clearApple(); editingApple=false; refresh(); } return; }
+    if(action==='connect'){ setConnected(true); return; }
+    if(action==='disconnect'){
+      if(activeKind==='fitbit-live'){ fetch('/api/fitbit/logout').catch(()=>{}).then(()=>{ fitbitConnected=false; fitbitData=null; clearFitbitData(); refresh(); }); }
+      else if(ON_SERVER){ fetch('/api/whoop/logout').catch(()=>{}).then(()=>{ liveConnected=false; liveData=null; clearWhoopData(); refresh(); }); }
+      else if(confirm('Disconnect Whoop? (Hides the sample preview in this standalone.)')){ setConnected(false); }
+      return;
+    }
+    if(action==='sync'){
+      if(activeKind==='fitbit-live'){ syncFitbitLive(); }
+      else if(ON_SERVER){ syncWhoopLive(); }
+      else { syncing=true; refresh(); setTimeout(()=>{ syncing=false; refresh(); },900); }
+      return;
+    }
+  });
+  document.addEventListener('keydown',e=>{ if(activeTab!=='band')return; if(e.key!=='Enter')return; const id=e.target&&e.target.id; if(id&&id.indexOf('a-')===0){ e.preventDefault(); saveAppleEntry(); } });
+
+  function boot(){
+    loadApple();
+    if(!ON_SERVER)return;
+    try{ const q=new URLSearchParams(location.search); const w=q.get('whoop'),f=q.get('fitbit'); if(w||f){ history.replaceState(null,'',location.pathname); if(w==='error'||w==='denied')alert('Whoop connection didn’t complete — check the host’s WHOOP keys & redirect URL (WHOOP_SETUP.md).'); if(f==='error'||f==='denied')alert('Fitbit connection didn’t complete — check the host’s FITBIT keys & redirect URL (FITBIT_SETUP.md).'); if(f==='connected')connectSource='fitbit'; } }catch(e){}
+    syncWhoopLive(); syncFitbitLive();
+  }
+  return { html, after, boot };
+})();
+
+/* =====================================================================
+ * MODULE: RECOVERY — reads the suite vitals (patron_health_v1), keeps a
+ * daily history (recovery_standalone_v1) for trends, shows rings + tips.
+ * Ported from the standalone recovery.html, restyled to the Rowan4 kit.
+ * ===================================================================== */
+const RECOVERY=(function(){
+  const LS='recovery_standalone_v1';
+  function health(){ try{ const d=readLS(HEALTH_KEY); return (d&&d.connected)?d:null; }catch(e){ return null; } }
+  function clamp01(x){ return Math.max(0,Math.min(1,x)); }
+  function estRecovery(h){
+    if(!h)return null; if(h.recovery!=null)return h.recovery; const parts=[],w=[];
+    if(typeof h.hrv==='number'){ parts.push(clamp01((h.hrv-20)/(90-20))*100); w.push(0.5); }
+    if(typeof h.rhr==='number'){ parts.push(clamp01((80-h.rhr)/(80-42))*100); w.push(0.25); }
+    if(typeof h.sleepPerf==='number'){ parts.push(Math.min(100,h.sleepPerf)); w.push(0.25); }
+    else if(typeof h.sleepHours==='number'){ parts.push(clamp01(h.sleepHours/(h.sleepTargetHours||8))*100); w.push(0.25); }
+    if(!parts.length)return null; const sw=w.reduce((a,b)=>a+b,0); let s=0; for(let i=0;i<parts.length;i++)s+=parts[i]*w[i]; return Math.max(1,Math.min(99,Math.round(s/sw)));
+  }
+  function isEst(h){ return !!(h&&h.recovery==null&&estRecovery(h)!=null); }
+  function tone(r){ if(r==null)return 'muted'; if(r>=67)return 'good'; if(r>=34)return 'watch'; return 'low'; }
+  function sleepTone(p){ if(p==null)return 'muted'; if(p>=85)return 'good'; if(p>=60)return 'watch'; return 'low'; }
+  function fmtHM(h){ if(h==null)return '—'; const hh=Math.floor(h),mm=Math.round((h-hh)*60); return hh+'h '+String(mm).padStart(2,'0')+'m'; }
+  function srcLabel(s){ return s==='apple'?'Apple Watch':s==='fitbit'?'Fitbit':s==='manual'?'Manual':s==='whoop'?'Whoop':'—'; }
+
+  function ringWrap(value,toneStr,cap,sub){
+    const circ=2*Math.PI*64;
+    const ring='<div class="rc-ring" data-tone="'+toneStr+'"><svg viewBox="0 0 150 150" aria-hidden><circle cx="75" cy="75" r="64" class="rc-track"/>'
+      +(value!=null?'<circle cx="75" cy="75" r="64" class="rc-fill" style="stroke-dasharray:'+circ+';stroke-dashoffset:'+(circ*(1-value/100))+'"/>':'')
+      +'</svg><div class="rc-inner"><div class="rc-num">'+(value!=null?Math.round(value):'—')+(value!=null?'<small>%</small>':'')+'</div><div class="rc-cap">'+cap+'</div></div></div>';
+    return '<div class="rc-ringWrap">'+ring+(sub?'<div class="rc-sub">'+sub+'</div>':'')+'</div>';
+  }
+
+  let state={ history:[] };
+  function load(){ const r=readLS(LS); return { history:(r&&Array.isArray(r.history))?r.history:[] }; }
+  function save(){ try{localStorage.setItem(LS,JSON.stringify(state));}catch(e){} if(window.PatronDB&&PatronDB.isCloud())PatronDB.set('recovery',state); }
+  function todayKey(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  function snapshotToday(){
+    const h=health(); if(!h)return; const rec=estRecovery(h);
+    const snap={ dateKey:todayKey(), recovery:rec, sleepHours:(typeof h.sleepHours==='number'?h.sleepHours:null), sleepPerf:(typeof h.sleepPerf==='number'?h.sleepPerf:null), hrv:(typeof h.hrv==='number'?h.hrv:null), rhr:(typeof h.rhr==='number'?h.rhr:null) };
+    if(rec==null&&snap.sleepHours==null&&snap.hrv==null)return;
+    state.history=state.history.filter(x=>x.dateKey!==snap.dateKey).concat([snap]).sort((a,b)=>a.dateKey.localeCompare(b.dateKey));
+    if(state.history.length>180)state.history.shift(); save();
+  }
+
+  let range=14;
+  function chartSvg(){
+    const hist=state.history.slice(-range);
+    if(hist.length<2)return '<p class="rc-note">Trends appear once you have 2+ days of data — open this page daily (or let your band sync) and the chart fills in.</p>';
+    const W=320,H=120,padY=10; const recs=hist.map(d=>typeof d.recovery==='number'?d.recovery:null); const sleeps=hist.map(d=>typeof d.sleepHours==='number'?d.sleepHours:null);
+    const maxSleep=Math.max(9,...sleeps.filter(v=>v!=null)); const xOf=i=>hist.length===1?W/2:(i/(hist.length-1))*W; const yRec=v=>H-padY-(v/100)*(H-padY*2); const ySleep=v=>H-padY-(v/maxSleep)*(H-padY*2);
+    let bars=''; const bw=Math.max(4,(W/hist.length)*0.5);
+    hist.forEach((d,i)=>{ if(typeof d.sleepHours==='number'){ const x=xOf(i)-bw/2,y=ySleep(d.sleepHours); bars+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+(H-padY-y).toFixed(1)+'" rx="2" fill="#6EE7B7" opacity=".18"/>'; } });
+    const pts=[]; recs.forEach((v,i)=>{ if(v!=null)pts.push([xOf(i),yRec(v)]); });
+    const line=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+    const dots=pts.map(p=>'<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="2.6" fill="#6EE7B7"/>').join('');
+    return '<svg class="rc-chart" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" aria-hidden="true">'+bars
+      +(pts.length>1?'<path d="'+line+'" fill="none" stroke="#6EE7B7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 5px rgba(110,231,183,.7))"/>':'')+dots+'</svg>'
+      +'<div class="rc-legend"><span class="rc-legItem"><span class="rc-legDot" style="background:#6EE7B7"></span>Recovery %</span><span class="rc-legItem"><span class="rc-legDot" style="background:#6EE7B7;opacity:.4"></span>Sleep hours</span></div>';
+  }
+
+  function tips(rec,h){
+    const out=[];
+    if(rec!=null){ if(rec>=67)out.push(['⚡','<b>Green light.</b> You\'re primed — good day for a hard session or a PR attempt.']); else if(rec>=34)out.push(['🟡','<b>Moderate.</b> Train, but keep it smart — quality over max intensity today.']); else out.push(['🛑','<b>Low recovery.</b> Go easy — light movement, hydration, and protect tonight\'s sleep.']); }
+    if(h&&typeof h.sleepHours==='number'&&h.sleepHours<7)out.push(['😴','<b>Short sleep ('+fmtHM(h.sleepHours)+').</b> Aim for 7–9h tonight — it\'s the biggest lever on tomorrow\'s recovery.']);
+    if(h&&typeof h.hrv==='number'&&h.hrv<35)out.push(['📉','<b>HRV is low ('+Math.round(h.hrv)+'ms).</b> A sign of stress or fatigue — prioritise rest and easy days.']);
+    if(h&&typeof h.rhr==='number'&&h.rhr>65)out.push(['❤️','<b>Resting HR is elevated ('+Math.round(h.rhr)+'bpm).</b> Could be stress, poor sleep, or coming down with something.']);
+    if(!out.length)out.push(['✅','Looking balanced. Keep logging and your trends will sharpen the advice.']);
+    return out;
+  }
+
+  function html(){
+    snapshotToday();
+    const h=health(); const rec=estRecovery(h); const t=tone(rec);
+    let body;
+    if(!h){
+      body='<section class="en-card"><p class="en-eyebrow">Recovery</p><div class="rc-empty"><div class="rc-emptyTitle">No vitals yet</div><p class="rc-emptyBody">Add today\'s sleep + HRV (or connect a band) over on the <strong>Band</strong> tab, and your recovery score, trends and tips show up here.</p></div></section>';
+    } else {
+      const statusWord=t==='good'?'Primed':t==='watch'?'Moderate':t==='low'?'Run down':'—';
+      const statusLine=rec==null?'Add HRV or sleep to estimate your readiness.':t==='good'?'You\'re well recovered and ready to push.':t==='watch'?'Partially recovered — train smart today.':'Your body needs rest — keep it light.';
+      const recRing=ringWrap(rec,t,isEst(h)?'Rec · est':'Recovery','');
+      const sTone=sleepTone(h.sleepPerf);
+      const sleepRing=(typeof h.sleepPerf==='number'||typeof h.sleepHours==='number')?ringWrap(typeof h.sleepPerf==='number'?h.sleepPerf:null,sTone,'Sleep',typeof h.sleepHours==='number'?fmtHM(h.sleepHours):''):'';
+      body='<section class="en-card"><span class="rc-srcBadge">'+srcLabel(h.source)+'</span><p class="en-eyebrow">Today</p>'
+        +'<div class="rc-hero">'+recRing+sleepRing+'</div>'
+        +'<div class="rc-status"><div class="rc-word" data-tone="'+t+'">'+statusWord+'</div><p class="rc-line">'+statusLine+'</p></div>'
+        +'<div class="rc-statRow"><div class="rc-stat"><div class="rc-statLabel">HRV</div><div class="rc-statVal">'+(typeof h.hrv==='number'?Math.round(h.hrv)+'<small> ms</small>':'—')+'</div></div><div class="rc-stat"><div class="rc-statLabel">Resting HR</div><div class="rc-statVal">'+(typeof h.rhr==='number'?Math.round(h.rhr)+'<small> bpm</small>':'—')+'</div></div></div></section>'
+        +'<section class="en-card"><div class="rc-chartHead"><p class="en-eyebrow" style="margin:0">Trends</p><div class="rc-seg">'+[7,14,30].map(n=>'<button class="rc-segBtn '+(range===n?'on':'')+'" data-range="'+n+'">'+n+'d</button>').join('')+'</div></div>'+chartSvg()+'</section>'
+        +'<section class="en-card"><p class="en-eyebrow">Today\'s guidance</p>'+tips(rec,h).map(t=>'<div class="rc-tip"><span class="rc-tipIcon">'+t[0]+'</span><span class="rc-tipText">'+t[1]+'</span></div>').join('')+'</section>';
+    }
+    return '<div class="fb-rec">'+body+'</div>';
+  }
+  function after(){}
+
+  document.addEventListener('click',e=>{ if(activeTab!=='recovery')return; const b=e.target.closest('[data-range]'); if(b){ range=parseInt(b.dataset.range,10)||14; renderPanel(); } });
+
+  function hydrate(){ state=load(); if(!window.PatronDB||!PatronDB.isCloud())return; PatronDB.get('recovery').then(cs=>{ if(cs&&Array.isArray(cs.history)){ state={history:cs.history}; try{localStorage.setItem(LS,JSON.stringify(state));}catch(e){} snapshotToday(); if(activeTab==='recovery')renderPanel(); } else { snapshotToday(); PatronDB.set('recovery',state); } }).catch(()=>{}); }
+  return { html, after, hydrate };
+})();
+
+/* =====================================================================
+ * SHELL WIRING
+ * ===================================================================== */
+const MODULES={ band:BAND, recovery:RECOVERY };
+function setTab(tab){ if(!MODULES[tab])return; activeTab=tab; document.querySelectorAll('.en-tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab)); renderPanel(); }
+document.getElementById('fbTabs').addEventListener('click',e=>{ const b=e.target.closest('[data-tab]'); if(b)setTab(b.dataset.tab); });
+
+/* drifting mint particles (Rowan4 backdrop) */
+(function(){ const root=document.getElementById('fbParticles'); if(!root)return; const N=window.innerWidth<640?14:24; for(let i=0;i<N;i++){ const s=document.createElement('span'); s.style.left=Math.random()*100+'%'; s.style.top=(60+Math.random()*40)+'%'; const size=1.2+Math.random()*1.2; s.style.width=s.style.height=size+'px'; const dur=22+Math.random()*28; s.style.animationDuration=dur+'s'; s.style.animationDelay=(-Math.random()*dur)+'s'; s.style.setProperty('--dx',(Math.random()*30-15)+'px'); s.style.setProperty('--dy',-(60+Math.random()*50)+'vh'); root.appendChild(s); } })();
+
+BAND.boot();
+RECOVERY.hydrate();
+setTab('band');
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="db.js?v=15"></script>
+<script src="brand.js?v=16"></script>
+</body>
+</html>

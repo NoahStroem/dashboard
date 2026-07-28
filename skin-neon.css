@@ -1,0 +1,27 @@
+/* Neon Kinetic skin — black canvas, glowing lime accent, Inter bold, bouncy hover.
+ * Drop-in: link this LAST in <head> instead of skin.css. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800&display=swap');
+
+html[data-theme]{
+  --bg:#070707; --bg-elevated:#101010;
+  --surface:rgba(255,255,255,.03); --surface-2:rgba(255,255,255,.06);
+  --fg:#E2E2E2; --muted:rgba(255,255,255,.5); --muted-strong:rgba(255,255,255,.78);
+  --border:rgba(255,255,255,.08); --border-strong:rgba(204,255,0,.4);
+  --brand:#CCFF00; --brand-2:#15E8B1; --brand-ink:#070707;
+  --brand-soft:rgba(204,255,0,.10); --brand-line:rgba(204,255,0,.35); --brand-glow:rgba(204,255,0,.55);
+  --pos:#15E8B1; --pos-soft:rgba(21,232,177,.14); --pos-line:rgba(21,232,177,.34);
+  --neg:#FF50A6; --neg-soft:rgba(255,80,166,.14); --neg-line:rgba(255,80,166,.3);
+  --warn:#A27BFF; --track:rgba(255,255,255,.06);
+  --font-display:'Inter'; --font-ui:'Inter';
+}
+body{ background:#070707 !important; font-family:'Inter',sans-serif; }
+.title{ font-style:normal !important; font-weight:800 !important; letter-spacing:-.03em !important; text-transform:none !important; background:none !important; -webkit-text-fill-color:currentColor !important; color:#E2E2E2 !important; filter:none !important; }
+.subtitle{ font-family:'Inter',sans-serif !important; letter-spacing:0; text-transform:none; color:var(--muted); }
+.cardPriceVal,.recNum{ color:var(--brand) !important; text-shadow:0 0 14px rgba(204,255,0,.5) !important; }
+/* bouncy hover (the GSAP elastic vibe, in CSS) */
+.card,.tile{ transition:transform .5s cubic-bezier(.34,1.56,.64,1), border-color .2s, box-shadow .3s !important; }
+.card:hover,.tile:hover{ transform:translateY(-8px) scale(1.02) !important; border-color:var(--brand-line) !important; box-shadow:0 18px 40px rgba(0,0,0,.5),0 0 30px rgba(204,255,0,.14) !important; }
+/* glow backdrop */
+body::before{ content:''; position:fixed; inset:0; z-index:-1; pointer-events:none; background:
+  radial-gradient(60% 45% at 50% 28%,rgba(204,255,0,.06),transparent 60%),
+  radial-gradient(120% 80% at 50% 110%,rgba(21,232,177,.05),rgba(0,0,0,.95) 70%); }

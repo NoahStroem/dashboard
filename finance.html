@@ -1,0 +1,1721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#0C0C12" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Patron" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="icon" type="image/svg+xml" href="icon.svg" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<style id="pwa-mobile">
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+img{max-width:100%;height:auto}
+@media (max-width:480px){input,select,textarea{font-size:16px !important}}
+</style>
+<title>Finance · standalone</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<script>try{document.documentElement.setAttribute("data-theme",localStorage.getItem("patron_theme")||"nocturne");}catch(e){document.documentElement.setAttribute("data-theme","nocturne");}</script>
+<style>
+
+/* ============================================================
+ * Finance — restyled: "Patron" — soft-dark electric-violet
+ * modern-fintech skin. 3 themes (Nocturne / Aurora / Daylight),
+ * all driven by tokens. Logic untouched.
+ * ============================================================ */
+
+/* ---- Nocturne (default) ---- */
+:root {
+  color-scheme: dark;
+  --bg: #0C0C12;
+  --bg-elevated: #15151F;
+  --surface: rgba(255,255,255,0.028);
+  --surface-2: rgba(255,255,255,0.055);
+  --fg: #F3F2F8;
+  --muted: rgba(243,242,248,0.50);
+  --muted-strong: rgba(243,242,248,0.74);
+  --border: rgba(255,255,255,0.08);
+  --border-strong: rgba(255,255,255,0.17);
+
+  --brand: #8B7CFF;
+  --brand-2: #C7BBFF;
+  --brand-ink: #130E2E;
+  --brand-soft: rgba(139,124,255,0.12);
+  --brand-line: rgba(139,124,255,0.28);
+  --brand-glow: rgba(139,124,255,0.42);
+
+  --pos: #46E0A8; --pos-soft: rgba(70,224,168,0.12); --pos-line: rgba(70,224,168,0.26);
+  --neg: #FB7185; --neg-soft: rgba(251,113,133,0.12); --neg-line: rgba(251,113,133,0.26);
+  --warn: #FBBF24; --warn-soft: rgba(251,191,36,0.10); --warn-line: rgba(251,191,36,0.26);
+
+  --track: rgba(255,255,255,0.06);
+  --card-shadow: 0 1px 0 rgba(255,255,255,0.04) inset, 0 18px 44px -30px rgba(0,0,0,0.85);
+  --glow-1: rgba(139,124,255,0.12);
+  --glow-2: rgba(70,224,168,0.05);
+  --grain-opacity: 0.05;
+  --overlay: rgba(6,6,12,0.66);
+  --tabbar-grad: linear-gradient(to top, rgba(10,10,16,0.92) 55%, transparent);
+  --tabbar-pill: rgba(26,26,36,0.9);
+
+  --space-1:.25rem; --space-2:.5rem; --space-3:.75rem; --space-4:1rem;
+  --space-5:1.25rem; --space-6:1.5rem; --space-8:2rem; --space-10:2.5rem;
+  --space-12:3rem; --space-16:4rem;
+
+  --radius-sm: 8px; --radius-md: 11px; --radius-lg: 18px; --radius-pill: 999px;
+
+  --text-xs:.75rem; --text-sm:.875rem; --text-base:1rem; --text-lg:1.125rem;
+  --text-xl:1.375rem; --text-2xl:1.75rem; --text-3xl:2.5rem;
+
+  --ease: cubic-bezier(0.2,0.8,0.2,1);
+  --ease-premium: cubic-bezier(0.16,1,0.3,1);
+  --duration-fast:120ms; --duration:200ms;
+
+  --font-display:'Space Grotesk';
+  --font-ui:'Hanken Grotesk';
+  --font-mono:'JetBrains Mono';
+}
+
+/* ---- Aurora (vibrant violet → teal) ---- */
+[data-theme="aurora"] {
+  color-scheme: dark;
+  --bg: #080913;
+  --bg-elevated: #12131F;
+  --surface: rgba(150,160,255,0.045);
+  --surface-2: rgba(150,160,255,0.08);
+  --fg: #EEF0FF;
+  --muted: rgba(220,225,255,0.52);
+  --muted-strong: rgba(220,225,255,0.76);
+  --border: rgba(150,160,255,0.11);
+  --border-strong: rgba(150,160,255,0.22);
+
+  --brand: #8B7BFF;
+  --brand-2: #B9ABFF;
+  --brand-ink: #0A0922;
+  --brand-soft: rgba(139,123,255,0.15);
+  --brand-line: rgba(139,123,255,0.32);
+  --brand-glow: rgba(124,107,255,0.6);
+
+  --pos: #4FE3D0; --pos-soft: rgba(79,227,208,0.13); --pos-line: rgba(79,227,208,0.28);
+  --neg: #FF6FA5; --neg-soft: rgba(255,111,165,0.13); --neg-line: rgba(255,111,165,0.28);
+  --warn: #FFC65C; --warn-soft: rgba(255,198,92,0.11); --warn-line: rgba(255,198,92,0.28);
+
+  --track: rgba(160,170,255,0.09);
+  --card-shadow: 0 0 0 1px rgba(140,130,255,0.05) inset, 0 22px 56px -28px rgba(78,60,210,0.55);
+  --glow-1: rgba(124,107,255,0.20);
+  --glow-2: rgba(79,227,208,0.13);
+  --grain-opacity: 0.05;
+  --overlay: rgba(5,6,16,0.7);
+  --tabbar-grad: linear-gradient(to top, rgba(8,9,19,0.92) 55%, transparent);
+  --tabbar-pill: rgba(18,19,32,0.92);
+}
+
+/* ---- Daylight (light) ---- */
+[data-theme="daylight"] {
+  color-scheme: light;
+  --bg: #F3F2FA;
+  --bg-elevated: #FFFFFF;
+  --surface: #FFFFFF;
+  --surface-2: #FAF9FF;
+  --fg: #171622;
+  --muted: rgba(23,22,34,0.52);
+  --muted-strong: rgba(23,22,34,0.72);
+  --border: rgba(23,22,60,0.10);
+  --border-strong: rgba(23,22,60,0.18);
+
+  --brand: #6A45FF;
+  --brand-2: #8E6BFF;
+  --brand-ink: #FFFFFF;
+  --brand-soft: rgba(106,69,255,0.08);
+  --brand-line: rgba(106,69,255,0.24);
+  --brand-glow: rgba(106,69,255,0.28);
+
+  --pos: #0E9E64; --pos-soft: rgba(14,158,100,0.10); --pos-line: rgba(14,158,100,0.26);
+  --neg: #E11D63; --neg-soft: rgba(225,29,99,0.08); --neg-line: rgba(225,29,99,0.24);
+  --warn: #B4690E; --warn-soft: rgba(180,105,14,0.10); --warn-line: rgba(180,105,14,0.24);
+
+  --track: rgba(23,22,60,0.08);
+  --card-shadow: 0 1px 2px rgba(23,22,60,0.05), 0 16px 34px -24px rgba(23,22,60,0.24);
+  --glow-1: rgba(106,69,255,0.07);
+  --glow-2: rgba(14,158,100,0.04);
+  --grain-opacity: 0.02;
+  --overlay: rgba(28,26,52,0.4);
+  --tabbar-grad: linear-gradient(to top, rgba(243,242,250,0.95) 55%, transparent);
+  --tabbar-pill: rgba(255,255,255,0.94);
+}
+
+* { box-sizing: border-box; }
+html, body { margin:0; padding:0; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-ui), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: var(--text-base);
+  -webkit-font-smoothing: antialiased;
+  transition: background var(--duration) var(--ease);
+}
+
+/* Grain */
+.grain-overlay { position: relative; }
+.grain-overlay::after {
+  content:''; position: fixed; inset:0; pointer-events:none; z-index:1;
+  opacity: var(--grain-opacity); mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: 200px 200px;
+}
+
+/* Page shell */
+.page { position: relative; min-height: 100dvh; background: var(--bg); color: var(--fg); padding: var(--space-8) var(--space-5) var(--space-16); isolation: isolate; }
+.page::before {
+  content:''; position: absolute; inset:0; pointer-events:none; z-index:-1;
+  background:
+    radial-gradient(58% 42% at 82% 6%, var(--glow-1), transparent 70%),
+    radial-gradient(48% 38% at 12% 92%, var(--glow-2), transparent 72%);
+}
+.shell { max-width: 1000px; margin: 0 auto; padding-bottom: 96px; }
+
+/* Header */
+.header { display:flex; align-items:flex-end; justify-content:space-between; gap: var(--space-4); margin-bottom: var(--space-8); flex-wrap: wrap; }
+.headerLeft { display:flex; flex-direction:column; gap: var(--space-3); }
+.headerRight { display:flex; flex-direction:column; align-items:flex-end; gap: var(--space-2); }
+.back {
+  display:inline-flex; align-items:center; gap: var(--space-2); align-self:flex-start;
+  padding: 6px 13px 6px 9px; background: var(--brand-soft); border: 1px solid var(--brand-line);
+  border-radius: var(--radius-pill); color: var(--brand); font-size: var(--text-xs); font-weight: 600;
+  letter-spacing: 0.01em; text-decoration: none;
+  transition: background var(--duration) var(--ease-premium), border-color var(--duration) var(--ease-premium);
+}
+.back:hover { background: color-mix(in srgb, var(--brand) 18%, transparent); border-color: var(--brand); }
+.backArrow { font-size: 14px; line-height: 1; }
+.title { font-family: var(--font-display); font-weight: 600; font-size: var(--text-3xl); line-height: 1.0; letter-spacing: -0.03em; color: var(--fg); margin: 0; }
+.subtitle { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--muted); margin: 0; }
+
+/* Theme + currency segmented controls */
+.themeSeg, .currencySeg { display:inline-flex; align-items:center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-pill); padding: 3px; gap: 2px; }
+.themeBtn { appearance:none; background: transparent; border:0; color: var(--muted); font-family: var(--font-ui); font-size: 11px; font-weight: 600; letter-spacing: 0.02em; padding: 5px 11px 5px 8px; border-radius: var(--radius-pill); cursor: pointer; display:inline-flex; align-items:center; gap:6px; transition: background var(--duration) var(--ease-premium), color var(--duration) var(--ease-premium); }
+.themeBtn:hover { color: var(--muted-strong); }
+.themeSwatch { width: 11px; height: 11px; border-radius: 50%; box-shadow: 0 0 0 1px var(--border-strong) inset; flex-shrink:0; }
+.themeBtnActive, .themeBtnActive:hover { background: var(--brand-soft); color: var(--fg); }
+.themeBtnActive .themeSwatch { box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--brand); }
+.currencyBtn { appearance:none; background: transparent; border:0; color: var(--muted); font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: 0.04em; padding: 5px 11px; border-radius: var(--radius-pill); cursor: pointer; transition: background var(--duration) var(--ease-premium), color var(--duration) var(--ease-premium); }
+.currencyBtn:hover { color: var(--muted-strong); }
+.currencyBtnActive, .currencyBtnActive:hover { background: var(--brand); color: var(--brand-ink); }
+
+/* Section */
+.section { margin-bottom: var(--space-10); }
+.sectionEyebrow { font-family: var(--font-display); font-weight: 600; font-size: var(--text-xl); letter-spacing: -0.02em; color: var(--fg); margin-bottom: var(--space-4); display:flex; align-items:baseline; justify-content:space-between; gap: var(--space-3); }
+.sectionEyebrow > span:first-child { display:inline-flex; align-items:center; gap: 10px; }
+.sectionEyebrow > span:first-child::before { content:''; width: 7px; height: 18px; border-radius: 3px; background: var(--brand); box-shadow: 0 0 12px -2px var(--brand-glow); }
+.sectionCount { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.sectionCountSep { color: var(--brand); font-weight: 600; }
+
+/* NW hero */
+.nwHero { display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap: var(--space-4); margin-bottom: var(--space-5); }
+.nwHeroFirstRun { align-items: stretch; }
+.nwHeroLabel { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+.nwHeroNum { font-family: var(--font-display); font-size: 46px; font-weight: 600; line-height: 1.0; letter-spacing: -0.03em; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.nwHeroBreakdown { font-family: var(--font-mono); font-size: 11px; color: var(--muted); margin-top: 8px; font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+.nwHeroMain { flex: 1; min-width: 0; }
+.nwHeroNumRow { display:inline-flex; align-items:baseline; gap: var(--space-3); flex-wrap: wrap; }
+.firstRunHint { margin-top: var(--space-3); font-size: 13px; color: var(--muted-strong); line-height: 1.5; max-width: 38ch; }
+
+.dailyDelta { display:inline-flex; align-items:baseline; gap: 6px; font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: 0.01em; padding: 4px 10px; border-radius: var(--radius-pill); border: 1px solid transparent; background: var(--surface-2); color: var(--muted-strong); white-space: nowrap; }
+.dailyDelta.up { background: var(--pos-soft); border-color: var(--pos-line); color: var(--pos); }
+.dailyDelta.down { background: var(--neg-soft); border-color: var(--neg-line); color: var(--neg); }
+.dailyDelta.flat { color: var(--muted); font-style: italic; }
+.dailyDeltaPct { font-weight: 500; opacity: 0.8; }
+.dailyDeltaWindow { font-family: var(--font-mono); font-size: 9px; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; color: inherit; opacity: 0.6; }
+
+/* Import trigger */
+.importTrigger { display:inline-flex; align-items:center; gap: var(--space-3); padding: var(--space-3) var(--space-4); border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); color: var(--fg); cursor: pointer; text-align:left; transition: border-color var(--duration) var(--ease), background var(--duration) var(--ease), transform var(--duration) var(--ease), box-shadow var(--duration) var(--ease); font-family: inherit; }
+.importTrigger:hover { border-color: var(--brand-line); background: var(--brand-soft); transform: translateY(-1px); box-shadow: 0 0 36px -16px var(--brand-glow); }
+.importTriggerIcon { display:grid; place-items:center; width: 34px; height: 34px; border-radius: 12px; background: var(--brand); color: var(--brand-ink); font-family: var(--font-display); font-weight: 600; font-size: 17px; flex-shrink:0; }
+.importTriggerText { display:flex; flex-direction:column; gap: 3px; min-width: 0; }
+.importTriggerTitle { font-size: var(--text-sm); font-weight: 700; line-height: 1.3; color: var(--fg); white-space: nowrap; }
+.nwHero .importTrigger { min-width: 288px; }
+.importTriggerSub { font-size: 11px; color: var(--muted); letter-spacing: 0.01em; }
+.section > .importTrigger { margin-bottom: var(--space-4); }
+.importTriggerLarge { padding: var(--space-4) var(--space-5); gap: var(--space-4); border-color: var(--brand-line); background: var(--brand-soft); box-shadow: 0 0 40px -20px var(--brand-glow); align-self: stretch; min-width: 280px; }
+.importTriggerLarge .importTriggerIcon { width: 46px; height: 46px; font-size: 22px; border-radius: 14px; }
+.importTriggerLarge .importTriggerTitle { font-size: var(--text-base); }
+.importTriggerLarge .importTriggerSub { font-size: 12px; color: var(--muted-strong); }
+@media (max-width: 560px) { .importTrigger { width: 100%; } }
+
+/* Import modal */
+.importOverlay { position: fixed; inset:0; background: var(--overlay); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 1000; display:grid; place-items:center; padding: var(--space-4); animation: importFade 200ms var(--ease-premium); }
+@keyframes importFade { from { opacity:0; } to { opacity:1; } }
+.importPanel { width: min(520px, 100%); background: var(--bg-elevated); border: 1px solid var(--border-strong); border-radius: var(--radius-lg); padding: var(--space-6); box-shadow: 0 28px 70px -16px rgba(0,0,0,0.6); animation: importRise 320ms var(--ease-premium); }
+@keyframes importRise { from { opacity:0; transform: translateY(12px) scale(0.98); } to { opacity:1; transform:none; } }
+.importHead { display:flex; justify-content:space-between; align-items:flex-start; gap: var(--space-3); margin-bottom: var(--space-5); }
+.importEyebrow { font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: 0.24em; text-transform: uppercase; color: var(--brand); }
+.importTitle { font-family: var(--font-display); font-weight: 600; font-size: clamp(1.5rem, 3.2vw, 2rem); line-height: 1.05; letter-spacing: -0.03em; margin: var(--space-2) 0 0; color: var(--fg); }
+.importTitle em { font-style: normal; color: var(--brand); }
+.importClose { background: transparent; border: 1px solid var(--border); color: var(--muted-strong); font-size: 22px; line-height: 1; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; transition: color var(--duration) var(--ease), border-color var(--duration) var(--ease); flex-shrink:0; }
+.importClose:hover { color: var(--fg); border-color: var(--border-strong); }
+.importDesc { color: var(--muted-strong); font-size: var(--text-sm); line-height: 1.55; margin: 0 0 var(--space-4); }
+.dropZone { display:flex; flex-direction:column; align-items:center; justify-content:center; gap: var(--space-2); padding: var(--space-8) var(--space-4); border: 1.5px dashed var(--border-strong); border-radius: var(--radius-lg); background: var(--brand-soft); text-align:center; }
+.dropIcon { display:grid; place-items:center; width: 50px; height: 50px; border-radius: 16px; background: var(--brand); color: var(--brand-ink); font-size: 22px; font-weight: 600; margin-bottom: var(--space-2); }
+.dropTitle { font-family: var(--font-display); font-weight: 600; font-size: var(--text-xl); color: var(--fg); }
+.dropSub { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.setupNote { margin: var(--space-4) 0 0; padding: var(--space-3) var(--space-4); border-left: 2px solid var(--warn-line); background: var(--warn-soft); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; font-size: var(--text-xs); line-height: 1.55; color: var(--muted-strong); }
+.setupNote strong { color: var(--warn); font-weight: 600; }
+
+/* Overview grid */
+.overviewGrid { display:grid; grid-template-columns: 1.6fr 1fr; gap: var(--space-4); margin-bottom: var(--space-4); }
+@media (max-width: 720px) { .overviewGrid { grid-template-columns: 1fr; } }
+.chartWrap, .donutWrap { position: relative; padding: var(--space-5); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--card-shadow); }
+.chartHead { display:flex; justify-content:space-between; align-items:baseline; margin-bottom: var(--space-4); gap: var(--space-3); flex-wrap: wrap; }
+.chartHeadLeft { display:inline-flex; align-items:baseline; gap: var(--space-3); }
+.chartLabel { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+.chartDelta { font-family: var(--font-mono); font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.chartDelta.up { color: var(--pos); } .chartDelta.down { color: var(--neg); }
+.periodSeg { display:inline-flex; align-items:center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-pill); padding: 2px; gap: 1px; }
+.periodBtn { appearance:none; background: transparent; border:0; color: var(--muted); font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: 0.04em; padding: 5px 10px; border-radius: var(--radius-pill); cursor: pointer; transition: background var(--duration) var(--ease-premium), color var(--duration) var(--ease-premium); }
+.periodBtn:hover { color: var(--muted-strong); }
+.periodBtnActive, .periodBtnActive:hover { background: var(--brand); color: var(--brand-ink); }
+.chartSvg { display:block; width: 100%; height: 144px; color: var(--pos); }
+.chartGrid { stroke: var(--border); stroke-width: 0.5; }
+.chartLineStroke { filter: drop-shadow(0 0 7px currentColor); }
+.chartEmpty { text-align:center; color: var(--muted); font-size: var(--text-sm); padding: var(--space-6) 0; }
+.chartStatsRow { display:grid; grid-template-columns: repeat(4,1fr); gap: var(--space-3); margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--border); }
+.chartStat { display:flex; flex-direction:column; gap: 3px; }
+.chartStatLabel { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.chartStatVal { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--fg); }
+
+/* Donut */
+.donutStage { position: relative; display:flex; align-items:center; justify-content:center; margin: var(--space-3) 0; }
+.donutSvg { width: 162px; height: 162px; }
+.donutCenter { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none; }
+.donutNum { font-family: var(--font-display); font-size: 19px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+.donutSub { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+.donutEmpty { text-align:center; color: var(--muted); font-size: var(--text-sm); padding: var(--space-3) 0; }
+.donutLegend { display:flex; flex-direction:column; gap: 8px; margin-top: var(--space-3); }
+.donutLeg { display:grid; grid-template-columns: 12px 1fr auto; align-items:center; gap: 9px; font-size: 12px; color: var(--muted-strong); }
+.donutLegDot { width: 9px; height: 9px; border-radius: 3px; }
+.donutLegPct { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--muted); }
+
+/* Account cards */
+.accountsGrid { display:grid; grid-template-columns: repeat(2,1fr); gap: var(--space-4); }
+@media (max-width: 720px) { .accountsGrid { grid-template-columns: 1fr; } }
+.accountCard { display:flex; flex-direction:column; gap: var(--space-3); padding: var(--space-5); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--card-shadow); }
+.accountHead { display:flex; align-items:baseline; justify-content:space-between; }
+.accountLabel { font-family: var(--font-display); font-weight: 600; font-size: var(--text-base); letter-spacing: -0.01em; color: var(--fg); }
+.accountTotal { font-family: var(--font-mono); font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.accountTotalPct { font-size: 10px; font-weight: 400; letter-spacing: 0.02em; color: var(--muted); margin-left: 6px; font-variant-numeric: tabular-nums; }
+.accountList { display:flex; flex-direction:column; gap: 2px; }
+.accountRow { display:grid; grid-template-columns: 1fr auto auto; align-items:center; gap: var(--space-3); padding: 8px 10px; border-radius: var(--radius-md); transition: background var(--duration) var(--ease-premium); }
+.accountRow:hover { background: var(--surface-2); }
+.accountRowName { font-size: 13px; color: var(--fg); cursor: pointer; border-radius: 6px; padding: 2px 5px; margin-left: -5px; }
+.accountRowName:hover { background: var(--brand-soft); }
+.accountRowAmount { font-family: var(--font-mono); font-size: 13px; font-weight: 500; font-variant-numeric: tabular-nums; cursor: pointer; text-align:right; border-radius: 6px; padding: 2px 5px; color: var(--fg); }
+.accountRowAmount:hover { background: var(--brand-soft); }
+.inlineEditInput { width: 100%; background: var(--bg-elevated); border: 1px solid var(--brand-line); border-radius: 6px; padding: 4px 7px; color: var(--fg); font-family: var(--font-mono); font-size: 13px; outline: none; font-variant-numeric: tabular-nums; }
+.inlineEditAmt { text-align:right; width: 110px; }
+.deleteBtn { background: transparent; border: 1px solid var(--border); color: var(--muted); font-size: 11px; line-height: 1; padding: 5px 8px; border-radius: var(--radius-md); cursor: pointer; transition: color var(--duration) var(--ease-premium), border-color var(--duration) var(--ease-premium); }
+.deleteBtn:hover { color: var(--neg); border-color: var(--neg-line); }
+.quickAdd { display:grid; grid-template-columns: 1fr 110px auto; gap: 7px; align-items:stretch; }
+.quickAddInput { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 9px 11px; color: var(--fg); font-family: var(--font-ui); font-size: 13px; outline: none; transition: border-color var(--duration) var(--ease-premium), box-shadow var(--duration) var(--ease-premium); }
+.quickAddInput::placeholder { color: var(--muted); }
+.quickAddInput:focus { border-color: var(--brand-line); box-shadow: 0 0 0 3px var(--brand-soft); }
+.quickAddBtn { background: var(--brand); border:0; color: var(--brand-ink); font-family: var(--font-ui); font-size: 13px; font-weight: 700; border-radius: var(--radius-md); padding: 0 15px; cursor: pointer; transition: filter var(--duration) var(--ease-premium); }
+.quickAddBtn:hover { filter: brightness(1.08); }
+.quickAddBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+.addToggle { align-self:flex-start; background: transparent; border: 1px dashed var(--border-strong); border-radius: var(--radius-md); color: var(--muted); font-family: var(--font-ui); font-size: 12px; letter-spacing: 0.01em; padding: 7px 13px; cursor: pointer; transition: color var(--duration) var(--ease-premium), border-color var(--duration) var(--ease-premium), background var(--duration) var(--ease-premium); }
+.addToggle:hover { color: var(--brand); border-color: var(--brand-line); background: var(--brand-soft); border-style: solid; }
+
+/* Holdings */
+.holdingRow { display:grid; grid-template-columns: auto 64px 1fr auto auto; align-items:center; gap: var(--space-3); padding: 8px 10px; border-radius: var(--radius-md); transition: background var(--duration) var(--ease-premium); }
+.holdingRow:hover { background: var(--surface-2); }
+.tickerPill { font-family: var(--font-mono); font-size: 11px; font-weight: 600; letter-spacing: 0.04em; color: var(--brand); background: var(--brand-soft); border: 1px solid var(--brand-line); padding: 3px 8px; border-radius: var(--radius-pill); text-transform: uppercase; }
+.holdingShares { font-family: var(--font-mono); font-size: 12px; font-variant-numeric: tabular-nums; color: var(--muted-strong); cursor: pointer; border-radius: 6px; padding: 2px 5px; text-align:right; }
+.holdingShares:hover { background: var(--brand-soft); }
+.holdingSharesInput { width: 64px; text-align:right; }
+.holdingPrice { display:inline-flex; align-items:baseline; gap: 6px; font-family: var(--font-mono); font-size: 12px; font-variant-numeric: tabular-nums; color: var(--muted); }
+.holdingsFooter { display:flex; justify-content:space-between; align-items:center; gap: var(--space-3); padding: 6px 2px 0; }
+.linkAction { background: transparent; border:0; padding: 4px 0; color: var(--muted-strong); font-family: var(--font-ui); font-size: 11px; letter-spacing: 0.01em; cursor: pointer; transition: color var(--duration) var(--ease-premium); }
+.linkAction:hover { color: var(--brand); }
+
+/* Activity */
+.activity { margin-top: var(--space-5); padding: var(--space-5); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--card-shadow); }
+.activityHead { display:flex; align-items:baseline; justify-content:space-between; margin-bottom: var(--space-3); }
+.activityList { display:flex; flex-direction:column; gap:0; }
+.activityBucket { display:flex; flex-direction:column; }
+.activityBucket + .activityBucket { margin-top: var(--space-3); }
+.activityBucketLabel { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 500; padding: 4px 0 2px; }
+.activityRow { display:grid; grid-template-columns: 4px 1fr auto auto; align-items:center; gap: var(--space-3); padding: 11px 0; border-bottom: 1px solid var(--border); }
+.activityRow:last-child { border-bottom:0; }
+.activityBar { width: 3px; height: 26px; border-radius: 2px; }
+.activityInfo { min-width:0; }
+.activityName { font-size: 13px; color: var(--fg); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.activityMeta { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-top: 3px; }
+.activityAmt { font-family: var(--font-mono); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.activityAmt.up { color: var(--pos); } .activityAmt.down { color: var(--neg); }
+.activityDate { font-family: var(--font-mono); font-size: 11px; color: var(--muted); min-width: 50px; text-align:right; }
+.activityEmpty { color: var(--muted); text-align:center; padding: var(--space-5) 0; }
+
+/* Ticker */
+.ticker { display:flex; align-items:center; gap: var(--space-3); padding: 9px 15px; background: var(--brand-soft); border: 1px solid var(--brand-line); border-radius: var(--radius-pill); margin-bottom: var(--space-5); overflow:hidden; }
+.ticker.urgent { background: var(--warn-soft); border-color: var(--warn-line); }
+.tickerTag { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--brand); font-weight: 600; flex-shrink:0; }
+.ticker.urgent .tickerTag { color: var(--warn); }
+.tickerStream { position: relative; flex:1; height: 18px; overflow:hidden; }
+.tickerItem { position:absolute; inset:0; display:flex; align-items:center; gap: var(--space-3); opacity:0; transform: translateY(8px); transition: opacity 400ms var(--ease-premium), transform 400ms var(--ease-premium); font-size: 12px; }
+.tickerItem.active { opacity:1; transform: translateY(0); }
+.tickerItemName { color: var(--fg); font-weight: 500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width: 50%; }
+.tickerItemAmt { font-family: var(--font-mono); color: var(--muted-strong); font-variant-numeric: tabular-nums; }
+.tickerItemDays { margin-left:auto; font-family: var(--font-mono); color: var(--muted); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; }
+.ticker.urgent .tickerItemDays { color: var(--warn); }
+.tickerDots { display:flex; gap: 4px; flex-shrink:0; }
+.tickerDot { width: 4px; height: 4px; border-radius: 50%; background: var(--border-strong); }
+.tickerDot.active { background: var(--brand); }
+.ticker.urgent .tickerDot.active { background: var(--warn); }
+
+/* Subs */
+.subsHero { display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap: var(--space-3); margin-bottom: var(--space-4); }
+.subsHeroNum { font-family: var(--font-display); font-size: 30px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; margin-top: 6px; }
+.subsHeroNumSuffix { font-family: var(--font-ui); font-size: 13px; color: var(--muted); font-weight: 500; margin-left: 5px; }
+.subsHeroSub { font-size: 11px; color: var(--muted); margin-top: 5px; }
+.subRow { display:grid; grid-template-columns: 1fr auto auto; align-items:center; gap: var(--space-3); padding: 13px 15px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 8px; }
+.subRow.urgent { background: var(--warn-soft); box-shadow: inset 3px 0 0 var(--warn); border-color: var(--warn-line); }
+.subRowName { font-size: 14px; font-weight: 700; color: var(--fg); }
+.subRowPeriod { font-family: var(--font-mono); font-size: 11px; color: var(--muted); margin-top: 3px; text-transform: capitalize; }
+.subRowRenew { font-size: 10px; color: var(--warn); margin-top: 4px; }
+.subRowPills { display:flex; flex-wrap:wrap; gap: 6px; margin-top: 7px; }
+.subPill { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.02em; padding: 3px 9px; border-radius: var(--radius-pill); background: var(--surface-2); color: var(--muted-strong); }
+.subToggle { appearance:none; background: var(--surface-2); border: 1px solid var(--border); color: var(--muted); font-family: var(--font-ui); font-size: 10px; letter-spacing: 0.02em; padding: 3px 9px 3px 7px; border-radius: var(--radius-pill); cursor: pointer; display:inline-flex; align-items:center; gap: 5px; transition: all var(--duration) var(--ease-premium); }
+.subToggle.on { background: var(--brand-soft); color: var(--brand); border-color: var(--brand-line); }
+.subToggleDot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); }
+.subToggle.on .subToggleDot { background: var(--brand); box-shadow: 0 0 5px var(--brand-glow); }
+.subRowCost { text-align:right; line-height: 1.15; }
+.subRowCostBig { font-family: var(--font-display); font-size: 21px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+.subRowCostUnit { font-family: var(--font-mono); font-size: 10px; color: var(--muted); margin-top: 2px; }
+.subRowCostBilled { font-size: 10px; color: var(--muted); margin-top: 2px; }
+.subRowActions { display:flex; flex-direction:column; gap: 5px; align-items:center; }
+.iconBtn { background: transparent; border: 1px solid var(--border); color: var(--muted); font-size: 12px; line-height: 1; padding: 4px 8px; border-radius: var(--radius-md); cursor: pointer; font-family: var(--font-ui); transition: color var(--duration) var(--ease-premium), border-color var(--duration) var(--ease-premium); }
+.iconBtn:hover { color: var(--fg); border-color: var(--border-strong); }
+
+/* Add card */
+.addCard { padding: var(--space-5); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: var(--space-4); box-shadow: var(--card-shadow); }
+.addCardHead { display:flex; align-items:center; justify-content:space-between; gap: var(--space-3); margin-bottom: var(--space-4); flex-wrap: wrap; }
+.addEyebrow { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.modeSeg { display:inline-flex; align-items:center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-pill); padding: 3px; gap: 2px; }
+.modeBtn { appearance:none; background: transparent; border:0; color: var(--muted); font-family: var(--font-ui); font-size: 12px; font-weight: 500; letter-spacing: 0.01em; padding: 6px 15px; border-radius: var(--radius-pill); cursor: pointer; transition: background var(--duration) var(--ease-premium), color var(--duration) var(--ease-premium); }
+.modeBtn:hover { color: var(--muted-strong); }
+.modeBtnActive, .modeBtnActive:hover { background: var(--brand); color: var(--brand-ink); }
+.addGrid { display:grid; gap: 8px; grid-template-columns: 1.4fr 0.9fr 0.7fr 0.9fr 1.1fr auto; align-items:stretch; }
+.addGridBought { grid-template-columns: 1.4fr 0.9fr 1fr auto; }
+@media (max-width: 720px) { .addGrid, .addGridBought { grid-template-columns: 1fr 1fr; } }
+.quickAddInputAlert { border-color: var(--warn-line) !important; box-shadow: 0 0 0 3px var(--warn-soft); }
+.addPreview { font-size: 11px; color: var(--muted); margin-top: var(--space-3); font-style: italic; }
+.addPreview.warn { color: var(--warn); } .addPreview.bad { color: var(--neg); }
+.subsCheck { display:inline-flex; align-items:center; gap: 8px; margin-top: var(--space-3); font-size: 11px; color: var(--muted-strong); cursor: pointer; }
+
+/* Orders */
+.ordCard { padding: var(--space-5); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: var(--space-3); display:flex; flex-direction:column; gap: var(--space-3); box-shadow: var(--card-shadow); }
+.ordCard.deducted { opacity: 0.62; }
+.ordHead { display:grid; grid-template-columns: 1fr auto auto; gap: var(--space-3); align-items:baseline; }
+.ordName { font-size: var(--text-base); font-weight: 700; color: var(--fg); }
+.ordCard.deducted .ordName { text-decoration: line-through; text-decoration-color: var(--muted); }
+.ordAmt { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+.ordMetaRow { display:flex; flex-wrap:wrap; gap: 6px; align-items:center; }
+.ordPill { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.02em; padding: 4px 10px; border-radius: var(--radius-pill); background: var(--surface-2); color: var(--muted-strong); }
+.ordPill.good { background: var(--pos-soft); color: var(--pos); }
+.ordPill.warn { background: var(--warn-soft); color: var(--warn); }
+.ordPill.bad { background: var(--neg-soft); color: var(--neg); }
+.ordPill.frozen { opacity: 0.55; text-decoration: line-through; }
+.ordDate.today { background: var(--pos-soft); color: var(--pos); }
+.ordDate.imminent { background: var(--warn-soft); color: var(--warn); }
+.ordDate.past { background: var(--neg-soft); color: var(--neg); }
+.ordFoot { display:flex; justify-content:flex-end; gap: 6px; margin-top: 4px; }
+.ordDeductBtn { background: transparent; border: 1px solid var(--border-strong); color: var(--muted-strong); font-family: var(--font-ui); font-size: 12px; padding: 7px 13px; border-radius: var(--radius-pill); cursor: pointer; transition: all var(--duration) var(--ease-premium); }
+.ordDeductBtn:hover { border-color: var(--neg-line); color: var(--neg); }
+.ordDeductedPill { font-family: var(--font-mono); font-size: 11px; padding: 7px 13px; border-radius: var(--radius-pill); background: var(--pos-soft); color: var(--pos); }
+
+/* Wishlist */
+.wishHero { padding: var(--space-5); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: var(--space-4); box-shadow: var(--card-shadow); }
+.wishHeroTop { display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap: var(--space-3); margin-bottom: var(--space-4); }
+.wishHeroNum { font-family: var(--font-display); font-size: 30px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; margin-top: 6px; }
+.wishHeroPctNum { font-family: var(--font-display); font-size: 30px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; color: var(--pos); text-align:right; }
+.wishHeroPctNum.warn { color: var(--warn); } .wishHeroPctNum.bad { color: var(--neg); }
+.wishHeroBar { height: 7px; border-radius: var(--radius-pill); background: var(--track); overflow:hidden; }
+.wishHeroBarFill { height: 100%; background: var(--pos); transition: width 320ms var(--ease-premium); }
+.wishHeroBarFill.warn { background: var(--warn); } .wishHeroBarFill.bad { background: var(--neg); }
+.wishHeroFoot { font-size: 11px; color: var(--muted); font-style: italic; margin-top: var(--space-3); }
+.wishRow { padding: var(--space-4); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: var(--space-2); display:flex; flex-direction:column; gap: var(--space-2); box-shadow: var(--card-shadow); }
+.wishRowH { display:grid; grid-template-columns: 1fr auto auto; gap: var(--space-3); align-items:center; }
+.wishRowName { font-size: var(--text-base); font-weight: 700; }
+.wishRowMeta { font-family: var(--font-mono); font-size: 11px; color: var(--muted); margin-top: 3px; }
+.wishRowAmtWrap { text-align:right; }
+.wishRowAmt { font-family: var(--font-mono); font-size: var(--text-base); font-weight: 600; font-variant-numeric: tabular-nums; }
+.wishRowPct { font-family: var(--font-mono); font-size: 11px; color: var(--pos); margin-top: 3px; }
+.wishRowPct.warn { color: var(--warn); } .wishRowPct.bad { color: var(--neg); }
+.wishRowBar { height: 3px; border-radius: var(--radius-pill); background: var(--track); overflow:hidden; }
+.wishRowBarFill { height: 100%; background: var(--pos); transition: width 320ms var(--ease-premium); }
+.wishRowBarFill.warn { background: var(--warn); } .wishRowBarFill.bad { background: var(--neg); }
+
+/* Empty states */
+.emptyState { padding: var(--space-8) var(--space-5); text-align:center; background: var(--surface); border: 1px dashed var(--border-strong); border-radius: var(--radius-lg); margin-bottom: var(--space-4); }
+.emptyTitle { font-family: var(--font-display); font-weight: 600; font-size: var(--text-lg); color: var(--muted-strong); margin-bottom: var(--space-2); }
+.emptyBody { font-size: 12px; color: var(--muted); max-width: 38ch; margin: 0 auto; line-height: 1.55; }
+
+/* Tab bar */
+.tabBar { position: fixed; bottom:0; left:0; right:0; z-index: 30; display:flex; justify-content:center; padding: var(--space-3) var(--space-4) calc(var(--space-3) + env(safe-area-inset-bottom)); background: var(--tabbar-grad); pointer-events:none; }
+.tabBarInner { display:flex; gap: 4px; padding: 5px; background: var(--tabbar-pill); border: 1px solid var(--border); border-radius: var(--radius-pill); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: 0 14px 44px rgba(0,0,0,0.45); pointer-events:auto; }
+.tab { appearance:none; background: transparent; border:0; color: var(--muted); font-family: var(--font-ui); font-size: 12px; font-weight: 600; letter-spacing: 0.02em; padding: 9px 18px; border-radius: var(--radius-pill); cursor: pointer; transition: background var(--duration) var(--ease-premium), color var(--duration) var(--ease-premium); }
+.tab:hover { color: var(--muted-strong); }
+.tab.active, .tab.active:hover { background: var(--brand); color: var(--brand-ink); }
+
+/* Aurora flourish: gradient hero number */
+[data-theme="aurora"] .nwHeroNum {
+  background: linear-gradient(100deg, var(--brand-2) 0%, var(--pos) 120%);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
+}
+
+/* Settings (API keys) */
+.settingsBtn { appearance:none; background: var(--surface); border: 1px solid var(--border); color: var(--muted-strong); width: 30px; height: 30px; border-radius: var(--radius-pill); cursor: pointer; font-size: 15px; line-height: 1; display:grid; place-items:center; transition: color var(--duration) var(--ease-premium), border-color var(--duration) var(--ease-premium), background var(--duration) var(--ease-premium); }
+.settingsBtn:hover { color: var(--fg); border-color: var(--border-strong); background: var(--surface-2); }
+.headerControls { display:flex; align-items:center; gap: var(--space-2); }
+.fieldGroup { display:flex; flex-direction:column; gap: 6px; margin-bottom: var(--space-5); }
+.fieldLabelRow { display:flex; align-items:baseline; justify-content:space-between; gap: var(--space-3); }
+.fieldLabel { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.keyStatus { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 7px; border-radius: var(--radius-pill); }
+.keyStatus.set { color: var(--pos); background: var(--pos-soft); }
+.keyStatus.unset { color: var(--muted); background: var(--surface-2); }
+.settingsInput { width:100%; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 10px 12px; color: var(--fg); font-family: var(--font-mono); font-size: 13px; outline: none; transition: border-color var(--duration) var(--ease-premium), box-shadow var(--duration) var(--ease-premium); }
+.settingsInput::placeholder { color: var(--muted); }
+.settingsInput:focus { border-color: var(--brand-line); box-shadow: 0 0 0 3px var(--brand-soft); }
+.fieldHint { font-size: 11px; color: var(--muted); line-height: 1.5; }
+.fieldHint a { color: var(--brand); text-decoration: none; }
+.fieldHint a:hover { text-decoration: underline; }
+.settingsActions { display:flex; justify-content:flex-end; gap: 8px; margin-top: var(--space-6); }
+.ghostBtn { background: transparent; border: 1px solid var(--border); color: var(--muted-strong); font-family: var(--font-ui); font-size: 13px; font-weight: 500; border-radius: var(--radius-md); padding: 0 15px; height: 38px; cursor: pointer; transition: color var(--duration) var(--ease-premium), border-color var(--duration) var(--ease-premium); }
+.ghostBtn:hover { color: var(--fg); border-color: var(--border-strong); }
+.importStatus { display:flex; flex-direction:column; align-items:center; gap: var(--space-3); padding: var(--space-8) var(--space-4); text-align:center; }
+.importSpinner { width: 34px; height: 34px; border-radius: 50%; border: 3px solid var(--brand-soft); border-top-color: var(--brand); animation: importSpin 800ms linear infinite; }
+@keyframes importSpin { to { transform: rotate(360deg); } }
+.importStatusTitle { font-family: var(--font-display); font-weight: 600; font-size: var(--text-lg); color: var(--fg); }
+.importStatusBody { font-size: 12px; color: var(--muted); max-width: 40ch; line-height: 1.55; }
+.importStatus.error .importStatusTitle { color: var(--neg); }
+.dropZone.clickable { cursor: pointer; transition: border-color var(--duration) var(--ease-premium), background var(--duration) var(--ease-premium); }
+.dropZone.clickable:hover { border-color: var(--brand); background: color-mix(in srgb, var(--brand) 14%, transparent); }
+
+</style>
+<link rel="stylesheet" href="skin.css?v=1">
+</head>
+<body>
+<main class="page grain-overlay">
+  <div class="shell" id="app"></div>
+</main>
+<div id="modalRoot"></div>
+<script>
+/* ============================================================
+ * Pure helpers — ported from state.ts
+ * ============================================================ */
+const STORAGE_KEY = 'finance_standalone_v1';
+const ACTIVITY_MAX = 50;
+const NW_HISTORY_MAX = 500;
+const CURRENCIES = ['CHF', 'USD', 'EUR', 'GBP'];
+const TAB_KEYS = ['net', 'subs', 'orders', 'wish'];
+const TAB_LABELS = { net: 'net worth', subs: 'subs', orders: 'orders', wish: 'wishlist' };
+const DEFAULT_RATES = { CHF: 1, USD: 1, EUR: 1, GBP: 1 };
+
+function genId(prefix) { return (prefix || 'id') + '_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8); }
+
+function fmtMoney(amountCHF, currency, rates) {
+  const rate = rates[currency] || 1;
+  const num = (Number(amountCHF) || 0) * rate;
+  const hasFraction = Math.abs(num % 1) > 0.005;
+  return currency + ' ' + num.toLocaleString('en-US', { minimumFractionDigits: hasFraction ? 2 : 0, maximumFractionDigits: 2 });
+}
+function displayToChf(amount, currency, rates) { return amount / (rates[currency] || 1); }
+function chfToDisplay(amountCHF, currency, rates) { return amountCHF * (rates[currency] || 1); }
+function monthlyEquivalent(s) { const a = Number(s.amountCHF) || 0; if (s.period === 'yearly') return a / 12; if (s.period === 'weekly') return a * 4.345; return a; }
+function netWorthChf(accounts) { return accounts.reduce((sum, a) => sum + (Number(a.amountCHF) || 0), 0); }
+function netWorthByType(accounts) { const out = { bank: 0, stocks: 0, crypto: 0, other: 0 }; accounts.forEach(a => { out[a.type] = (out[a.type] || 0) + (Number(a.amountCHF) || 0); }); return out; }
+
+function nextRenewalDate(iso, period) {
+  if (!iso) return null;
+  const isoSafe = /^\d{4}-\d{2}-\d{2}$/.test(iso) ? iso + 'T00:00' : iso;
+  const d = new Date(isoSafe);
+  if (isNaN(d.getTime())) return null;
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  let safety = 0;
+  while (d < today && safety++ < 600) {
+    if (period === 'weekly') d.setDate(d.getDate() + 7);
+    else if (period === 'yearly') d.setFullYear(d.getFullYear() + 1);
+    else d.setMonth(d.getMonth() + 1);
+  }
+  return d;
+}
+function formatActivityDate(ts) {
+  const d = new Date(ts), now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const yesterday = today - 86400000;
+  const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  if (dayStart === today) return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  if (dayStart === yesterday) return 'yest';
+  const months = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+  return months[d.getMonth()] + ' ' + d.getDate();
+}
+function formatRenewal(iso) {
+  if (!iso) return '';
+  const isoSafe = /^\d{4}-\d{2}-\d{2}$/.test(iso) ? iso + 'T00:00' : iso;
+  const d = new Date(isoSafe);
+  if (isNaN(d.getTime())) return iso;
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const diffDays = Math.round((dayStart.getTime() - today.getTime()) / 86400000);
+  const dateLabel = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  let prefix = '';
+  if (diffDays < 0) prefix = 'past · ';
+  else if (diffDays === 0) prefix = 'today · ';
+  else if (diffDays === 1) prefix = 'tomorrow · ';
+  else if (diffDays <= 7) prefix = 'in ' + diffDays + 'd · ';
+  return prefix + dateLabel;
+}
+function pctClass(pct) { if (pct < 5) return 'good'; if (pct < 25) return 'warn'; return 'bad'; }
+function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+/* ============================================================
+ * State + persistence
+ * ============================================================ */
+const DEFAULT_STATE = { version: 1, currency: 'CHF', activeTab: 'net', accounts: [], subscriptions: [], orders: [], wishlist: [], activity: [], netWorthHistory: [] };
+
+function load() {
+  try { const raw = localStorage.getItem(STORAGE_KEY); if (!raw) return Object.assign({}, DEFAULT_STATE); return Object.assign({}, DEFAULT_STATE, JSON.parse(raw)); }
+  catch { return Object.assign({}, DEFAULT_STATE); }
+}
+function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {} }
+
+let state = load();
+let rates = Object.assign({}, DEFAULT_RATES);
+
+/* ---- API keys / settings (stored only in this browser) ---- */
+const SETTINGS_KEY = 'finance_settings_v1';
+const DEFAULT_MODEL = 'claude-haiku-4-5'; // cheapest vision-capable model — never use Sonnet/Opus for OCR
+function loadSettings() {
+  try { return Object.assign({ finnhubKey: '', anthropicKey: '', anthropicModel: DEFAULT_MODEL }, JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}')); }
+  catch { return { finnhubKey: '', anthropicKey: '', anthropicModel: DEFAULT_MODEL }; }
+}
+function saveSettings() { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch {} }
+let settings = loadSettings();
+
+/* UI session state (not persisted) */
+const ui = {
+  chartPeriod: 'ALL',
+  show: {},          // bankAdd, cryptoAdd, otherAdd, stocksAdd, stocksManual
+  edit: null,        // { id, field:'name'|'amt'|'shares' }
+  subEditId: null,
+  importOpen: null,  // 'statement' | 'subs' | 'receipt'
+  settingsOpen: false,
+  importBusy: false, importError: null, importResult: null,
+  pricesBusy: false,
+  drafts: {
+    bank: { name: '', amt: '' }, crypto: { name: '', amt: '' }, other: { name: '', amt: '' },
+    stockHold: { ticker: '', shares: '' }, stockManual: { name: '', amt: '' },
+    subAdd: { name: '', amount: '', period: 'monthly', renewal: '', from: '', auto: false },
+    subEdit: null,
+    order: { mode: 'incoming', name: '', cost: '', from: '', arrival: '' },
+    wish: { name: '', amount: '' },
+  },
+};
+
+function fmt(chf) { return fmtMoney(chf, state.currency, rates); }
+
+/* ---- NW snapshot ---- */
+function maybeSnapshotNw() {
+  const total = netWorthChf(state.accounts);
+  const h = state.netWorthHistory;
+  const last = h[h.length - 1];
+  if (last && Math.abs((last.v || 0) - total) < 0.005) return;
+  h.push({ t: Date.now(), v: total });
+  if (h.length > NW_HISTORY_MAX) h.splice(0, h.length - NW_HISTORY_MAX);
+}
+function pushActivity(entry) {
+  state.activity.push(Object.assign({ id: genId('act'), ts: Date.now() }, entry));
+  if (state.activity.length > ACTIVITY_MAX) state.activity.splice(0, state.activity.length - ACTIVITY_MAX);
+}
+
+/* ============================================================
+ * Actions
+ * ============================================================ */
+const actions = {
+  setCurrency(c) { state.currency = c; save(); render(); },
+  setActiveTab(t) { state.activeTab = t; save(); render(); },
+
+  addAccount(type, name, displayAmount) {
+    const trimmed = name.trim(); if (!trimmed || !isFinite(displayAmount)) return;
+    const amountCHF = displayToChf(displayAmount, state.currency, rates);
+    state.accounts.push({ id: genId('acc'), type, name: trimmed, amountCHF });
+    pushActivity({ accountType: type, name: trimmed, deltaCHF: amountCHF, kind: 'add' });
+    maybeSnapshotNw(); save(); render();
+  },
+  renameAccount(id, name) { const a = state.accounts.find(x => x.id === id); if (a) a.name = name.trim() || a.name; save(); render(); },
+  setAccountAmount(id, displayAmount) {
+    const acct = state.accounts.find(a => a.id === id); if (!acct || !isFinite(displayAmount)) return;
+    const next = Math.max(0, displayToChf(displayAmount, state.currency, rates));
+    const delta = next - acct.amountCHF; acct.amountCHF = next;
+    if (Math.abs(delta) >= 0.005) pushActivity({ accountType: acct.type, name: acct.name, deltaCHF: delta, kind: 'edit' });
+    maybeSnapshotNw(); save(); render();
+  },
+  deleteAccount(id) {
+    const acct = state.accounts.find(a => a.id === id); if (!acct) return;
+    state.accounts = state.accounts.filter(a => a.id !== id);
+    pushActivity({ accountType: acct.type, name: acct.name, deltaCHF: -acct.amountCHF, kind: 'delete' });
+    maybeSnapshotNw(); save(); render();
+  },
+  addHolding(ticker, shares) {
+    const t = ticker.trim().toUpperCase(); if (!t || !isFinite(shares) || shares <= 0) return;
+    // No live price source in the standalone — value stays 0 until you switch
+    // to a manual entry or use the hosted app. Shown as "—".
+    state.accounts.push({ id: genId('acc'), type: 'stocks', name: t, ticker: t, shares, amountCHF: 0 });
+    save(); render();
+  },
+  setHoldingShares(id, shares) { const a = state.accounts.find(x => x.id === id); if (a && a.type === 'stocks' && a.ticker && isFinite(shares) && shares >= 0) a.shares = shares; save(); render(); },
+
+  addSubscription(input) {
+    const name = input.name.trim(); if (!name || !isFinite(input.displayAmount)) return;
+    state.subscriptions.push({
+      id: genId('sub'), name, amountCHF: displayToChf(input.displayAmount, state.currency, rates), period: input.period,
+      enteredAmount: input.displayAmount, enteredCurrency: state.currency, renewal: input.renewal || null,
+      fromAccountId: input.fromAccountId || null, autoDeduct: !!input.autoDeduct, lastDeductedAt: null,
+    });
+    save(); render();
+  },
+  updateSubscription(id, patch) {
+    const sub = state.subscriptions.find(x => x.id === id); if (!sub) return;
+    let amountCHF = sub.amountCHF;
+    if (typeof patch.displayAmount === 'number' && isFinite(patch.displayAmount)) {
+      const ccy = patch.enteredCurrency || sub.enteredCurrency || state.currency;
+      amountCHF = displayToChf(patch.displayAmount, ccy, rates);
+    }
+    Object.assign(sub, patch, { amountCHF, enteredAmount: patch.displayAmount != null ? patch.displayAmount : sub.enteredAmount });
+    delete sub.displayAmount;
+    save(); render();
+  },
+  deleteSubscription(id) { state.subscriptions = state.subscriptions.filter(x => x.id !== id); save(); render(); },
+  toggleSubAutoDeduct(id) { const s = state.subscriptions.find(x => x.id === id); if (s) s.autoDeduct = !s.autoDeduct; save(); render(); },
+
+  addOrder(input) {
+    const name = input.name.trim(); if (!name || !isFinite(input.displayAmount)) return;
+    const amountCHF = displayToChf(input.displayAmount, state.currency, rates);
+    let deductedAt = null, pctAtDeduction = null, deductedFromName = null;
+    if (input.immediate && input.fromAccountId) {
+      const acct = state.accounts.find(a => a.id === input.fromAccountId);
+      if (acct) {
+        const grand = netWorthChf(state.accounts);
+        pctAtDeduction = grand > 0 ? (amountCHF / grand) * 100 : 0;
+        deductedAt = Date.now(); deductedFromName = acct.name;
+        const nextAmount = Math.max(0, acct.amountCHF - amountCHF);
+        const delta = nextAmount - acct.amountCHF; acct.amountCHF = nextAmount;
+        pushActivity({ accountType: acct.type, name: acct.name, deltaCHF: delta, kind: 'edit' });
+      }
+    }
+    state.orders.push({ id: genId('ord'), name, amountCHF, enteredAmount: input.displayAmount, enteredCurrency: state.currency, fromAccountId: input.fromAccountId || null, date: input.date || null, ts: Date.now(), deductedAt, pctAtDeduction, deductedFromName });
+    maybeSnapshotNw(); save(); render();
+  },
+  deleteOrder(id) { state.orders = state.orders.filter(x => x.id !== id); save(); render(); },
+  deductOrder(id) {
+    const order = state.orders.find(x => x.id === id); if (!order || order.deductedAt) return;
+    const grand = netWorthChf(state.accounts);
+    const pct = grand > 0 ? (order.amountCHF / grand) * 100 : 0;
+    const acct = order.fromAccountId ? state.accounts.find(a => a.id === order.fromAccountId) : null;
+    if (acct) { const nextAmount = Math.max(0, acct.amountCHF - order.amountCHF); const delta = nextAmount - acct.amountCHF; acct.amountCHF = nextAmount; pushActivity({ accountType: acct.type, name: acct.name, deltaCHF: delta, kind: 'edit' }); }
+    order.deductedAt = Date.now(); order.pctAtDeduction = pct; order.deductedFromName = acct ? acct.name : null;
+    maybeSnapshotNw(); save(); render();
+  },
+  undoDeductOrder(id) {
+    const order = state.orders.find(x => x.id === id); if (!order || !order.deductedAt) return;
+    const acct = order.fromAccountId ? state.accounts.find(a => a.id === order.fromAccountId) : null;
+    if (acct) { acct.amountCHF += order.amountCHF; pushActivity({ accountType: acct.type, name: acct.name, deltaCHF: order.amountCHF, kind: 'edit' }); }
+    order.deductedAt = null; order.pctAtDeduction = null; order.deductedFromName = null;
+    maybeSnapshotNw(); save(); render();
+  },
+
+  addWish(name, displayAmount) {
+    const trimmed = name.trim(); if (!trimmed || !isFinite(displayAmount)) return;
+    state.wishlist.push({ id: genId('wish'), name: trimmed, amountCHF: displayToChf(displayAmount, state.currency, rates), enteredAmount: displayAmount, enteredCurrency: state.currency, ts: Date.now() });
+    save(); render();
+  },
+  deleteWish(id) { state.wishlist = state.wishlist.filter(x => x.id !== id); save(); render(); },
+};
+
+/* ============================================================
+ * Constants for views
+ * ============================================================ */
+let TYPE_COLORS = { bank: '#8B7CFF', stocks: '#C7BBFF', crypto: '#46E0A8', other: 'rgba(243,242,248,0.4)' };
+let SUBS_COLOR = '#FBBF24';
+const THEMES = [
+  { key: 'nocturne', label: 'Nocturne', swatch: '#8B7CFF' },
+  { key: 'aurora', label: 'Aurora', swatch: 'linear-gradient(135deg,#8B7BFF,#4FE3D0)' },
+  { key: 'daylight', label: 'Daylight', swatch: '#6A45FF' },
+];
+const THEME_PALETTES = {
+  nocturne: { bank: '#8B7CFF', stocks: '#C7BBFF', crypto: '#46E0A8', other: 'rgba(243,242,248,0.4)', subs: '#FBBF24' },
+  aurora:   { bank: '#8B7BFF', stocks: '#B9ABFF', crypto: '#4FE3D0', other: 'rgba(220,225,255,0.4)', subs: '#FFC65C' },
+  daylight: { bank: '#6A45FF', stocks: '#9E84FF', crypto: '#0E9E64', other: 'rgba(23,22,34,0.4)', subs: '#B4690E' },
+};
+let currentTheme = (function(){ try { return localStorage.getItem('patron_theme') || 'nocturne'; } catch(e){ return 'nocturne'; } })();
+if (!THEME_PALETTES[currentTheme]) currentTheme = 'nocturne';
+function applyTheme(name){
+  if (!THEME_PALETTES[name]) name = 'nocturne';
+  currentTheme = name;
+  document.documentElement.setAttribute('data-theme', name);
+  const p = THEME_PALETTES[name];
+  TYPE_COLORS = { bank: p.bank, stocks: p.stocks, crypto: p.crypto, other: p.other };
+  SUBS_COLOR = p.subs;
+  try { localStorage.setItem('patron_theme', name); } catch(e){}
+  render();
+}
+const TYPE_LABELS = { bank: 'Bank', stocks: 'Stocks', crypto: 'Crypto', other: 'Other' };
+const CATEGORY_ORDER = [
+  { key: 'bank', label: 'Bank accounts', ph1: 'Account name', ph2: 'Amount' },
+  { key: 'stocks', label: 'Stocks · investments', ph1: 'Stock / fund', ph2: 'Value' },
+  { key: 'crypto', label: 'Crypto', ph1: 'Coin / wallet', ph2: 'Value' },
+  { key: 'other', label: 'Other assets', ph1: 'Asset name', ph2: 'Value' },
+];
+const CHART_PERIODS = [ { key:'1D',label:'1D',days:1 }, { key:'1W',label:'1W',days:7 }, { key:'1M',label:'1M',days:30 }, { key:'1Y',label:'1Y',days:365 }, { key:'ALL',label:'All',days:null } ];
+
+/* ============================================================
+ * Header + ticker
+ * ============================================================ */
+function headerHtml() {
+  const themeSeg = THEMES.map(t => '<button type="button" class="themeBtn ' + (t.key === currentTheme ? 'themeBtnActive' : '') + '" data-act="theme" data-theme="' + t.key + '"><span class="themeSwatch" style="background:' + t.swatch + '"></span>' + t.label + '</button>').join('');
+  const segs = CURRENCIES.map(c => '<button type="button" class="currencyBtn ' + (c === state.currency ? 'currencyBtnActive' : '') + '" data-act="currency" data-c="' + c + '">' + c + '</button>').join('');
+  return '<header class="header"><div class="headerLeft">'
+    + '<a class="back" href="index.html"><span class="backArrow">←</span> Liam</a>'
+    + '<h1 class="title">Finance</h1><p class="subtitle">Net worth · subs · orders · wishlist</p>'
+    + '</div>'
+    + '<div class="headerRight">'
+    + '<div class="headerControls">'
+    + '<div class="themeSeg" role="radiogroup" aria-label="Theme">' + themeSeg + '</div>'
+    + '<button type="button" class="settingsBtn" data-act="openSettings" title="API keys & settings" aria-label="Settings">⚙</button>'
+    + '</div>'
+    + '<div class="currencySeg" role="radiogroup" aria-label="Display currency">' + segs + '</div>'
+    + '</div></header>';
+}
+
+function tickerEntries() {
+  const out = [];
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  state.subscriptions.forEach(s => {
+    if (!s.renewal) return;
+    const next = nextRenewalDate(s.renewal, s.period);
+    if (!next) return;
+    out.push({ id: s.id, name: s.name, amountCHF: s.amountCHF, days: Math.round((next.getTime() - today) / 86400000) });
+  });
+  out.sort((a, b) => a.days - b.days);
+  return out;
+}
+function daysLabel(d) { if (d < 0) return Math.abs(d) + 'd late'; if (d === 0) return 'today'; if (d === 1) return 'tomorrow'; return 'in ' + d + 'd'; }
+
+function tickerHtml() {
+  const entries = tickerEntries();
+  if (entries.length === 0) return '';
+  const cur = entries[tickerIdx % entries.length];
+  const urgent = cur && cur.days <= 5;
+  const items = entries.map((e, i) => '<div class="tickerItem ' + (i === (tickerIdx % entries.length) ? 'active' : '') + '"><span class="tickerItemName">' + esc(e.name) + '</span><span class="tickerItemAmt">' + esc(fmt(e.amountCHF)) + '</span><span class="tickerItemDays">' + daysLabel(e.days) + '</span></div>').join('');
+  const dots = entries.map((e, i) => '<span class="tickerDot ' + (i === (tickerIdx % entries.length) ? 'active' : '') + '"></span>').join('');
+  return '<div class="ticker ' + (urgent ? 'urgent' : '') + '"><span class="tickerTag">renews</span><div class="tickerStream">' + items + '</div><div class="tickerDots">' + dots + '</div></div>';
+}
+let tickerIdx = 0, tickerTimer = null;
+function mountTicker() {
+  if (tickerTimer) { clearInterval(tickerTimer); tickerTimer = null; }
+  const entries = tickerEntries();
+  if (entries.length < 2) return;
+  tickerTimer = setInterval(() => {
+    tickerIdx = (tickerIdx + 1) % entries.length;
+    document.querySelectorAll('.tickerItem').forEach((el, i) => el.classList.toggle('active', i === tickerIdx));
+    document.querySelectorAll('.tickerDot').forEach((el, i) => el.classList.toggle('active', i === tickerIdx));
+  }, 5000);
+}
+
+/* ============================================================
+ * NET WORTH view
+ * ============================================================ */
+function dailyDeltaHtml() {
+  const history = state.netWorthHistory;
+  if (history.length < 2) return '';
+  const last = history[history.length - 1];
+  const cutoff = last.t - 86400000;
+  let baseline = null;
+  for (let i = history.length - 1; i >= 0; i--) { if (history[i].t <= cutoff) { baseline = history[i]; break; } }
+  if (!baseline) baseline = history[0];
+  if (last.t - baseline.t < 3600000) return '';
+  const delta = last.v - baseline.v;
+  const pct = Math.abs(baseline.v) > 0.005 ? (delta / Math.abs(baseline.v)) * 100 : null;
+  if (Math.abs(delta) < 0.005) return '<span class="dailyDelta flat">flat · 24h</span>';
+  const up = delta > 0, sign = up ? '+' : '−';
+  const pctLabel = pct == null ? '' : '<span class="dailyDeltaPct">' + (up ? '+' : '−') + (Math.abs(pct) >= 100 ? Math.abs(pct).toFixed(0) : Math.abs(pct).toFixed(2)) + '%</span>';
+  return '<span class="dailyDelta ' + (up ? 'up' : 'down') + '">' + sign + esc(fmt(Math.abs(delta))) + pctLabel + '<span class="dailyDeltaWindow">· 24h</span></span>';
+}
+
+function smoothPath(points) {
+  if (points.length < 2) return '';
+  if (points.length === 2) return 'M' + points[0].x + ',' + points[0].y + ' L' + points[1].x + ',' + points[1].y;
+  const d = ['M' + points[0].x + ',' + points[0].y];
+  for (let i = 0; i < points.length - 1; i++) {
+    const p0 = points[i-1] || points[i], p1 = points[i], p2 = points[i+1], p3 = points[i+2] || p2;
+    const c1x = p1.x + (p2.x - p0.x)/6, c1y = p1.y + (p2.y - p0.y)/6, c2x = p2.x - (p3.x - p1.x)/6, c2y = p2.y - (p3.y - p1.y)/6;
+    d.push('C' + c1x + ',' + c1y + ' ' + c2x + ',' + c2y + ' ' + p2.x + ',' + p2.y);
+  }
+  return d.join(' ');
+}
+
+function chartHtml() {
+  const W = 600, H = 200, PAD = 8;
+  const activePeriod = CHART_PERIODS.find(p => p.key === ui.chartPeriod) || CHART_PERIODS[CHART_PERIODS.length - 1];
+  const full = state.netWorthHistory;
+  let history;
+  if (activePeriod.days == null) history = full;
+  else {
+    const cutoff = Date.now() - activePeriod.days * 86400000;
+    const inWin = full.filter(p => p.t >= cutoff);
+    if (inWin.length >= 2 || full.length === 0) history = inWin;
+    else { let anchor = null; for (let i = full.length - 1; i >= 0; i--) { if (full[i].t < cutoff) { anchor = full[i]; break; } } history = anchor ? [anchor].concat(inWin) : inWin; }
+  }
+  const seg = CHART_PERIODS.map(p => '<button type="button" class="periodBtn ' + (p.key === ui.chartPeriod ? 'periodBtnActive' : '') + '" data-act="chartPeriod" data-p="' + p.key + '">' + p.label + '</button>').join('');
+  const periodToggle = '<div class="periodSeg">' + seg + '</div>';
+
+  function statsRow(hist) {
+    if (!hist.length) return '<div class="chartStatsRow">' + stat('1% of NW','-') + stat('All-time high','-') + stat('All-time low','-') + stat('Snapshots','0') + '</div>';
+    const vals = hist.map(p => p.v), last = vals[vals.length - 1];
+    return '<div class="chartStatsRow">' + stat('1% of NW', fmt(last/100)) + stat('All-time high', fmt(Math.max.apply(null, vals))) + stat('All-time low', fmt(Math.min.apply(null, vals))) + stat('Snapshots', String(hist.length)) + '</div>';
+  }
+  function stat(l, v) { return '<div class="chartStat"><span class="chartStatLabel">' + esc(l) + '</span><span class="chartStatVal">' + esc(v) + '</span></div>'; }
+
+  if (history.length < 1) {
+    return '<div class="chartWrap"><div class="chartHead"><span class="chartLabel">' + (activePeriod.key === 'ALL' ? 'All-time' : activePeriod.label) + '</span>' + periodToggle + '</div><div class="chartEmpty">Add or edit an asset to start tracking net worth over time.</div>' + statsRow(history) + '</div>';
+  }
+  const first = history[0].v, last = history[history.length - 1].v, change = last - first;
+  const direction = Math.abs(change) < 0.005 ? 'flat' : change > 0 ? 'up' : 'down';
+  const color = direction === 'up' ? 'var(--pos)' : direction === 'down' ? 'var(--neg)' : 'var(--muted)';
+  let deltaLabel = '-';
+  if (direction === 'flat') deltaLabel = 'Flat';
+  else if (Math.abs(first) < 0.5) deltaLabel = (change > 0 ? '+' : '−') + fmt(Math.abs(change));
+  else { const pct = (change / Math.abs(first)) * 100, absPct = Math.abs(pct); const pctStr = absPct >= 100 ? absPct.toFixed(0) : absPct >= 10 ? absPct.toFixed(1) : absPct.toFixed(2); deltaLabel = (change > 0 ? '+' : '−') + pctStr + '%'; }
+
+  const vals = history.map(p => p.v), minV = Math.min.apply(null, vals), maxV = Math.max.apply(null, vals);
+  const range = (maxV - minV) || Math.max(1, Math.abs(maxV));
+  let lineD = '', areaD = '';
+  if (history.length === 1) { const y = H/2; lineD = 'M0,' + y + ' L' + W + ',' + y; areaD = lineD + ' L' + W + ',' + H + ' L0,' + H + ' Z'; }
+  else {
+    const points = history.map((p, i) => ({ x: (i/(history.length-1))*W, y: H - PAD - ((p.v - minV)/range)*(H - PAD*2) }));
+    lineD = smoothPath(points); const lp = points[points.length-1], fp = points[0]; areaD = lineD + ' L' + lp.x + ',' + H + ' L' + fp.x + ',' + H + ' Z';
+  }
+  return '<div class="chartWrap"><div class="chartHead"><div class="chartHeadLeft"><span class="chartLabel">' + (activePeriod.key === 'ALL' ? 'All-time' : activePeriod.label) + '</span>'
+    + '<span class="chartDelta ' + (direction === 'up' ? 'up' : direction === 'down' ? 'down' : '') + '">' + esc(deltaLabel) + '</span></div>' + periodToggle + '</div>'
+    + '<svg class="chartSvg" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden style="color:' + color + '">'
+    + '<defs><linearGradient id="nwGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="currentColor" stop-opacity="0.55"/><stop offset="60%" stop-color="currentColor" stop-opacity="0.18"/><stop offset="100%" stop-color="currentColor" stop-opacity="0"/></linearGradient></defs>'
+    + '<line class="chartGrid" x1="0" x2="' + W + '" y1="40" y2="40"/><line class="chartGrid" x1="0" x2="' + W + '" y1="100" y2="100"/><line class="chartGrid" x1="0" x2="' + W + '" y1="160" y2="160"/>'
+    + '<path d="' + areaD + '" fill="url(#nwGrad)"/><path d="' + lineD + '" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="chartLineStroke"/></svg>'
+    + statsRow(history) + '</div>';
+}
+
+function donutArcPath(cx, cy, rO, rI, a1, a2) {
+  const x1o = cx + rO*Math.cos(a1), y1o = cy + rO*Math.sin(a1), x2o = cx + rO*Math.cos(a2), y2o = cy + rO*Math.sin(a2);
+  const x1i = cx + rI*Math.cos(a2), y1i = cy + rI*Math.sin(a2), x2i = cx + rI*Math.cos(a1), y2i = cy + rI*Math.sin(a1);
+  const large = a2 - a1 > Math.PI ? 1 : 0;
+  return 'M ' + x1o.toFixed(2) + ' ' + y1o.toFixed(2) + ' A ' + rO + ' ' + rO + ' 0 ' + large + ' 1 ' + x2o.toFixed(2) + ' ' + y2o.toFixed(2) + ' L ' + x1i.toFixed(2) + ' ' + y1i.toFixed(2) + ' A ' + rI + ' ' + rI + ' 0 ' + large + ' 0 ' + x2i.toFixed(2) + ' ' + y2i.toFixed(2) + ' Z';
+}
+function donutHtml(netWorth) {
+  const slices = [];
+  state.accounts.forEach(a => { if (a.amountCHF > 0) slices.push({ id: a.id, name: a.name, color: TYPE_COLORS[a.type], value: a.amountCHF }); });
+  const annualSubs = state.subscriptions.reduce((s, sub) => s + monthlyEquivalent(sub) * 12, 0);
+  if (annualSubs > 0) slices.push({ id: '__subs', name: 'Subs / yr', color: SUBS_COLOR, value: annualSubs });
+  slices.sort((a, b) => b.value - a.value);
+  const total = slices.reduce((s, x) => s + x.value, 0);
+  if (!slices.length || total <= 0) {
+    return '<div class="donutWrap"><div class="chartHead"><span class="chartLabel">Allocation</span><span class="chartDelta">-</span></div>'
+      + '<div class="donutStage"><svg class="donutSvg" viewBox="0 0 140 140" aria-hidden><circle cx="70" cy="70" r="60" fill="var(--track)"/><circle cx="70" cy="70" r="44" fill="var(--bg-elevated)"/></svg>'
+      + '<div class="donutCenter"><div class="donutNum">-</div><div class="donutSub">total</div></div></div><div class="donutEmpty">Add an account to see your breakdown</div></div>';
+  }
+  let angle = -Math.PI / 2; const arcs = [];
+  slices.forEach(s => { const sa = (s.value/total)*Math.PI*2; const pad = slices.length > 1 ? 0.015 : 0; const a1 = angle + pad, a2 = angle + sa - pad; if (a2 > a1) arcs.push({ color: s.color, d: donutArcPath(70,70,60,44,a1,a2) }); angle += sa; });
+  const centerNum = fmt(netWorth).split(' ').slice(1).join(' ') || fmt(netWorth);
+  const legend = slices.map(s => '<div class="donutLeg"><span class="donutLegDot" style="background:' + s.color + '"></span><span>' + esc(s.name) + '</span><span class="donutLegPct">' + ((s.value/total)*100).toFixed(1) + '%</span></div>').join('');
+  return '<div class="donutWrap"><div class="chartHead"><span class="chartLabel">Allocation</span><span class="chartDelta">' + slices.length + ' slice' + (slices.length === 1 ? '' : 's') + '</span></div>'
+    + '<div class="donutStage"><svg class="donutSvg" viewBox="0 0 140 140" aria-hidden>' + arcs.map(a => '<path d="' + a.d + '" fill="' + a.color + '"/>').join('') + '</svg>'
+    + '<div class="donutCenter"><div class="donutNum">' + esc(centerNum) + '</div><div class="donutSub">total</div></div></div><div class="donutLegend">' + legend + '</div></div>';
+}
+
+function accountRowHtml(acct) {
+  const editingName = ui.edit && ui.edit.id === acct.id && ui.edit.field === 'name';
+  const editingAmt = ui.edit && ui.edit.id === acct.id && ui.edit.field === 'amt';
+  const nameCell = editingName
+    ? '<input class="inlineEditInput" id="edit-name-' + acct.id + '" value="' + esc(acct.name) + '" data-edit="name" data-id="' + acct.id + '" />'
+    : '<span class="accountRowName" data-act="editName" data-id="' + acct.id + '" title="Tap to rename">' + esc(acct.name) + '</span>';
+  const amtCell = editingAmt
+    ? '<input class="inlineEditInput inlineEditAmt" id="edit-amt-' + acct.id + '" value="' + esc(amtStr(acct)) + '" data-edit="amt" data-id="' + acct.id + '" />'
+    : '<span class="accountRowAmount" data-act="editAmt" data-id="' + acct.id + '" title="Tap to edit · type +500 to add, -200 to subtract, or a new total">' + esc(fmt(acct.amountCHF)) + '</span>';
+  return '<div class="accountRow">' + nameCell + amtCell + '<button type="button" class="deleteBtn" data-act="delAccount" data-id="' + acct.id + '" title="Delete">×</button></div>';
+}
+function amtStr(acct) { const d = chfToDisplay(acct.amountCHF, state.currency, rates); return String(d.toFixed(d % 1 === 0 ? 0 : 2)); }
+
+function accountCardHtml(cat, netWorth) {
+  const items = state.accounts.filter(a => a.type === cat.key);
+  const total = items.reduce((s, a) => s + a.amountCHF, 0);
+  const pct = netWorth > 0 && total > 0 ? (total / netWorth) * 100 : null;
+  const showKey = cat.key + 'Add';
+  const showAdd = ui.show[showKey] !== undefined ? ui.show[showKey] : items.length === 0;
+  const d = ui.drafts[cat.key];
+  const addBlock = showAdd
+    ? '<div class="quickAdd"><input class="quickAddInput" type="text" placeholder="' + esc(cat.ph1) + '" value="' + esc(d.name) + '" data-draft="' + cat.key + '.name" data-enter="addAccount" data-cat="' + cat.key + '" />'
+      + '<input class="quickAddInput" type="number" inputmode="decimal" step="0.01" placeholder="' + esc(cat.ph2) + '" value="' + esc(d.amt) + '" data-draft="' + cat.key + '.amt" data-enter="addAccount" data-cat="' + cat.key + '" />'
+      + '<button type="button" class="quickAddBtn" data-act="addAccount" data-cat="' + cat.key + '">+</button></div>'
+    : '<button type="button" class="addToggle" data-act="showAdd" data-show="' + showKey + '">+ add</button>';
+  return '<div class="accountCard"><div class="accountHead"><span class="accountLabel">' + esc(cat.label) + '</span>'
+    + '<span class="accountTotal">' + esc(fmt(total)) + (pct != null ? '<span class="accountTotalPct">· ' + pct.toFixed(1) + '%</span>' : '') + '</span></div>'
+    + '<div class="accountList">' + items.map(accountRowHtml).join('') + '</div>' + addBlock + '</div>';
+}
+
+function holdingRowHtml(acct) {
+  const editing = ui.edit && ui.edit.id === acct.id && ui.edit.field === 'shares';
+  const sharesCell = editing
+    ? '<input class="inlineEditInput holdingSharesInput" id="edit-shares-' + acct.id + '" type="number" step="0.0001" value="' + esc(String(acct.shares || 0)) + '" data-edit="shares" data-id="' + acct.id + '" />'
+    : '<span class="holdingShares" data-act="editShares" data-id="' + acct.id + '" title="Tap to edit share count">' + (acct.shares || 0) + ' sh</span>';
+  const hasPrice = typeof acct.lastPriceChf === 'number' && isFinite(acct.lastPriceChf);
+  const priceCell = hasPrice
+    ? '<span class="holdingPrice" title="Live price · ' + (acct.lastPriceAt ? new Date(acct.lastPriceAt).toLocaleString() : '') + '">' + esc(fmt(acct.lastPriceChf)) + '</span>'
+    : '<span class="holdingPrice" title="Add a Finnhub key in ⚙ settings, then ↻ refresh prices">—</span>';
+  const amtCell = hasPrice
+    ? '<span class="accountRowAmount" title="shares × live price">' + esc(fmt(acct.amountCHF)) + '</span>'
+    : '<span class="accountRowAmount" title="Add a Finnhub key in ⚙ settings, then ↻ refresh prices">—</span>';
+  return '<div class="holdingRow"><span class="tickerPill">' + esc(acct.ticker) + '</span>' + sharesCell
+    + priceCell + amtCell
+    + '<button type="button" class="deleteBtn" data-act="delAccount" data-id="' + acct.id + '" title="Delete">×</button></div>';
+}
+function stocksCardHtml(netWorth) {
+  const stockAccounts = state.accounts.filter(a => a.type === 'stocks');
+  const holdings = stockAccounts.filter(a => !!a.ticker);
+  const manuals = stockAccounts.filter(a => !a.ticker);
+  const total = stockAccounts.reduce((s, a) => s + a.amountCHF, 0);
+  const pct = netWorth > 0 && total > 0 ? (total / netWorth) * 100 : null;
+  const showAdd = ui.show.stocksAdd !== undefined ? ui.show.stocksAdd : (holdings.length === 0 && manuals.length === 0);
+  const showManual = ui.show.stocksManual !== undefined ? ui.show.stocksManual : (manuals.length > 0);
+  const dh = ui.drafts.stockHold, dm = ui.drafts.stockManual;
+  const addHold = showAdd
+    ? '<div class="quickAdd"><input class="quickAddInput" type="text" placeholder="Ticker (e.g. VTI)" spellcheck="false" value="' + esc(dh.ticker) + '" data-draft="stockHold.ticker" data-upper="1" data-enter="addHolding" />'
+      + '<input class="quickAddInput" type="number" step="0.0001" placeholder="Shares" value="' + esc(dh.shares) + '" data-draft="stockHold.shares" data-enter="addHolding" />'
+      + '<button type="button" class="quickAddBtn" data-act="addHolding">+</button></div>'
+    : '<button type="button" class="addToggle" data-act="showAdd" data-show="stocksAdd">+ add holding</button>';
+  const manualBlock = showManual
+    ? '<div class="quickAdd"><input class="quickAddInput" type="text" placeholder="Name (e.g. 401k)" value="' + esc(dm.name) + '" data-draft="stockManual.name" data-enter="addStockManual" />'
+      + '<input class="quickAddInput" type="number" step="0.01" placeholder="Value" value="' + esc(dm.amt) + '" data-draft="stockManual.amt" data-enter="addStockManual" />'
+      + '<button type="button" class="quickAddBtn" data-act="addStockManual">+</button></div>'
+    : '';
+  return '<div class="accountCard"><div class="accountHead"><span class="accountLabel">Stocks · investments</span>'
+    + '<span class="accountTotal">' + esc(fmt(total)) + (pct != null ? '<span class="accountTotalPct">· ' + pct.toFixed(1) + '%</span>' : '') + '</span></div>'
+    + '<div class="accountList">' + holdings.map(holdingRowHtml).join('') + manuals.map(accountRowHtml).join('') + '</div>'
+    + addHold
+    + '<div class="holdingsFooter"><button type="button" class="linkAction" data-act="refreshPrices" title="Fetch live quotes from Finnhub (add your key in ⚙ settings)"' + (ui.pricesBusy ? ' disabled' : '') + '>' + (ui.pricesBusy ? '↻ refreshing…' : '↻ refresh prices') + '</button>'
+    + (showManual ? '' : '<button type="button" class="linkAction" data-act="showAdd" data-show="stocksManual">+ add manual entry</button>') + '</div>'
+    + manualBlock + '</div>';
+}
+
+const ACTIVITY_BUCKETS = [ { key:'today',label:'Today' }, { key:'yesterday',label:'Yesterday' }, { key:'thisWeek',label:'Earlier this week' }, { key:'earlier',label:'Earlier' } ];
+function activityHtml() {
+  if (!state.activity.length) return '<div class="activity"><div class="activityHead"><span class="chartLabel">Recent activity</span><span class="chartDelta">-</span></div><div class="activityEmpty">Activity will appear here as you add or edit accounts.</div></div>';
+  const sorted = state.activity.slice().sort((a, b) => b.ts - a.ts).slice(0, 30);
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const yStart = todayStart - 86400000, wStart = todayStart - 7*86400000;
+  const buckets = { today: [], yesterday: [], thisWeek: [], earlier: [] };
+  sorted.forEach(e => { if (e.ts >= todayStart) buckets.today.push(e); else if (e.ts >= yStart) buckets.yesterday.push(e); else if (e.ts >= wStart) buckets.thisWeek.push(e); else buckets.earlier.push(e); });
+  let rows = '';
+  ACTIVITY_BUCKETS.forEach(b => {
+    const entries = buckets[b.key]; if (!entries.length) return;
+    rows += '<div class="activityBucket"><div class="activityBucketLabel">' + b.label + '</div>'
+      + entries.map(e => { const sign = e.deltaCHF >= 0 ? '+' : '−'; const cls = e.deltaCHF >= 0 ? 'up' : 'down'; const kind = e.kind === 'edit' ? 'edit' : e.kind === 'delete' ? 'delete' : 'add';
+        return '<div class="activityRow"><span class="activityBar" style="background:' + TYPE_COLORS[e.accountType] + '"></span><div class="activityInfo"><div class="activityName">' + esc(e.name || '(unnamed)') + '</div><div class="activityMeta">' + TYPE_LABELS[e.accountType] + ' · ' + kind + '</div></div><span class="activityAmt ' + cls + '">' + sign + esc(fmt(Math.abs(e.deltaCHF))) + '</span><span class="activityDate">' + formatActivityDate(e.ts) + '</span></div>'; }).join('') + '</div>';
+  });
+  return '<div class="activity"><div class="activityHead"><span class="chartLabel">Recent activity</span><span class="chartDelta">' + state.activity.length + ' event' + (state.activity.length === 1 ? '' : 's') + '</span></div><div class="activityList">' + rows + '</div></div>';
+}
+
+function netWorthViewHtml() {
+  const netWorth = netWorthChf(state.accounts);
+  const byType = netWorthByType(state.accounts);
+  const parts = [];
+  ['bank','stocks','crypto','other'].forEach(t => { if (byType[t] > 0) parts.push(TYPE_LABELS[t] + ': ' + fmt(byType[t])); });
+  const breakdown = parts.join('  ·  ');
+  const isFirstRun = state.accounts.length === 0;
+  const cards = CATEGORY_ORDER.map(cat => cat.key === 'stocks' ? stocksCardHtml(netWorth) : accountCardHtml(cat, netWorth)).join('');
+  return '<section class="section"><div class="sectionEyebrow"><span>Net worth</span></div>'
+    + '<div class="nwHero ' + (isFirstRun ? 'nwHeroFirstRun' : '') + '"><div class="nwHeroMain"><div class="nwHeroLabel">Total net worth</div>'
+    + '<div class="nwHeroNumRow"><span class="nwHeroNum">' + esc(fmt(netWorth)) + '</span>' + dailyDeltaHtml() + '</div>'
+    + (breakdown ? '<div class="nwHeroBreakdown">' + esc(breakdown) + '</div>' : '')
+    + (isFirstRun ? '<div class="firstRunHint">Import a statement screenshot, or add an account manually below to start tracking.</div>' : '')
+    + '</div><button type="button" class="importTrigger ' + (isFirstRun ? 'importTriggerLarge' : '') + '" data-act="import" data-kind="statement"><span class="importTriggerIcon" aria-hidden>↗</span><span class="importTriggerText"><span class="importTriggerTitle">Import from screenshot</span><span class="importTriggerSub">' + (isFirstRun ? 'fastest way to get started' : 'read a statement in 5 seconds') + '</span></span></button></div>'
+    + '<div class="overviewGrid">' + chartHtml() + donutHtml(netWorth) + '</div>'
+    + '<div class="accountsGrid">' + cards + '</div>'
+    + activityHtml() + '</section>';
+}
+
+/* ============================================================
+ * SUBS view
+ * ============================================================ */
+const PERIODS = [ { value:'monthly',label:'Monthly' }, { value:'yearly',label:'Yearly' }, { value:'weekly',label:'Weekly' } ];
+function accountOptions(selected) { return '<option value="">From account…</option>' + state.accounts.map(a => '<option value="' + a.id + '"' + (a.id === selected ? ' selected' : '') + '>' + esc(a.name) + '</option>').join(''); }
+function periodOptions(selected) { return PERIODS.map(p => '<option value="' + p.value + '"' + (p.value === selected ? ' selected' : '') + '>' + p.label + '</option>').join(''); }
+function daysToNext(s) { if (!s.renewal) return null; const next = nextRenewalDate(s.renewal, s.period); if (!next) return null; const now = new Date(); const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime(); return Math.round((next.getTime() - today) / 86400000); }
+
+function subsViewHtml() {
+  const monthlyTotal = state.subscriptions.reduce((s, sub) => s + monthlyEquivalent(sub), 0);
+  const d = ui.drafts.subAdd;
+  const addForm = '<div class="addCard"><div class="addEyebrow">+ new subscription</div><div class="addGrid">'
+    + '<input class="quickAddInput" type="text" placeholder="Service (e.g. Netflix)" value="' + esc(d.name) + '" data-draft="subAdd.name" data-enter="addSub" />'
+    + '<input class="quickAddInput" type="number" step="0.01" placeholder="Amount (' + state.currency + ')" value="' + esc(d.amount) + '" data-draft="subAdd.amount" data-enter="addSub" />'
+    + '<select class="quickAddInput" data-draft="subAdd.period">' + periodOptions(d.period) + '</select>'
+    + '<input class="quickAddInput" type="date" title="Next renewal date" value="' + esc(d.renewal) + '" data-draft="subAdd.renewal" />'
+    + '<select class="quickAddInput" data-draft="subAdd.from">' + accountOptions(d.from) + '</select>'
+    + '<button type="button" class="quickAddBtn" data-act="addSub">+ Add</button></div>'
+    + '<label class="subsCheck"><input type="checkbox" ' + (d.auto ? 'checked' : '') + ' data-draft="subAdd.auto" /> Auto-deduct from linked account on each renewal</label></div>';
+
+  let list;
+  if (state.subscriptions.length === 0) {
+    list = '<div class="emptyState"><div class="emptyTitle">No subscriptions yet.</div><div class="emptyBody">Add anything that auto-renews. Netflix, gym, hosting bills, whatever drains money on a schedule.</div></div>';
+  } else {
+    list = state.subscriptions.map(sub => {
+      if (ui.subEditId === sub.id) return subEditRowHtml(sub);
+      const days = daysToNext(sub); const isUrgent = days != null && days <= 5; const monthly = monthlyEquivalent(sub);
+      const fromName = sub.fromAccountId ? (state.accounts.find(a => a.id === sub.fromAccountId) || {}).name : null;
+      const billedOriginal = (sub.enteredCurrency && sub.enteredCurrency !== 'CHF' && sub.enteredAmount != null)
+        ? 'billed ' + sub.enteredCurrency + ' ' + sub.enteredAmount.toLocaleString('en-US', { minimumFractionDigits: sub.enteredAmount % 1 === 0 ? 0 : 2, maximumFractionDigits: 2 }) + ' / ' + sub.period
+        : (sub.period !== 'monthly' ? 'billed ' + fmt(sub.amountCHF) + ' / ' + sub.period : null);
+      return '<div class="subRow ' + (isUrgent ? 'urgent' : '') + '"><div style="min-width:0"><div class="subRowName">' + esc(sub.name) + '</div><div class="subRowPeriod">' + esc(sub.period) + '</div>'
+        + (sub.renewal ? '<div class="subRowRenew">↻ renews ' + esc(formatRenewal(sub.renewal)) + '</div>' : '')
+        + '<div class="subRowPills">' + (fromName ? '<span class="subPill">from · ' + esc(fromName) + '</span>' : '')
+        + '<button type="button" class="subToggle ' + (sub.autoDeduct ? 'on' : '') + '" data-act="toggleAuto" data-id="' + sub.id + '"><span class="subToggleDot"></span>' + (sub.autoDeduct ? 'auto-deduct on' : 'auto-deduct off') + '</button></div></div>'
+        + '<div class="subRowCost"><div class="subRowCostBig">' + esc(fmt(monthly)) + '</div><div class="subRowCostUnit">/ month</div>' + (billedOriginal ? '<div class="subRowCostBilled">' + esc(billedOriginal) + '</div>' : '') + '</div>'
+        + '<div class="subRowActions"><button type="button" class="iconBtn" data-act="editSub" data-id="' + sub.id + '" title="Edit">✎</button><button type="button" class="iconBtn" data-act="delSub" data-id="' + sub.id + '" title="Delete">×</button></div></div>';
+    }).join('');
+  }
+
+  return '<section class="section"><div class="sectionEyebrow"><span>Active subscriptions</span><span class="sectionCount">' + state.subscriptions.length + ' ' + (state.subscriptions.length === 1 ? 'sub' : 'subs') + (monthlyTotal > 0 ? '<span class="sectionCountSep"> · ' + esc(fmt(monthlyTotal * 12)) + ' / yr</span>' : '') + '</span></div>'
+    + '<button type="button" class="importTrigger" data-act="import" data-kind="subs"><span class="importTriggerIcon" aria-hidden>↗</span><span class="importTriggerText"><span class="importTriggerTitle">Import subscriptions</span><span class="importTriggerSub">snap a billing page, pull every sub at once</span></span></button>'
+    + '<div class="addCard"><div class="subsHero"><div><div class="nwHeroLabel">Monthly burn</div><div class="subsHeroNum">' + esc(fmt(monthlyTotal)) + '<span class="subsHeroNumSuffix">/ mo</span></div>' + (monthlyTotal > 0 ? '<div class="subsHeroSub">~' + esc(fmt(monthlyTotal * 12)) + ' per year</div>' : '') + '</div></div></div>'
+    + addForm + '<div>' + list + '</div></section>';
+}
+function subEditRowHtml(sub) {
+  const d = ui.drafts.subEdit || {};
+  return '<div class="subRow"><div style="display:grid;gap:8px;grid-template-columns:1fr 1fr;min-width:0">'
+    + '<input class="quickAddInput" value="' + esc(d.name) + '" data-draft="subEdit.name" placeholder="Service" />'
+    + '<input class="quickAddInput" type="number" step="0.01" value="' + esc(d.amount) + '" data-draft="subEdit.amount" placeholder="Amount" />'
+    + '<select class="quickAddInput" data-draft="subEdit.period">' + periodOptions(d.period) + '</select>'
+    + '<input class="quickAddInput" type="date" value="' + esc(d.renewal) + '" data-draft="subEdit.renewal" />'
+    + '<select class="quickAddInput" data-draft="subEdit.from">' + accountOptions(d.from) + '</select>'
+    + '<label style="display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--muted-strong)"><input type="checkbox" ' + (d.auto ? 'checked' : '') + ' data-draft="subEdit.auto" /> Auto-deduct</label>'
+    + '</div><div></div><div class="subRowActions"><button type="button" class="iconBtn" data-act="saveSub" data-id="' + sub.id + '">save</button><button type="button" class="iconBtn" data-act="cancelSub">cancel</button><button type="button" class="iconBtn" data-act="delSub" data-id="' + sub.id + '">delete</button></div></div>';
+}
+
+/* ============================================================
+ * ORDERS view
+ * ============================================================ */
+function arrivalLabel(iso) {
+  if (!iso) return null;
+  const isoSafe = /^\d{4}-\d{2}-\d{2}$/.test(iso) ? iso + 'T00:00' : iso;
+  const d = new Date(isoSafe); if (isNaN(d.getTime())) return null;
+  const now = new Date(); const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()); const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const diff = Math.round((dayStart.getTime() - today.getTime()) / 86400000);
+  const date = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  if (diff < 0) return { label: Math.abs(diff) + 'd late · ' + date, cls: 'past' };
+  if (diff === 0) return { label: 'arrives today · ' + date, cls: 'today' };
+  if (diff === 1) return { label: 'arrives tomorrow · ' + date, cls: 'imminent' };
+  if (diff <= 5) return { label: 'in ' + diff + 'd · ' + date, cls: 'imminent' };
+  return { label: 'in ' + diff + 'd · ' + date, cls: '' };
+}
+function orderPreviewText(netWorth) {
+  const d = ui.drafts.order; const isBought = d.mode === 'bought';
+  const a = parseFloat(d.cost);
+  if (isNaN(a) || a <= 0) return { text: isBought ? 'Type a cost. We will deduct it from the chosen account on Add.' : 'Type a cost. Preview will show what % of net worth it takes.', cls: '' };
+  const amountCHF = displayToChf(a, state.currency, rates);
+  const fromName = d.from ? ((state.accounts.find(x => x.id === d.from) || {}).name || 'unassigned') : 'unassigned';
+  if (isBought && !d.from) return { text: fmt(amountCHF) + ' · pick a "from account" to deduct from', cls: 'warn' };
+  if (netWorth > 0) {
+    const pct = (amountCHF / netWorth) * 100; const cls = pctClass(pct);
+    const text = isBought ? 'Will debit ' + fromName + ': ' + fmt(amountCHF) + ' · ' + pct.toFixed(2) + '% of your ' + fmt(netWorth) + ' net worth'
+      : fmt(amountCHF) + ' from ' + fromName + ' · ' + pct.toFixed(2) + '% of your ' + fmt(netWorth) + ' net worth';
+    return { text, cls: cls === 'good' ? '' : cls };
+  }
+  return { text: fmt(amountCHF) + ' from ' + fromName + ' · add net worth first to see %', cls: '' };
+}
+function ordersViewHtml() {
+  const netWorth = netWorthChf(state.accounts);
+  const d = ui.drafts.order; const isBought = d.mode === 'bought'; const needsAccount = isBought && !d.from;
+  const prev = orderPreviewText(netWorth);
+  const addForm = '<div class="addCard"><div class="addCardHead"><div class="addEyebrow">' + (isBought ? '+ today’s purchase' : '+ new order') + '</div>'
+    + '<div class="modeSeg"><button type="button" class="modeBtn ' + (!isBought ? 'modeBtnActive' : '') + '" data-act="orderMode" data-mode="incoming">Incoming</button><button type="button" class="modeBtn ' + (isBought ? 'modeBtnActive' : '') + '" data-act="orderMode" data-mode="bought">Bought today</button></div></div>'
+    + '<div class="addGrid ' + (isBought ? 'addGridBought' : '') + '">'
+    + '<input class="quickAddInput" type="text" placeholder="' + (isBought ? 'What did you buy?' : 'Item (e.g. New iPhone)') + '" value="' + esc(d.name) + '" data-draft="order.name" data-enter="addOrder" />'
+    + '<input class="quickAddInput" type="number" step="0.01" placeholder="Cost (' + state.currency + ')" value="' + esc(d.cost) + '" data-draft="order.cost" data-orderprev="1" data-enter="addOrder" />'
+    + '<select class="quickAddInput ' + (needsAccount ? 'quickAddInputAlert' : '') + '" data-draft="order.from" data-orderprev="1"><option value="">' + (isBought ? 'From account (required)…' : 'From account…') + '</option>' + state.accounts.map(a => '<option value="' + a.id + '"' + (a.id === d.from ? ' selected' : '') + '>' + esc(a.name) + '</option>').join('') + '</select>'
+    + (!isBought ? '<input class="quickAddInput" type="date" title="Expected arrival" value="' + esc(d.arrival) + '" data-draft="order.arrival" />' : '')
+    + '<button type="button" class="quickAddBtn" data-act="addOrder"' + (needsAccount ? ' disabled' : '') + '>' + (isBought ? '− Log purchase' : '+ Add order') + '</button></div>'
+    + '<div class="addPreview ' + (prev.cls === 'warn' ? 'warn' : prev.cls === 'bad' ? 'bad' : '') + '" id="orderPreview">' + esc(prev.text) + '</div></div>';
+
+  const sorted = state.orders.slice().sort((a, b) => { if (!a.date) return 1; if (!b.date) return -1; return a.date.localeCompare(b.date); });
+  let list;
+  if (state.orders.length === 0) list = '<div class="emptyState"><div class="emptyTitle">Nothing on the way.</div><div class="emptyBody">Log an order above. Pick the account it comes out of and the expected arrival date. The dashboard will show what % of your net worth it costs.</div></div>';
+  else list = sorted.map(o => orderCardHtml(o, netWorth)).join('');
+
+  return '<section class="section"><div class="sectionEyebrow"><span>Incoming orders</span><span class="sectionCount">' + state.orders.length + ' ' + (state.orders.length === 1 ? 'item' : 'items') + '</span></div>'
+    + '<button type="button" class="importTrigger" data-act="import" data-kind="receipt"><span class="importTriggerIcon" aria-hidden>↗</span><span class="importTriggerText"><span class="importTriggerTitle">Import receipt</span><span class="importTriggerSub">snap a receipt, auto-log the purchase</span></span></button>'
+    + addForm + '<div>' + list + '</div></section>';
+}
+function orderCardHtml(order, netWorth) {
+  const fromName = order.fromAccountId ? ((state.accounts.find(a => a.id === order.fromAccountId) || {}).name || 'unassigned') : 'unassigned';
+  const isDeducted = !!order.deductedAt; const arr = arrivalLabel(order.date);
+  let pctText, pctCls;
+  if (isDeducted && typeof order.pctAtDeduction === 'number') { pctText = order.pctAtDeduction.toFixed(2) + '% of NW'; pctCls = pctClass(order.pctAtDeduction) + ' frozen'; }
+  else if (netWorth > 0) { const pct = (order.amountCHF / netWorth) * 100; pctText = pct.toFixed(2) + '% of NW'; pctCls = pctClass(pct); }
+  else { pctText = '- of NW'; pctCls = ''; }
+  const pctPillCls = (pctCls.indexOf('good') >= 0 ? 'good' : pctCls.indexOf('warn') >= 0 ? 'warn' : pctCls.indexOf('bad') >= 0 ? 'bad' : '') + (pctCls.indexOf('frozen') >= 0 ? ' frozen' : '');
+  let datePill;
+  if (isDeducted) datePill = '<span class="ordPill ordDate">bought ' + new Date(order.deductedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + '</span>';
+  else if (arr) datePill = '<span class="ordPill ordDate ' + (arr.cls === 'today' ? 'today' : arr.cls === 'imminent' ? 'imminent' : arr.cls === 'past' ? 'past' : '') + '">' + esc(arr.label) + '</span>';
+  else datePill = '<span class="ordPill">no arrival date</span>';
+  const foot = isDeducted
+    ? '<span class="ordDeductedPill">Deducted from ' + esc(order.deductedFromName || fromName) + '</span><button type="button" class="ordDeductBtn" data-act="undoDeduct" data-id="' + order.id + '">Undo</button>'
+    : '<button type="button" class="ordDeductBtn" data-act="deduct" data-id="' + order.id + '">− Deduct from net worth</button>';
+  return '<div class="ordCard ' + (isDeducted ? 'deducted' : '') + '"><div class="ordHead"><div class="ordName">' + esc(order.name) + '</div><div class="ordAmt">' + esc(fmt(order.amountCHF)) + '</div><button type="button" class="iconBtn" data-act="delOrder" data-id="' + order.id + '" title="Remove">×</button></div>'
+    + '<div class="ordMetaRow"><span class="ordPill">from · ' + esc(fromName) + '</span><span class="ordPill ' + pctPillCls + '">' + pctText + '</span>' + datePill + '</div>'
+    + '<div class="ordFoot">' + foot + '</div></div>';
+}
+
+/* ============================================================
+ * WISHLIST view
+ * ============================================================ */
+function wishViewHtml() {
+  const netWorth = netWorthChf(state.accounts);
+  const totalChf = state.wishlist.reduce((s, w) => s + w.amountCHF, 0);
+  const heroPct = netWorth > 0 ? (totalChf / netWorth) * 100 : null;
+  const heroCls = heroPct == null ? '' : pctClass(heroPct);
+  const heroClsName = heroCls === 'warn' ? 'warn' : heroCls === 'bad' ? 'bad' : '';
+  const heroFill = heroPct == null ? 0 : Math.min(100, heroPct);
+  const d = ui.drafts.wish;
+  const addForm = '<div class="addCard"><div class="addEyebrow">+ add to wishlist</div><div class="addGrid" style="grid-template-columns:2fr 1fr auto">'
+    + '<input class="quickAddInput" type="text" placeholder="Item name (e.g. New iPhone Pro Max)" value="' + esc(d.name) + '" data-draft="wish.name" data-enter="addWish" />'
+    + '<input class="quickAddInput" type="number" step="0.01" placeholder="Cost (' + state.currency + ')" value="' + esc(d.amount) + '" data-draft="wish.amount" data-enter="addWish" />'
+    + '<button type="button" class="quickAddBtn" data-act="addWish">+ Add</button></div></div>';
+
+  const sorted = state.wishlist.slice().sort((a, b) => b.amountCHF - a.amountCHF);
+  let list;
+  if (state.wishlist.length === 0) list = '<div class="emptyState"><div class="emptyTitle">No wishes yet.</div><div class="emptyBody">Add anything you\'re saving for. The dashboard will calculate what % of your net worth it\'d cost.</div></div>';
+  else list = sorted.map(item => {
+    const pct = netWorth > 0 ? (item.amountCHF / netWorth) * 100 : null;
+    const cls = pct == null ? '' : pctClass(pct); const clsName = cls === 'warn' ? 'warn' : cls === 'bad' ? 'bad' : '';
+    const fill = pct == null ? 0 : Math.min(100, pct);
+    const originalLabel = (item.enteredCurrency && item.enteredAmount != null) ? item.enteredCurrency + ' ' + item.enteredAmount.toLocaleString('en-US', { maximumFractionDigits: 2 }) : fmt(item.amountCHF);
+    return '<div class="wishRow"><div class="wishRowH"><div><div class="wishRowName">' + esc(item.name) + '</div><div class="wishRowMeta">' + esc(originalLabel) + ' · added ' + formatActivityDate(item.ts) + '</div></div>'
+      + '<div class="wishRowAmtWrap"><div class="wishRowAmt">' + esc(fmt(item.amountCHF)) + '</div><div class="wishRowPct ' + clsName + '">' + (pct == null ? '-' : pct.toFixed(2) + '%') + ' of NW</div></div>'
+      + '<button type="button" class="iconBtn" data-act="delWish" data-id="' + item.id + '" title="Remove">×</button></div>'
+      + '<div class="wishRowBar"><div class="wishRowBarFill ' + clsName + '" style="width:' + fill + '%"></div></div></div>';
+  }).join('');
+
+  return '<section class="section"><div class="sectionEyebrow"><span>Wishlist</span><span class="sectionCount">' + state.wishlist.length + ' ' + (state.wishlist.length === 1 ? 'item' : 'items') + '</span></div>'
+    + '<div class="wishHero"><div class="wishHeroTop"><div><div class="nwHeroLabel">Wishlist total</div><div class="wishHeroNum">' + esc(fmt(totalChf)) + '</div></div>'
+    + '<div><div class="nwHeroLabel">% of net worth</div><div class="wishHeroPctNum ' + heroClsName + '">' + (heroPct == null ? '-' : heroPct.toFixed(2) + '%') + '</div></div></div>'
+    + '<div class="wishHeroBar"><div class="wishHeroBarFill ' + heroClsName + '" style="width:' + heroFill + '%"></div></div>'
+    + '<div class="wishHeroFoot">' + (heroPct == null ? 'Add net worth first to see this as a %' : 'Your wishlist is ' + heroPct.toFixed(2) + '% of your ' + fmt(netWorth) + ' net worth') + '</div></div>'
+    + addForm + '<div>' + list + '</div></section>';
+}
+
+/* ============================================================
+ * Import modal (placeholder — AI import is hosted-app only)
+ * ============================================================ */
+const IMPORT_COPY = {
+  statement: { eyebrow: 'Import', title: 'Read a <em>statement</em> screenshot', desc: 'Drop a bank/brokerage screenshot and Claude reads every account and balance, then fills them in automatically.', dropTitle: 'Drop a statement screenshot' },
+  subs: { eyebrow: 'Import', title: 'Pull <em>subscriptions</em> from a screenshot', desc: 'Snap your billing page and Claude detects every recurring subscription and adds them at once.', dropTitle: 'Drop a billing screenshot' },
+  receipt: { eyebrow: 'Import', title: 'Auto-log a <em>receipt</em>', desc: 'Snap a receipt and Claude logs the purchase to your orders automatically.', dropTitle: 'Drop a receipt screenshot' },
+};
+/* ------------------------------------------------------------------
+ * Cheapest-possible screenshot OCR (see runImport for the full rationale).
+ * The system block below is byte-identical on every call (instructions +
+ * field guide + few-shot), so cache_control:ephemeral lets repeat calls
+ * read it cheaply. NOTE: Haiku's cacheable minimum is 4096 tokens — this
+ * lean block is under that, so caching is a no-op until/unless the block
+ * grows (the downscaled image is the real cost; we minimise it instead).
+ * Kept identical for ALL three import kinds so the prefix is shared; the
+ * per-kind hint rides in the cheap, uncached user turn.
+ * ------------------------------------------------------------------ */
+const EXTRACT_SYSTEM = [
+  'You are a precise financial-screenshot OCR extractor. You read ONE screenshot of a bank/brokerage statement, a subscriptions/billing page, or a purchase receipt, and return its line items by calling the `extract` tool. Output the tool call only — never prose.',
+  '',
+  'Each element of `items`:',
+  '- t: category — "bank","stocks","crypto","other" for statement/balance lines; "sub" for a recurring subscription; "order" for a receipt/purchase.',
+  '- n: short name (account, holding, service, or merchant). No amounts inside the name.',
+  '- a: numeric amount, no thousands separators or currency symbols (e.g. 1234.50).',
+  '- c: ISO currency inferred from symbols/text — "CHF","USD","EUR","GBP". Omit if unsure.',
+  '- p: billing period, subscriptions only — "monthly","yearly","weekly". Omit otherwise.',
+  '',
+  'Rules: one item per distinct line; skip totals that merely sum other lines; omit any field you are unsure of (never emit null or empty strings); if nothing is readable, return an empty items array.',
+  '',
+  'Examples (shape only):',
+  '"Checking $4,210.55" -> {"t":"bank","n":"Checking","a":4210.55,"c":"USD"}',
+  '"VTI 12 sh — €3,100" -> {"t":"stocks","n":"VTI","a":3100,"c":"EUR"}',
+  '"Netflix CHF 19.90/mo" -> {"t":"sub","n":"Netflix","a":19.9,"c":"CHF","p":"monthly"}',
+  '"Migros total 54.30 CHF" -> {"t":"order","n":"Migros","a":54.3,"c":"CHF"}',
+].join('\n');
+// Compact tool schema → short keys keep the priciest part (output tokens) tiny.
+const EXTRACT_TOOL = {
+  name: 'extract',
+  description: 'Return every line item read from the financial screenshot.',
+  input_schema: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      items: {
+        type: 'array',
+        items: {
+          type: 'object',
+          additionalProperties: false,
+          properties: {
+            t: { type: 'string', enum: ['bank', 'stocks', 'crypto', 'other', 'sub', 'order'] },
+            n: { type: 'string' },
+            a: { type: 'number' },
+            c: { type: 'string', enum: ['CHF', 'USD', 'EUR', 'GBP'] },
+            p: { type: 'string', enum: ['monthly', 'yearly', 'weekly'] },
+          },
+          required: ['t', 'n', 'a'],
+        },
+      },
+    },
+    required: ['items'],
+  },
+};
+const KIND_HINT = {
+  statement: 'This screenshot is a bank/brokerage statement. Extract every account/balance line.',
+  subs: 'This screenshot is a subscriptions/billing page. Extract every recurring subscription.',
+  receipt: 'This screenshot is a purchase receipt. Extract the purchase (usually one order total).',
+};
+
+function renderModal() {
+  const root = document.getElementById('modalRoot');
+  if (ui.settingsOpen) { root.innerHTML = settingsModalHtml(); return; }
+  if (!ui.importOpen) { root.innerHTML = ''; return; }
+  root.innerHTML = importModalHtml();
+}
+
+function settingsModalHtml() {
+  const fSet = !!settings.finnhubKey, aSet = !!settings.anthropicKey;
+  function field(id, label, set, value, type, placeholder, hint) {
+    return '<div class="fieldGroup"><div class="fieldLabelRow"><span class="fieldLabel">' + label + '</span>'
+      + '<span class="keyStatus ' + (set ? 'set' : 'unset') + '">' + (set ? 'set' : 'not set') + '</span></div>'
+      + '<input class="settingsInput" id="' + id + '" type="' + type + '" autocomplete="off" autocapitalize="off" spellcheck="false" value="' + esc(value || '') + '" placeholder="' + esc(placeholder) + '" />'
+      + '<div class="fieldHint">' + hint + '</div></div>';
+  }
+  return '<div class="importOverlay" data-act="closeSettings"><div class="importPanel" data-stop="1">'
+    + '<div class="importHead"><div><div class="importEyebrow">Settings</div><h2 class="importTitle">API <em>keys</em></h2></div><button type="button" class="importClose" data-act="closeSettings">×</button></div>'
+    + '<p class="importDesc">Add your own keys to unlock live stock prices and AI screenshot import. Keys are stored only in this browser and sent directly from your device to Finnhub / Anthropic — never to any other server.</p>'
+    + field('settings-finnhub', 'Finnhub key · live stock prices', fSet, settings.finnhubKey, 'password', 'paste your Finnhub API key', 'Free key at <a href="https://finnhub.io/register" target="_blank" rel="noopener">finnhub.io/register</a>. Powers the holdings ↻ refresh prices button (US-listed symbols).')
+    + field('settings-anthropic', 'Anthropic key · AI screenshot import', aSet, settings.anthropicKey, 'password', 'paste your Anthropic API key (sk-ant-…)', 'Key at <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a>. Powers reading statements / subs / receipts from a screenshot.')
+    + field('settings-model', 'Anthropic model', !!settings.anthropicModel, settings.anthropicModel, 'text', DEFAULT_MODEL, 'Vision-capable model used for import. Change it if your account uses a different model id.')
+    + '<div class="settingsActions"><button type="button" class="ghostBtn" data-act="closeSettings">Cancel</button><button type="button" class="quickAddBtn" style="height:38px" data-act="saveSettings">Save keys</button></div>'
+    + '</div></div>';
+}
+
+function importModalHtml() {
+  const c = IMPORT_COPY[ui.importOpen];
+  let body;
+  if (!settings.anthropicKey) {
+    body = '<div class="dropZone"><div class="dropIcon">↗</div><div class="dropTitle">Screenshot import</div><div class="dropSub">needs an Anthropic key</div></div>'
+      + '<p class="setupNote"><strong>One-time setup:</strong> AI import calls Claude with your own Anthropic API key. Add it in settings — it stays in this browser and is sent straight to Anthropic. Everything else here works offline.</p>'
+      + '<div class="settingsActions"><button type="button" class="quickAddBtn" style="height:38px" data-act="openSettings">Add Anthropic key</button></div>';
+  } else if (ui.importBusy) {
+    body = '<div class="importStatus"><div class="importSpinner"></div><div class="importStatusTitle">Reading your screenshot…</div><div class="importStatusBody">Claude is extracting the data. This usually takes a few seconds.</div></div>';
+  } else if (ui.importError) {
+    body = '<div class="importStatus error"><div class="importStatusTitle">Import failed</div><div class="importStatusBody">' + esc(ui.importError) + '</div></div>'
+      + '<label class="dropZone clickable"><input type="file" accept="image/*" data-importfile="' + ui.importOpen + '" style="display:none" /><div class="dropIcon">↗</div><div class="dropTitle">Try another screenshot</div><div class="dropSub">PNG · JPG</div></label>';
+  } else if (ui.importResult) {
+    body = '<div class="importStatus"><div class="dropIcon" style="width:50px;height:50px;font-size:24px">✓</div><div class="importStatusTitle">Added ' + ui.importResult.count + ' ' + esc(ui.importResult.noun) + '</div><div class="importStatusBody">' + (ui.importResult.count ? 'Review them below — every value is editable.' : 'Claude couldn\'t read any items from that image. Try a clearer screenshot.') + '</div></div>'
+      + '<div class="settingsActions"><button type="button" class="ghostBtn" data-act="closeImport">Done</button><label class="quickAddBtn" style="height:38px;display:inline-flex;align-items:center;cursor:pointer"><input type="file" accept="image/*" data-importfile="' + ui.importOpen + '" style="display:none" />Import another</label></div>';
+  } else {
+    body = '<p class="importDesc">' + c.desc + '</p>'
+      + '<label class="dropZone clickable"><input type="file" accept="image/*" data-importfile="' + ui.importOpen + '" style="display:none" /><div class="dropIcon">↗</div><div class="dropTitle">' + c.dropTitle + '</div><div class="dropSub">click to choose · PNG · JPG</div></label>'
+      + '<p class="setupNote">Sent directly to Anthropic with your key (model <strong>' + esc(settings.anthropicModel || DEFAULT_MODEL) + '</strong>). Nothing is uploaded anywhere else.</p>';
+  }
+  return '<div class="importOverlay" data-act="closeImport"><div class="importPanel" data-stop="1">'
+    + '<div class="importHead"><div><div class="importEyebrow">' + c.eyebrow + '</div><h2 class="importTitle">' + c.title + '</h2></div><button type="button" class="importClose" data-act="closeImport">×</button></div>'
+    + body + '</div></div>';
+}
+
+/* ============================================================
+ * Live stock prices (Finnhub) — called from the holdings card
+ * ============================================================ */
+async function refreshStockPrices(opts) {
+  opts = opts || {};
+  const holdings = state.accounts.filter(a => a.type === 'stocks' && a.ticker);
+  if (!settings.finnhubKey) { if (!opts.silent) openSettings(); return; }
+  if (!holdings.length) { if (!opts.silent) alert('Add a stock holding (with a ticker) first.'); return; }
+  ui.pricesBusy = true; if (!opts.silent) render();
+  let ok = 0; const failed = [];
+  await Promise.all(holdings.map(async a => {
+    try {
+      const r = await fetch('https://finnhub.io/api/v1/quote?symbol=' + encodeURIComponent(a.ticker) + '&token=' + encodeURIComponent(settings.finnhubKey));
+      const j = await r.json();
+      const price = Number(j && j.c);
+      // Finnhub quotes US-listed symbols in USD; convert USD → CHF (our base).
+      if (!price || !isFinite(price)) { failed.push(a.ticker); return; }
+      const priceChf = price / (rates.USD || 1);
+      a.lastPriceChf = priceChf; a.lastPriceAt = Date.now();
+      a.amountCHF = (Number(a.shares) || 0) * priceChf;
+      ok++;
+    } catch (e) { failed.push(a.ticker); }
+  }));
+  ui.pricesBusy = false;
+  maybeSnapshotNw(); save(); render();
+  if (!opts.silent && failed.length) {
+    alert('Updated ' + ok + ' holding' + (ok === 1 ? '' : 's') + '. Could not price: ' + failed.join(', ') + '.\n\nFinnhub\'s free tier covers US-listed symbols. Check the ticker and that your key is valid.');
+  }
+}
+
+/* ============================================================
+ * AI screenshot import (Anthropic) — direct from the browser
+ * ============================================================ */
+function openSettings() { ui.settingsOpen = true; renderModal(); }
+function fileToDataUrl(file) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(file); }); }
+const IS_DEV = (function () { try { const h = location.hostname; return location.protocol === 'file:' || h === 'localhost' || h === '127.0.0.1' || h.endsWith('.local'); } catch (e) { return false; } })();
+const IMAGE_MAX_EDGE = 1024; // cap long edge — the image is ~all of the input cost
+
+function loadImage(src) { return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('That file is not a readable image.')); i.src = src; }); }
+
+// Downscale + re-encode in the browser (the client-side equivalent of a
+// server-side `sharp` resize): cap the long edge to ~1024px and re-encode as
+// JPEG. A raw phone screenshot is ~4k image tokens; this brings it to ~1k.
+async function downscaleImage(file) {
+  const img = await loadImage(await fileToDataUrl(file));
+  const w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+  const scale = Math.min(1, IMAGE_MAX_EDGE / Math.max(w, h));
+  const tw = Math.max(1, Math.round(w * scale)), th = Math.max(1, Math.round(h * scale));
+  const canvas = document.createElement('canvas');
+  canvas.width = tw; canvas.height = th;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, tw, th); // flatten alpha (PNG screenshots → JPEG)
+  ctx.drawImage(img, 0, 0, tw, th);
+  const url = canvas.toDataURL('image/jpeg', 0.8);
+  const m = /^data:(image\/[^;]+);base64,(.*)$/.exec(url);
+  if (!m) throw new Error('Could not process that image.');
+  return { mediaType: m[1], b64: m[2], w: tw, h: th };
+}
+
+function ccyOf(v) { const c = String(v || '').toUpperCase(); return CURRENCIES.indexOf(c) >= 0 ? c : 'CHF'; }
+function applyImport(kind, items) {
+  if (!Array.isArray(items)) return 0;
+  let n = 0;
+  items.forEach(it => {
+    const amt = Number(it && it.a);
+    if (!isFinite(amt)) return;
+    const ccy = ccyOf(it.c);
+    const amountCHF = amt / (rates[ccy] || 1);
+    const name = String((it && it.n) || '').trim() || 'Untitled';
+    if (kind === 'statement') {
+      const type = ['bank', 'stocks', 'crypto', 'other'].indexOf(it.t) >= 0 ? it.t : 'other';
+      state.accounts.push({ id: genId('acc'), type, name, amountCHF });
+      pushActivity({ accountType: type, name, deltaCHF: amountCHF, kind: 'add' });
+      n++;
+    } else if (kind === 'subs') {
+      const period = ['monthly', 'yearly', 'weekly'].indexOf(it.p) >= 0 ? it.p : 'monthly';
+      state.subscriptions.push({ id: genId('sub'), name, amountCHF, period, enteredAmount: amt, enteredCurrency: ccy, renewal: null, fromAccountId: null, autoDeduct: false, lastDeductedAt: null });
+      n++;
+    } else if (kind === 'receipt') {
+      state.orders.push({ id: genId('ord'), name, amountCHF, enteredAmount: amt, enteredCurrency: ccy, fromAccountId: null, date: null, ts: Date.now(), deductedAt: null, pctAtDeduction: null, deductedFromName: null });
+      n++;
+    }
+  });
+  if (n) { maybeSnapshotNw(); save(); }
+  return n;
+}
+
+/* ============================================================
+ * runImport — cheapest-possible bank-statement / receipt OCR.
+ *
+ * Cost optimizations (input image ≫ everything else, so we attack it first):
+ *  1. Model: Claude Haiku 4.5 ($1/$5 per 1M) — never Sonnet/Opus for OCR.
+ *  2. Downscale the screenshot to ~1024px long edge + re-encode JPEG BEFORE
+ *     upload (downscaleImage). ~4k image tokens → ~1k. Biggest single lever.
+ *  3. Prompt caching: the instructions + schema + few-shot live in a
+ *     cache_control:ephemeral system block, byte-identical every call, shared
+ *     across all three import kinds. (Haiku's cache minimum is 4096 tokens, so
+ *     this lean block won't actually cache until it grows — harmless, and the
+ *     dev log shows cache_read so you can see if/when it engages.)
+ *  4. Forced structured output: tool_choice pins the `extract` tool, so the
+ *     model must emit one schema-shaped object — no prose. max_tokens 500,
+ *     temperature 0 (effort param is NOT sent — it errors on Haiku).
+ *  5. Compact JSON: short keys (t,n,a,c,p), optional fields omitted, no nulls —
+ *     output tokens are the priciest part.
+ *  Robustness: parse the tool_use block; on a malformed/empty result retry
+ *  once, then surface { error }. Auth errors (401/403) are not retried.
+ *  NOTE: keys are server-side-only in the hosted Liam app; this is the
+ *  standalone, so the call is browser-direct with the user's own key. There is
+ *  no route handler / sharp / tier-gate here — those are hosted-app concerns.
+ * ============================================================ */
+async function callExtract(kind, img) {
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'x-api-key': settings.anthropicKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: settings.anthropicModel || DEFAULT_MODEL,
+      max_tokens: 500,
+      temperature: 0,
+      system: [{ type: 'text', text: EXTRACT_SYSTEM, cache_control: { type: 'ephemeral' } }],
+      tools: [EXTRACT_TOOL],
+      tool_choice: { type: 'tool', name: 'extract' },
+      messages: [{ role: 'user', content: [
+        { type: 'image', source: { type: 'base64', media_type: img.mediaType, data: img.b64 } },
+        { type: 'text', text: KIND_HINT[kind] },
+      ] }],
+    }),
+  });
+  const j = await r.json();
+  if (j.error) { const e = new Error(j.error.message || ('Anthropic API error (HTTP ' + r.status + ')')); e.status = r.status; throw e; }
+  if (IS_DEV) { const u = j.usage || {}; console.log('[finance import] ' + kind + ' ' + img.w + '×' + img.h, { in: u.input_tokens, out: u.output_tokens, cache_write: u.cache_creation_input_tokens, cache_read: u.cache_read_input_tokens }); }
+  const block = (j.content || []).find(b => b.type === 'tool_use' && b.name === 'extract');
+  if (!block || !block.input || !Array.isArray(block.input.items)) throw new Error('The model did not return the expected structure.');
+  return block.input.items;
+}
+async function runImport(kind, file) {
+  if (!settings.anthropicKey || !file) return;
+  ui.importBusy = true; ui.importError = null; ui.importResult = null; renderModal();
+  try {
+    const img = await downscaleImage(file);
+    let items = null, lastErr = null;
+    for (let attempt = 0; attempt < 2 && items === null; attempt++) {
+      try { items = await callExtract(kind, img); }
+      catch (e) { lastErr = e; if (e.status === 401 || e.status === 403) break; } // bad key → no retry
+    }
+    if (items === null) throw lastErr || new Error('Could not read that screenshot.');
+    const count = applyImport(kind, items);
+    const noun = kind === 'statement' ? (count === 1 ? 'account' : 'accounts') : kind === 'subs' ? (count === 1 ? 'subscription' : 'subscriptions') : (count === 1 ? 'order' : 'orders');
+    if (kind === 'statement') state.activeTab = 'net'; else if (kind === 'subs') state.activeTab = 'subs'; else state.activeTab = 'orders';
+    ui.importBusy = false; ui.importResult = { count, noun };
+    save(); render();
+  } catch (err) {
+    ui.importBusy = false;
+    ui.importError = (err && err.message) || 'Something went wrong. Check your key and try again.';
+    renderModal();
+  }
+}
+
+/* ============================================================
+ * Render
+ * ============================================================ */
+function viewHtml() {
+  if (state.activeTab === 'net') return netWorthViewHtml();
+  if (state.activeTab === 'subs') return subsViewHtml();
+  if (state.activeTab === 'orders') return ordersViewHtml();
+  return wishViewHtml();
+}
+function tabBarHtml() {
+  return '<nav class="tabBar" aria-label="Finance sections"><div class="tabBarInner">'
+    + TAB_KEYS.map(k => '<button type="button" class="tab ' + (k === state.activeTab ? 'active' : '') + '" data-act="tab" data-tab="' + k + '">' + TAB_LABELS[k] + '</button>').join('')
+    + '</div></nav>';
+}
+function render() {
+  document.getElementById('app').innerHTML = headerHtml() + tickerHtml() + viewHtml() + tabBarHtml();
+  renderModal();
+  mountTicker();
+  // Focus an inline-edit input if one just opened.
+  if (ui.edit) {
+    const el = document.getElementById('edit-' + ui.edit.field + '-' + ui.edit.id);
+    if (el) { el.focus(); try { el.select(); } catch {} }
+  }
+}
+
+/* ============================================================
+ * Inline-edit commit helpers
+ * ============================================================ */
+function commitName(id, val) { actions.renameAccount(id, val); ui.edit = null; }
+function commitAmt(id, val) {
+  const acct = state.accounts.find(a => a.id === id); ui.edit = null;
+  if (!acct) { render(); return; }
+  const v = (val || '').trim();
+  if (v === '') { render(); return; }
+  let nextDisplay = chfToDisplay(acct.amountCHF, state.currency, rates);
+  if (/^[+\-]\s*\d/.test(v)) { const delta = parseFloat(v.replace(/\s+/g, '')); if (!isNaN(delta)) nextDisplay += delta; }
+  else { const n = parseFloat(v); if (!isNaN(n)) nextDisplay = n; }
+  actions.setAccountAmount(id, Math.max(0, nextDisplay));
+}
+function commitShares(id, val) { const next = parseFloat(val); ui.edit = null; if (!isNaN(next) && next >= 0) actions.setHoldingShares(id, next); else render(); }
+
+/* ============================================================
+ * Event wiring
+ * ============================================================ */
+function getDraftRef(path) { const [a, b] = path.split('.'); return { obj: ui.drafts[a], key: b }; }
+
+document.addEventListener('input', e => {
+  const t = e.target;
+  if (t.dataset && t.dataset.draft) {
+    const { obj, key } = getDraftRef(t.dataset.draft);
+    if (obj) {
+      if (t.type === 'checkbox') obj[key] = t.checked;
+      else obj[key] = t.dataset.upper ? t.value.toUpperCase() : t.value;
+    }
+    if (t.dataset.orderprev) {
+      const prevEl = document.getElementById('orderPreview');
+      if (prevEl) { const p = orderPreviewText(netWorthChf(state.accounts)); prevEl.textContent = p.text; prevEl.className = 'addPreview ' + (p.cls === 'warn' ? 'warn' : p.cls === 'bad' ? 'bad' : ''); }
+    }
+  }
+});
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t.dataset && t.dataset.importfile) { const file = t.files && t.files[0]; if (file) runImport(t.dataset.importfile, file); return; }
+  if (t.dataset && t.dataset.draft) { const { obj, key } = getDraftRef(t.dataset.draft); if (obj) obj[key] = (t.type === 'checkbox') ? t.checked : t.value; }
+});
+
+document.addEventListener('keydown', e => {
+  const t = e.target;
+  if (t.dataset && t.dataset.edit) {
+    if (e.key === 'Enter') { e.preventDefault(); commitEdit(t); }
+    else if (e.key === 'Escape') { ui.edit = null; render(); }
+    return;
+  }
+  if (e.key === 'Enter' && t.dataset && t.dataset.enter) {
+    e.preventDefault();
+    const container = t.closest('.addCard, .accountCard');
+    const submit = container && container.querySelector('[data-act="' + t.dataset.enter + '"]');
+    if (submit) submit.click();
+  }
+});
+document.addEventListener('blur', e => {
+  const t = e.target;
+  if (t.dataset && t.dataset.edit) commitEdit(t);
+}, true);
+
+function commitEdit(t) {
+  const id = t.dataset.id, field = t.dataset.edit;
+  if (!ui.edit) return; // already committed
+  if (field === 'name') commitName(id, t.value);
+  else if (field === 'amt') commitAmt(id, t.value);
+  else if (field === 'shares') commitShares(id, t.value);
+}
+
+document.addEventListener('click', e => {
+  const stop = e.target.closest('[data-stop]');
+  const btn = e.target.closest('[data-act]');
+  if (!btn) return;
+  const act = btn.dataset.act;
+  const id = btn.dataset.id;
+  switch (act) {
+    case 'back': e.preventDefault(); break;
+    case 'currency': actions.setCurrency(btn.dataset.c); break;
+    case 'theme': applyTheme(btn.dataset.theme); break;
+    case 'tab': actions.setActiveTab(btn.dataset.tab); break;
+    case 'chartPeriod': ui.chartPeriod = btn.dataset.p; render(); break;
+    case 'showAdd': ui.show[btn.dataset.show] = true; render(); break;
+    case 'refreshPrices': refreshStockPrices(); break;
+    case 'openSettings': openSettings(); break;
+    case 'closeSettings': if (!stop || e.target.closest('.importClose')) { ui.settingsOpen = false; renderModal(); } break;
+    case 'saveSettings': {
+      const fk = document.getElementById('settings-finnhub');
+      const ak = document.getElementById('settings-anthropic');
+      const mk = document.getElementById('settings-model');
+      settings.finnhubKey = fk ? fk.value.trim() : settings.finnhubKey;
+      settings.anthropicKey = ak ? ak.value.trim() : settings.anthropicKey;
+      settings.anthropicModel = (mk && mk.value.trim()) || DEFAULT_MODEL;
+      saveSettings(); ui.settingsOpen = false; renderModal();
+      break;
+    }
+
+    case 'editName': ui.edit = { id, field: 'name' }; render(); break;
+    case 'editAmt': ui.edit = { id, field: 'amt' }; render(); break;
+    case 'editShares': ui.edit = { id, field: 'shares' }; render(); break;
+    case 'delAccount': actions.deleteAccount(id); break;
+
+    case 'addAccount': {
+      const cat = btn.dataset.cat; const d = ui.drafts[cat];
+      const a = parseFloat(d.amt); if (!d.name.trim() || isNaN(a)) break;
+      actions.addAccount(cat, d.name, a); d.name = ''; d.amt = '';
+      ui.show[cat + 'Add'] = true; render(); break;
+    }
+    case 'addHolding': {
+      const d = ui.drafts.stockHold; const s = parseFloat(d.shares);
+      if (!d.ticker.trim() || isNaN(s) || s <= 0) break;
+      actions.addHolding(d.ticker, s); d.ticker = ''; d.shares = ''; ui.show.stocksAdd = true; render(); break;
+    }
+    case 'addStockManual': {
+      const d = ui.drafts.stockManual; const a = parseFloat(d.amt);
+      if (!d.name.trim() || isNaN(a)) break;
+      actions.addAccount('stocks', d.name, a); d.name = ''; d.amt = ''; ui.show.stocksManual = true; render(); break;
+    }
+
+    case 'addSub': {
+      const d = ui.drafts.subAdd; const a = parseFloat(d.amount);
+      if (!d.name.trim() || isNaN(a)) break;
+      if (d.auto && !d.from) { alert('Pick a “from account” first. Auto-deduct needs somewhere to take the money from.'); break; }
+      actions.addSubscription({ name: d.name, displayAmount: a, period: d.period, renewal: d.renewal || null, fromAccountId: d.from || null, autoDeduct: d.auto });
+      ui.drafts.subAdd = { name: '', amount: '', period: 'monthly', renewal: '', from: '', auto: false }; render(); break;
+    }
+    case 'editSub': {
+      const sub = state.subscriptions.find(x => x.id === id); if (!sub) break;
+      ui.subEditId = id;
+      ui.drafts.subEdit = { name: sub.name, amount: String(sub.enteredAmount != null ? sub.enteredAmount : sub.amountCHF), period: sub.period, renewal: sub.renewal || '', from: sub.fromAccountId || '', auto: sub.autoDeduct };
+      render(); break;
+    }
+    case 'saveSub': {
+      const d = ui.drafts.subEdit; const a = parseFloat(d.amount);
+      if (!d.name.trim() || isNaN(a)) break;
+      if (d.auto && !d.from) { alert('Pick a “from account” first.'); break; }
+      actions.updateSubscription(id, { name: d.name.trim(), displayAmount: a, period: d.period, renewal: d.renewal || null, fromAccountId: d.from || null, autoDeduct: d.auto });
+      ui.subEditId = null; ui.drafts.subEdit = null; render(); break;
+    }
+    case 'cancelSub': ui.subEditId = null; ui.drafts.subEdit = null; render(); break;
+    case 'delSub': { const sub = state.subscriptions.find(x => x.id === id); if (sub && confirm('Delete "' + sub.name + '"?')) { actions.deleteSubscription(id); ui.subEditId = null; } break; }
+    case 'toggleAuto': { const sub = state.subscriptions.find(x => x.id === id); if (sub && !sub.autoDeduct && !sub.fromAccountId) { alert('Pick a “from account” first (use the ✎ edit button).'); break; } actions.toggleSubAutoDeduct(id); break; }
+
+    case 'orderMode': ui.drafts.order.mode = btn.dataset.mode; render(); break;
+    case 'addOrder': {
+      const d = ui.drafts.order; const isBought = d.mode === 'bought'; const a = parseFloat(d.cost);
+      if (!d.name.trim() || isNaN(a)) break; if (isBought && !d.from) break;
+      actions.addOrder({ name: d.name, displayAmount: a, fromAccountId: d.from || null, date: isBought ? null : (d.arrival || null), immediate: isBought });
+      ui.drafts.order = { mode: d.mode, name: '', cost: '', from: '', arrival: '' }; render(); break;
+    }
+    case 'deduct': { const o = state.orders.find(x => x.id === id); if (o && !o.fromAccountId) { alert('Set a “from account” to deduct from.'); break; } actions.deductOrder(id); break; }
+    case 'undoDeduct': actions.undoDeductOrder(id); break;
+    case 'delOrder': actions.deleteOrder(id); break;
+
+    case 'addWish': { const d = ui.drafts.wish; const a = parseFloat(d.amount); if (!d.name.trim() || isNaN(a)) break; actions.addWish(d.name, a); ui.drafts.wish = { name: '', amount: '' }; render(); break; }
+    case 'delWish': actions.deleteWish(id); break;
+
+    case 'import': ui.importOpen = btn.dataset.kind; ui.importBusy = false; ui.importError = null; ui.importResult = null; renderModal(); break;
+    case 'closeImport': if (!stop || e.target.closest('.importClose')) { ui.importOpen = null; ui.importBusy = false; ui.importError = null; ui.importResult = null; render(); } break;
+  }
+});
+
+/* ============================================================
+ * Boot — snapshot NW, fetch FX rates, render
+ * ============================================================ */
+maybeSnapshotNw(); save();
+
+fetch('https://open.er-api.com/v6/latest/CHF')
+  .then(r => r.json())
+  .then(data => {
+    if (data && data.rates) {
+      rates = { CHF: 1, USD: data.rates.USD || 1, EUR: data.rates.EUR || 1, GBP: data.rates.GBP || 1 };
+      render();
+      // Now that USD→CHF is known, refresh live holdings prices if a key is set.
+      if (settings.finnhubKey && state.accounts.some(a => a.type === 'stocks' && a.ticker)) refreshStockPrices({ silent: true });
+    }
+  })
+  .catch(() => {});
+
+applyTheme(currentTheme);
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="db.js?v=15"></script>
+<script src="brand.js?v=16"></script>
+</body>
+</html>

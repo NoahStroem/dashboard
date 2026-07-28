@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Text Animation Lab · Rowan4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  /* ============================================================
+   * TEXT ANIMATION LAB
+   * A playground for title/tile text animations in the rowan4 look.
+   * Each "card" below is one animation preset. To tweak one, find its
+   * @keyframes / .anim-<name> block and the entry in the PRESETS array.
+   * Workflow: open this file in a browser, tell Claude which card +
+   * how to change it, Claude edits, you refresh.
+   * ============================================================ */
+  :root {
+    --bg:#000; --fg:#fff; --mint:#6EE7B7; --mint2:#A7F3D0;
+    --muted:rgba(255,255,255,.5); --line:rgba(255,255,255,.08);
+    --card:rgba(255,255,255,.02); --serif:'Instrument Serif',Georgia,serif;
+    --ui:'Inter',-apple-system,sans-serif; --mono:'JetBrains Mono',monospace;
+    --ease:cubic-bezier(.16,1,.3,1);
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin:0; background:var(--bg); color:var(--fg); font-family:var(--ui);
+    min-height:100vh;
+    background-image:
+      radial-gradient(ellipse 50% 35% at 70% 0%, rgba(110,231,183,.07), transparent 60%),
+      radial-gradient(ellipse 40% 30% at 10% 100%, rgba(110,231,183,.05), transparent 70%);
+  }
+
+  /* ---- control bar ---- */
+  .bar {
+    position:sticky; top:0; z-index:10; display:flex; flex-wrap:wrap; gap:14px;
+    align-items:center; padding:16px 22px; backdrop-filter:blur(14px);
+    background:rgba(0,0,0,.6); border-bottom:1px solid var(--line);
+  }
+  .bar h1 { font-family:var(--serif); font-style:italic; font-weight:400; font-size:22px; margin:0 12px 0 0; }
+  .topbar { display:flex; align-items:center; gap:16px; padding:14px 22px; border-bottom:1px solid var(--line); }
+  .topbar h1 { font-family:var(--serif); font-style:italic; font-weight:400; font-size:24px; margin:0; }
+  .nav { display:flex; gap:8px; margin-left:auto; }
+  .nav a { font-size:13px; color:var(--muted); text-decoration:none; padding:7px 12px; border:1px solid var(--line); border-radius:9px; }
+  .nav a:hover, .nav a.on { color:var(--mint); border-color:rgba(110,231,183,.35); }
+  .bar input[type=text] {
+    flex:1; min-width:220px; background:var(--card); border:1px solid var(--line);
+    color:var(--fg); font-family:var(--ui); font-size:15px; padding:9px 14px; border-radius:10px;
+  }
+  .bar input[type=text]:focus { outline:none; border-color:rgba(110,231,183,.4); }
+  .ctl { display:flex; align-items:center; gap:7px; font-size:13px; color:var(--muted); }
+  .ctl input[type=range] { accent-color:var(--mint); }
+  .btn {
+    background:var(--mint); color:#04231a; border:none; font-weight:600; font-size:13px;
+    padding:9px 16px; border-radius:10px; cursor:pointer; font-family:var(--ui);
+  }
+  .btn:hover { background:#5dd6a6; }
+  .seg { display:flex; border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  .seg button { background:transparent; color:var(--muted); border:none; padding:8px 12px; cursor:pointer; font-size:13px; font-family:var(--ui); }
+  .seg button.on { background:rgba(110,231,183,.14); color:var(--mint); }
+
+  /* ---- gallery ---- */
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:16px; padding:22px; }
+  .card {
+    position:relative; border:1px solid var(--line); border-radius:16px; background:var(--card);
+    min-height:170px; display:flex; align-items:center; justify-content:center; overflow:hidden;
+    padding:34px 22px; cursor:pointer; isolation:isolate;
+  }
+  .card:hover { border-color:rgba(110,231,183,.25); }
+  .card .tag {
+    position:absolute; top:12px; left:14px; font-family:var(--mono); font-size:11px;
+    letter-spacing:.04em; color:var(--muted); z-index:2;
+  }
+  .card .replay {
+    position:absolute; top:10px; right:12px; z-index:2; font-size:11px; color:var(--mint);
+    opacity:.55; font-family:var(--mono);
+  }
+  .card:hover .replay { opacity:1; }
+  .card .copy { position:absolute; top:10px; right:74px; z-index:2; font-size:11px; color:var(--mint); opacity:.55; font-family:var(--mono); cursor:pointer; }
+  .card:hover .copy { opacity:1; } .card .copy:hover { text-decoration:underline; }
+  .stage {
+    font-family:var(--serif); font-style:italic; font-weight:400; line-height:1.05;
+    text-align:center; font-size:var(--size,44px); white-space:pre-wrap;
+  }
+  body[data-font="sans"] .stage { font-family:var(--ui); font-style:normal; font-weight:700; letter-spacing:-.02em; }
+  .stage .ch, .stage .wd { display:inline-block; white-space:pre; }
+
+  /* ============================================================
+   * PRESETS — each one is a .anim-* class + keyframes.
+   * Replaying = JS removes the class, reflows, re-adds it.
+   * ============================================================ */
+
+  /* 1. fade up (whole block) */
+  .anim-fadeUp { opacity:0; animation:fadeUp .9s var(--ease) forwards; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+  /* 2. word stagger up */
+  .anim-wordUp .wd { opacity:0; transform:translateY(18px); animation:fadeUp .7s var(--ease) forwards; }
+
+  /* 3. char stagger up */
+  .anim-charUp .ch { opacity:0; transform:translateY(20px); animation:fadeUp .55s var(--ease) forwards; }
+
+  /* 4. mask reveal (clip from bottom, per word) */
+  .anim-mask .wd { overflow:hidden; }
+  .anim-mask .wd > span { display:inline-block; transform:translateY(105%); animation:maskUp .8s var(--ease) forwards; }
+  @keyframes maskUp { to { transform:translateY(0); } }
+
+  /* 5. blur in */
+  .anim-blur { opacity:0; filter:blur(14px); animation:blurIn 1s var(--ease) forwards; }
+  @keyframes blurIn { to { opacity:1; filter:blur(0); } }
+
+  /* 6. tracking settle (letters spread then settle) */
+  .anim-track { opacity:0; letter-spacing:.5em; animation:track 1s var(--ease) forwards; }
+  @keyframes track { to { opacity:1; letter-spacing:normal; } }
+
+  /* 7. shine sweep (gradient gloss runs across) */
+  .anim-shine {
+    background:linear-gradient(100deg,var(--fg) 0%,var(--fg) 38%,var(--mint2) 50%,var(--fg) 62%,var(--fg) 100%);
+    background-size:250% 100%; -webkit-background-clip:text; background-clip:text; color:transparent;
+    animation:shine 1.6s var(--ease) forwards;
+  }
+  @keyframes shine { from{background-position:120% 0} to{background-position:-20% 0} }
+
+  /* 8. char stagger up + per-char glow (used by JS too) */
+  .anim-charGlow .ch { opacity:0; transform:translateY(18px); animation:charGlow .7s var(--ease) forwards; }
+  @keyframes charGlow {
+    0%{opacity:0;transform:translateY(18px);text-shadow:0 0 0 transparent}
+    60%{opacity:1;text-shadow:0 0 14px var(--mint)}
+    100%{opacity:1;transform:translateY(0);text-shadow:0 0 0 transparent}
+  }
+
+  /* 9. 3D flip up (rotateX per char) */
+  .anim-flip { perspective:600px; }
+  .anim-flip .ch { opacity:0; transform-origin:50% 100%; transform:rotateX(-90deg); animation:flipUp .7s var(--ease) forwards; }
+  @keyframes flipUp { to { opacity:1; transform:rotateX(0); } }
+
+  /* 10. rise + fade with slight scale (cinematic) */
+  .anim-rise { opacity:0; transform:translateY(26px) scale(.94); filter:blur(6px); animation:rise 1s var(--ease) forwards; }
+  @keyframes rise { to { opacity:1; transform:translateY(0) scale(1); filter:blur(0); } }
+
+  /* 11. typewriter (JS-driven) — caret */
+  .anim-type::after { content:'▍'; color:var(--mint); animation:caret 1s steps(1) infinite; margin-left:2px; }
+  @keyframes caret { 50% { opacity:0; } }
+
+  /* 12. scramble / decode (JS-driven) — no css needed */
+
+  @media (prefers-reduced-motion: reduce) {
+    .stage, .stage * { animation:none !important; opacity:1 !important; transform:none !important; filter:none !important; }
+  }
+</style>
+</head>
+<body data-font="serif">
+  <div class="topbar">
+    <h1>Text Lab</h1>
+    <div class="nav">
+      <a href="text-lab.html" class="on">Text</a>
+      <a href="graph-lab.html">Graph</a>
+      <a href="schedule-lab.html">Schedule</a>
+    </div>
+  </div>
+  <div class="bar">
+    <input id="text" type="text" value="Welcome back, Rowan" placeholder="type the title / tile text…" />
+    <div class="seg" id="fontSeg">
+      <button data-font="serif" class="on">Serif</button>
+      <button data-font="sans">Sans</button>
+    </div>
+    <label class="ctl">Size <input id="size" type="range" min="20" max="72" value="44" /></label>
+    <label class="ctl">Speed <input id="speed" type="range" min="0.4" max="2" step="0.1" value="1" /></label>
+    <button class="btn" id="replayAll">Replay all ⟳</button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+<script>
+/* Each preset: name (shown), cls (the .anim-* class), split: 'none'|'word'|'char'|'mask',
+   and an optional js(stage) for typewriter/scramble. stagger = ms between word/char. */
+var PRESETS = [
+  { name:'01 · fade up',        cls:'anim-fadeUp',  split:'none' },
+  { name:'02 · word stagger',   cls:'anim-wordUp',  split:'word', stagger:90 },
+  { name:'03 · char stagger',   cls:'anim-charUp',  split:'char', stagger:35 },
+  { name:'04 · mask reveal',    cls:'anim-mask',    split:'mask', stagger:80 },
+  { name:'05 · blur in',        cls:'anim-blur',    split:'none' },
+  { name:'06 · tracking settle',cls:'anim-track',   split:'none' },
+  { name:'07 · shine sweep',    cls:'anim-shine',   split:'none' },
+  { name:'08 · char glow',      cls:'anim-charGlow',split:'char', stagger:45 },
+  { name:'09 · 3D flip up',     cls:'anim-flip',    split:'char', stagger:45 },
+  { name:'10 · cinematic rise', cls:'anim-rise',    split:'none' },
+  { name:'11 · typewriter',     cls:'anim-type',    split:'none', js:'type' },
+  { name:'12 · scramble decode',cls:'',             split:'none', js:'scramble' }
+];
+
+var grid = document.getElementById('grid');
+var textEl = document.getElementById('text');
+var sizeEl = document.getElementById('size');
+var speedEl = document.getElementById('speed');
+
+var cards = PRESETS.map(function (p) {
+  var card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = '<span class="tag">' + p.name + '</span><span class="copy">copy</span><span class="replay">replay ⟳</span><div class="stage"></div>';
+  var stage = card.querySelector('.stage');
+  card.addEventListener('click', function () { play(p, stage); });
+  var copyEl = card.querySelector('.copy');
+  copyEl.addEventListener('click', function(ev){ ev.stopPropagation();
+    var font=document.body.getAttribute('data-font'), size=sizeEl.value, speed=speedEl.value, text=document.getElementById('text').value;
+    var human='TEXT DESIGN — "'+p.name+'" entrance · '+font+' font, size '+size+'px, speed '+speed+'x · sample: "'+text+'"';
+    var json=JSON.stringify({lab:'text',animation:p.name,font:font,size:+size,speed:+speed,sample:text});
+    copyText(human+'\n'+json, copyEl);
+  });
+  grid.appendChild(card);
+  return { p:p, stage:stage };
+});
+
+/* split text into word/char spans */
+function build(p, stage, text) {
+  stage.className = 'stage';
+  stage.style.removeProperty('--size'); // inherits from grid via setSize below
+  if (p.js) { stage.textContent = ''; return; }
+  if (p.split === 'none') { stage.textContent = text; return; }
+  stage.innerHTML = '';
+  if (p.split === 'char') {
+    text.split('').forEach(function (c) {
+      var s = document.createElement('span'); s.className='ch'; s.textContent = c; stage.appendChild(s);
+    });
+  } else if (p.split === 'word') {
+    text.split(' ').forEach(function (w, i, arr) {
+      var s = document.createElement('span'); s.className='wd'; s.textContent = w; stage.appendChild(s);
+      if (i < arr.length - 1) stage.appendChild(document.createTextNode(' '));
+    });
+  } else if (p.split === 'mask') {
+    text.split(' ').forEach(function (w, i, arr) {
+      var wrap = document.createElement('span'); wrap.className='wd';
+      var inner = document.createElement('span'); inner.textContent = w; wrap.appendChild(inner);
+      stage.appendChild(wrap);
+      if (i < arr.length - 1) stage.appendChild(document.createTextNode(' '));
+    });
+  }
+}
+
+function play(p, stage) {
+  var text = textEl.value || ' ';
+  var spd = parseFloat(speedEl.value) || 1;
+  build(p, stage, text);
+
+  if (p.js === 'type') return typewriter(stage, text, spd);
+  if (p.js === 'scramble') return scramble(stage, text, spd);
+
+  // apply animation class + per-element stagger
+  void stage.offsetWidth;
+  stage.classList.add(p.cls);
+  stage.style.animationDuration = (0.9 / spd) + 's';
+  var parts = stage.querySelectorAll(p.split === 'mask' ? '.wd > span' : (p.split === 'char' ? '.ch' : '.wd'));
+  parts.forEach(function (el, i) {
+    el.style.animationDelay = (i * (p.stagger || 0) / 1000 / spd) + 's';
+    el.style.animationDuration = ((p.split === 'mask' ? 0.8 : 0.6) / spd) + 's';
+  });
+}
+
+/* typewriter */
+function typewriter(stage, text, spd) {
+  stage.classList.add('anim-type');
+  stage.textContent = '';
+  var i = 0;
+  (function tick() {
+    if (i > text.length) return;
+    stage.textContent = text.slice(0, i++);
+    setTimeout(tick, 55 / spd);
+  })();
+}
+
+/* scramble / decode */
+function scramble(stage, text, spd) {
+  var chars = '!<>-_\\/[]{}—=+*^?#01';
+  var frame = 0, queue = [];
+  for (var i = 0; i < text.length; i++) {
+    var start = Math.floor(Math.random() * 18 / spd);
+    var end = start + Math.floor(10 + Math.random() * 18 / spd);
+    queue.push({ to: text[i], start: start, end: end, ch: '' });
+  }
+  (function run() {
+    var out = '', done = 0;
+    for (var i = 0; i < queue.length; i++) {
+      var q = queue[i];
+      if (frame >= q.end) { done++; out += q.to; }
+      else if (frame >= q.start) {
+        if (!q.ch || Math.random() < 0.28) q.ch = chars[Math.floor(Math.random() * chars.length)];
+        out += '<span style="color:var(--mint)">' + q.ch + '</span>';
+      } else out += '';
+    }
+    stage.innerHTML = out;
+    if (done < queue.length) { frame++; requestAnimationFrame(run); }
+    else stage.textContent = text;
+  })();
+}
+
+/* ---- controls ---- */
+function setSize() { grid.style.setProperty('--size', sizeEl.value + 'px'); document.querySelectorAll('.stage').forEach(function(s){ s.style.fontSize = sizeEl.value + 'px'; }); }
+function replayAll() { cards.forEach(function (c, i) { setTimeout(function () { play(c.p, c.stage); }, i * 60); }); }
+
+textEl.addEventListener('input', replayAll);
+sizeEl.addEventListener('input', function(){ setSize(); });
+speedEl.addEventListener('input', replayAll);
+document.getElementById('replayAll').addEventListener('click', replayAll);
+/* Copy this text design as a shareable, self-describing code (human line + JSON).
+ * No screenshot needed — the values fully define the look. */
+function copyText(t, btn){ function ok(){ if(btn){ var o=btn.textContent; btn.textContent='✓ copied'; setTimeout(function(){ btn.textContent=o; }, 1400); } }
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(ok, function(){ window.prompt('Copy this design:', t); }); } else { window.prompt('Copy this design:', t); } }
+document.getElementById('fontSeg').addEventListener('click', function (e) {
+  var b = e.target.closest('button'); if (!b) return;
+  document.body.setAttribute('data-font', b.dataset.font);
+  [].forEach.call(this.querySelectorAll('button'), function (x){ x.classList.toggle('on', x === b); });
+  replayAll();
+});
+
+setSize();
+replayAll();
+</script>
+</body>
+</html>

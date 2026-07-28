@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#0F0F23" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Liam" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="icon" type="image/svg+xml" href="icon.svg" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<title>Recovery · Liam</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800&family=Exo+2:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script>try{document.documentElement.setAttribute("data-theme",localStorage.getItem("patron_theme")||"nocturne");}catch(e){document.documentElement.setAttribute("data-theme","nocturne");}</script>
+<script src="icons.js?v=1"></script>
+<style>
+:root{
+  color-scheme: dark;
+  --bg:#0F0F23; --bg-elevated:#1A1A3A;
+  --surface:rgba(139,92,246,0.06); --surface-2:rgba(139,92,246,0.11);
+  --fg:#F8FAFC; --muted:rgba(226,232,255,0.52); --muted-strong:rgba(226,232,255,0.80);
+  --border:rgba(124,58,237,0.22); --border-strong:rgba(167,139,250,0.45);
+  --brand:#8B5CF6; --brand-2:#22D3EE; --brand-ink:#0B0420;
+  --brand-soft:rgba(139,92,246,0.16); --brand-line:rgba(139,92,246,0.40); --brand-glow:rgba(139,92,246,0.65);
+  --pos:#34D399; --warn:#FBBF24; --neg:#FB5775; --track:rgba(255,255,255,0.06);
+  --card-shadow:0 1px 0 rgba(167,139,250,0.08) inset, 0 22px 50px -28px rgba(0,0,0,0.95);
+  --space-2:.5rem;--space-3:.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-16:4rem;
+  --radius-md:13px; --radius-lg:18px; --radius-pill:999px;
+  --text-xs:.75rem;--text-sm:.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.375rem;--text-3xl:2.5rem;
+  --ease:cubic-bezier(.2,.8,.2,1); --ease-premium:cubic-bezier(.16,1,.3,1); --duration:200ms;
+  --font-display:'Orbitron'; --font-ui:'Exo 2'; --font-mono:'JetBrains Mono';
+}
+*{box-sizing:border-box} html,body{margin:0;padding:0}
+body{ background:var(--bg); color:var(--fg); font-family:var(--font-ui),-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; -webkit-font-smoothing:antialiased; }
+.page{ position:relative; min-height:100dvh; padding:var(--space-8) var(--space-5) var(--space-16); isolation:isolate; }
+.page::before{ content:''; position:absolute; inset:0; pointer-events:none; z-index:-1; background:radial-gradient(58% 42% at 82% 6%, rgba(139,92,246,0.22), transparent 70%), radial-gradient(48% 38% at 12% 92%, rgba(52,211,153,0.12), transparent 72%); }
+.shell{ max-width:720px; margin:0 auto; }
+
+.header{ display:flex; align-items:flex-end; justify-content:space-between; gap:var(--space-4); margin-bottom:var(--space-6); flex-wrap:wrap; }
+.title{ font-family:var(--font-display); font-weight:800; font-size:var(--text-3xl); line-height:1; letter-spacing:.03em; text-transform:uppercase; margin:0; background:linear-gradient(120deg,#fff 35%,var(--brand-2) 75%,var(--brand)); -webkit-background-clip:text; background-clip:text; color:transparent; filter:drop-shadow(0 0 20px rgba(34,211,238,.4)); }
+.subtitle{ font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:.18em; color:var(--muted); margin:6px 0 0; }
+.backLink{ display:inline-flex; align-items:center; gap:6px; padding:7px 14px; background:var(--brand-soft); border:1px solid var(--brand-line); border-radius:var(--radius-pill); color:var(--brand-2); font-size:var(--text-xs); font-weight:600; text-decoration:none; }
+.backLink:hover{ border-color:var(--brand-2); }
+
+.card{ position:relative; border:1px solid var(--border); border-radius:var(--radius-lg); background:var(--bg-elevated); box-shadow:var(--card-shadow); padding:var(--space-5); margin-bottom:var(--space-4); }
+.eyebrow{ font-family:var(--font-mono); font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--brand-2); margin:0 0 var(--space-3); display:flex; align-items:center; gap:8px; }
+.eyebrow::before{ content:''; width:22px; height:1px; background:linear-gradient(90deg,var(--brand-2),transparent); }
+.srcBadge{ float:right; font-family:var(--font-mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase; padding:5px 11px; border-radius:var(--radius-pill); border:1px solid var(--border); background:var(--surface); color:var(--muted-strong); }
+
+/* Hero ring */
+.hero{ display:flex; align-items:center; justify-content:center; gap:var(--space-8); flex-wrap:wrap; text-align:center; }
+.sleepBig{ text-align:center; }
+.sleepBigLabel{ font-family:var(--font-mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
+.sleepBigVal{ font-family:var(--font-display); font-weight:700; font-size:2.6rem; line-height:1; margin-top:6px; font-variant-numeric:tabular-nums; }
+.sleepBigScore{ font-size:12px; color:var(--brand-2); margin-top:6px; font-variant-numeric:tabular-nums; }
+.statusBlock{ text-align:center; margin-top:var(--space-5); }
+.statusBlock .statusLine{ max-width:44ch; margin-left:auto; margin-right:auto; }
+.recRing{ position:relative; width:150px; height:150px; display:grid; place-items:center; flex-shrink:0; overflow:visible; }
+.recRing[data-tone="good"]{ color:var(--pos); } .recRing[data-tone="watch"]{ color:var(--warn); } .recRing[data-tone="low"]{ color:var(--neg); } .recRing[data-tone="muted"]{ color:var(--muted); }
+.recRing::before{ content:''; position:absolute; inset:-18px; border-radius:50%; background:radial-gradient(closest-side, currentColor, transparent 70%); opacity:.32; filter:blur(14px); pointer-events:none; z-index:0; animation:recPulse 3.6s var(--ease) infinite; }
+.recRing[data-tone="muted"]::before{ opacity:.10; animation:none; }
+@keyframes recPulse{ 0%,100%{opacity:.26} 50%{opacity:.44} }
+.recRing svg{ position:absolute; inset:0; transform:rotate(-90deg); overflow:visible; z-index:1; }
+.recTrack{ fill:none; stroke:var(--track); stroke-width:10; }
+.recFill{ fill:none; stroke:currentColor; stroke-width:10; stroke-linecap:round; transition:stroke-dashoffset 800ms var(--ease-premium); filter:drop-shadow(0 0 4px currentColor) drop-shadow(0 0 13px currentColor); }
+.ringWrap{ display:flex; flex-direction:column; align-items:center; gap:10px; }
+.ringSub{ font-family:var(--font-display); font-weight:700; font-size:1.2rem; font-variant-numeric:tabular-nums; color:var(--fg); }
+.recInner{ position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; justify-content:center; max-width:120px; }
+.recNum{ color:var(--fg); font-family:var(--font-display); font-weight:700; font-size:2.2rem; line-height:1; font-variant-numeric:tabular-nums; }
+.recNum small{ font-size:0.95rem; color:var(--muted-strong); }
+.recCap{ font-family:var(--font-mono); font-size:8px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-top:5px; text-align:center; white-space:nowrap; }
+.heroText{ flex:1; min-width:180px; }
+.statusWord{ font-family:var(--font-display); font-weight:700; font-size:var(--text-xl); }
+.statusWord[data-tone="good"]{ color:var(--pos); } .statusWord[data-tone="watch"]{ color:var(--warn); } .statusWord[data-tone="low"]{ color:var(--neg); }
+.statusLine{ font-size:14px; color:var(--muted-strong); line-height:1.5; margin-top:6px; }
+
+/* stat chips */
+.statRow{ display:flex; gap:var(--space-3); flex-wrap:wrap; margin-top:var(--space-5); }
+.stat{ flex:1; min-width:96px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px 14px; }
+.statLabel{ font-family:var(--font-mono); font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
+.statVal{ font-family:var(--font-display); font-weight:700; font-size:var(--text-lg); margin-top:4px; font-variant-numeric:tabular-nums; }
+.statVal small{ font-size:11px; color:var(--muted); font-family:var(--font-ui); }
+
+/* chart */
+.chartHead{ display:flex; align-items:center; justify-content:space-between; gap:var(--space-3); }
+.seg{ display:inline-flex; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-pill); padding:3px; gap:2px; }
+.segBtn{ appearance:none; background:transparent; border:0; color:var(--muted); font-family:var(--font-mono); font-size:10px; letter-spacing:.08em; padding:5px 11px; border-radius:var(--radius-pill); cursor:pointer; }
+.segBtn.on{ background:var(--brand-soft); color:var(--brand-2); }
+.chart{ width:100%; height:130px; display:block; overflow:visible; margin-top:var(--space-4); }
+.legend{ display:flex; gap:var(--space-4); margin-top:8px; }
+.legItem{ display:inline-flex; align-items:center; gap:6px; font-family:var(--font-mono); font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
+.legDot{ width:12px; height:3px; border-radius:2px; }
+
+/* tips */
+.tip{ display:flex; gap:12px; padding:13px 14px; border-radius:var(--radius-md); background:var(--surface); border:1px solid var(--border); margin-bottom:10px; }
+.tip:last-child{ margin-bottom:0; }
+.tipIcon{ font-size:18px; flex-shrink:0; }
+.tipText{ font-size:13.5px; line-height:1.5; color:var(--muted-strong); }
+.tipText b{ color:var(--fg); }
+
+.empty{ text-align:center; padding:var(--space-6) var(--space-4); }
+.emptyTitle{ font-family:var(--font-display); font-weight:700; font-size:var(--text-lg); }
+.emptyBody{ font-size:13.5px; color:var(--muted-strong); line-height:1.55; margin-top:8px; }
+.btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; margin-top:var(--space-4); padding:11px 18px; border-radius:var(--radius-md); font-family:var(--font-display); font-weight:700; font-size:13px; text-transform:uppercase; letter-spacing:.04em; color:#fff; background:linear-gradient(120deg,var(--brand),var(--brand-2)); text-decoration:none; box-shadow:0 0 22px -4px var(--brand-glow); }
+.noteLine{ font-size:11px; color:var(--muted); font-style:italic; margin-top:var(--space-3); }
+@media (prefers-reduced-motion:reduce){ .recRing::before{animation:none} .recFill{transition:none} }
+</style>
+<link rel="stylesheet" href="skin.css?v=1">
+</head>
+<body>
+<main class="page"><div class="shell" id="app"></div></main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="db.js?v=15"></script>
+<script>
+/* ============================================================
+ * Recovery & Sleep — reads the suite-wide vitals (patron_health_v1),
+ * estimates a recovery score when the source has none, keeps a daily
+ * history for trends, and gives readiness tips. Cyberpunk UI.
+ * ============================================================ */
+function readLS(k){ try{ const r=localStorage.getItem(k); return r?JSON.parse(r):null; }catch(e){ return null; } }
+function health(){ try{ const d=readLS('patron_health_v1'); return (d&&d.connected)?d:null; }catch(e){ return null; } }
+function clamp01(x){ return Math.max(0,Math.min(1,x)); }
+
+/* recovery estimate — same logic as the dashboard */
+function estRecovery(h){
+  if(!h) return null;
+  if(h.recovery!=null) return h.recovery;
+  const parts=[],w=[];
+  if(typeof h.hrv==='number'){ parts.push(clamp01((h.hrv-20)/(90-20))*100); w.push(0.5); }
+  if(typeof h.rhr==='number'){ parts.push(clamp01((80-h.rhr)/(80-42))*100); w.push(0.25); }
+  if(typeof h.sleepPerf==='number'){ parts.push(Math.min(100,h.sleepPerf)); w.push(0.25); }
+  else if(typeof h.sleepHours==='number'){ parts.push(clamp01(h.sleepHours/(h.sleepTargetHours||8))*100); w.push(0.25); }
+  if(!parts.length) return null;
+  const sw=w.reduce((a,b)=>a+b,0); let s=0; for(let i=0;i<parts.length;i++)s+=parts[i]*w[i];
+  return Math.max(1,Math.min(99,Math.round(s/sw)));
+}
+function isEst(h){ return !!(h&&h.recovery==null&&estRecovery(h)!=null); }
+function tone(r){ if(r==null)return 'muted'; if(r>=67)return 'good'; if(r>=34)return 'watch'; return 'low'; }
+function sleepTone(p){ if(p==null)return 'muted'; if(p>=85)return 'good'; if(p>=60)return 'watch'; return 'low'; }
+function ringWrap(value, toneStr, cap, sub){
+  const circ=2*Math.PI*64;
+  const ring='<div class="recRing" data-tone="'+toneStr+'"><svg viewBox="0 0 150 150" aria-hidden><circle cx="75" cy="75" r="64" class="recTrack"/>'
+    +(value!=null?'<circle cx="75" cy="75" r="64" class="recFill" style="stroke-dasharray:'+circ+';stroke-dashoffset:'+(circ*(1-value/100))+'"/>':'')
+    +'</svg><div class="recInner"><div class="recNum">'+(value!=null?Math.round(value):'—')+(value!=null?'<small>%</small>':'')+'</div><div class="recCap">'+cap+'</div></div></div>';
+  return '<div class="ringWrap">'+ring+(sub?'<div class="ringSub">'+sub+'</div>':'')+'</div>';
+}
+function srcLabel(s){ return s==='apple'?'Apple Watch':s==='fitbit'?'Fitbit':s==='manual'?'Manual':s==='whoop'?'Whoop':'—'; }
+
+/* ---------- history ---------- */
+const LS='recovery_standalone_v1';
+function load(){ const r=readLS(LS); return { history:(r&&Array.isArray(r.history))?r.history:[] }; }
+function save(){ try{localStorage.setItem(LS,JSON.stringify(state));}catch(e){} if(window.PatronDB&&PatronDB.isCloud())PatronDB.set('recovery',state); }
+let state=load();
+function todayKey(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function snapshotToday(){
+  const h=health(); if(!h) return;
+  const rec=estRecovery(h);
+  const snap={ dateKey:todayKey(), recovery:rec, sleepHours:(typeof h.sleepHours==='number'?h.sleepHours:null), sleepPerf:(typeof h.sleepPerf==='number'?h.sleepPerf:null), hrv:(typeof h.hrv==='number'?h.hrv:null), rhr:(typeof h.rhr==='number'?h.rhr:null) };
+  if(rec==null && snap.sleepHours==null && snap.hrv==null) return;
+  state.history=state.history.filter(x=>x.dateKey!==snap.dateKey).concat([snap]).sort((a,b)=>a.dateKey.localeCompare(b.dateKey));
+  if(state.history.length>180) state.history.shift();
+  save();
+}
+
+let range=14;
+function fmtHM(h){ if(h==null)return '—'; const hh=Math.floor(h),mm=Math.round((h-hh)*60); return hh+'h '+String(mm).padStart(2,'0')+'m'; }
+
+/* ---------- trend chart ---------- */
+function chartSvg(){
+  const hist=state.history.slice(-range);
+  if(hist.length<2) return '<p class="noteLine">Trends appear once you have 2+ days of data — open this page daily (or let your band sync) and the chart fills in.</p>';
+  const W=320,H=120,padY=10;
+  const recs=hist.map(d=>typeof d.recovery==='number'?d.recovery:null);
+  const sleeps=hist.map(d=>typeof d.sleepHours==='number'?d.sleepHours:null);
+  const maxSleep=Math.max(9, ...sleeps.filter(v=>v!=null));
+  const xOf=i=>hist.length===1?W/2:(i/(hist.length-1))*W;
+  const yRec=v=>H-padY-(v/100)*(H-padY*2);
+  const ySleep=v=>H-padY-(v/maxSleep)*(H-padY*2);
+  // sleep bars
+  let bars='';
+  const bw=Math.max(4,(W/hist.length)*0.5);
+  hist.forEach((d,i)=>{ if(typeof d.sleepHours==='number'){ const x=xOf(i)-bw/2, y=ySleep(d.sleepHours); bars+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+(H-padY-y).toFixed(1)+'" rx="2" fill="#8B5CF6" opacity=".22"/>'; } });
+  // recovery line
+  const pts=[]; recs.forEach((v,i)=>{ if(v!=null)pts.push([xOf(i),yRec(v)]); });
+  const line=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  const dots=pts.map(p=>'<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="2.6" fill="#22D3EE"/>').join('');
+  return '<svg class="chart" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" aria-hidden="true">'
+    + bars
+    + (pts.length>1?'<path d="'+line+'" fill="none" stroke="#22D3EE" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 5px rgba(34,211,238,.7))"/>':'')
+    + dots + '</svg>'
+    + '<div class="legend"><span class="legItem"><span class="legDot" style="background:#22D3EE"></span>Recovery %</span><span class="legItem"><span class="legDot" style="background:#8B5CF6;opacity:.5"></span>Sleep hours</span></div>';
+}
+
+/* ---------- tips ---------- */
+function tips(rec,h){
+  const out=[];
+  if(rec!=null){
+    if(rec>=67) out.push(['⚡','<b>Green light.</b> You\'re primed — good day for a hard session or a PR attempt.']);
+    else if(rec>=34) out.push(['🟡','<b>Moderate.</b> Train, but keep it smart — quality over max intensity today.']);
+    else out.push(['🛑','<b>Low recovery.</b> Go easy — light movement, hydration, and protect tonight\'s sleep.']);
+  }
+  if(h&&typeof h.sleepHours==='number'&&h.sleepHours<7) out.push(['😴','<b>Short sleep ('+fmtHM(h.sleepHours)+').</b> Aim for 7–9h tonight — it\'s the biggest lever on tomorrow\'s recovery.']);
+  if(h&&typeof h.hrv==='number'&&h.hrv<35) out.push(['📉','<b>HRV is low ('+Math.round(h.hrv)+'ms).</b> A sign of stress or fatigue — prioritise rest and easy days.']);
+  if(h&&typeof h.rhr==='number'&&h.rhr>65) out.push(['❤️','<b>Resting HR is elevated ('+Math.round(h.rhr)+'bpm).</b> Could be stress, poor sleep, or coming down with something.']);
+  if(!out.length) out.push(['✅','Looking balanced. Keep logging and your trends will sharpen the advice.']);
+  return out;
+}
+
+/* ---------- render ---------- */
+function render(){
+  const h=health();
+  const rec=estRecovery(h);
+  const t=tone(rec);
+  const circ=2*Math.PI*64;
+  let body;
+  if(!h){
+    body='<section class="card"><p class="eyebrow">Recovery</p><div class="empty"><div class="emptyTitle">No vitals yet</div>'
+      +'<p class="emptyBody">Connect a fitness band or add today\'s sleep + HRV, and your recovery score, trends and tips show up here.</p>'
+      +'<a class="btn" href="index.html">Add vitals on the dashboard</a></div></section>';
+  } else {
+    const statusWord = t==='good'?'Primed':t==='watch'?'Moderate':t==='low'?'Run down':'—';
+    const statusLine = rec==null?'Add HRV or sleep to estimate your readiness.'
+      : t==='good'?'You\'re well recovered and ready to push.'
+      : t==='watch'?'Partially recovered — train smart today.'
+      : 'Your body needs rest — keep it light.';
+    const recRing = ringWrap(rec, t, isEst(h)?'Rec · est':'Recovery', '');
+    const sTone = sleepTone(h.sleepPerf);
+    const sleepRing = (typeof h.sleepPerf==='number' || typeof h.sleepHours==='number')
+      ? ringWrap(typeof h.sleepPerf==='number'?h.sleepPerf:null, sTone, 'Sleep', typeof h.sleepHours==='number'?fmtHM(h.sleepHours):'')
+      : '';
+    body='<section class="card"><span class="srcBadge">'+srcLabel(h.source)+'</span><p class="eyebrow">Today</p>'
+      +'<div class="hero">'+recRing+sleepRing+'</div>'
+      +'<div class="statusBlock"><div class="statusWord" data-tone="'+t+'">'+statusWord+'</div><p class="statusLine">'+statusLine+'</p></div>'
+      +'<div class="statRow">'
+      +'<div class="stat"><div class="statLabel">HRV</div><div class="statVal">'+(typeof h.hrv==='number'?Math.round(h.hrv)+'<small> ms</small>':'—')+'</div></div>'
+      +'<div class="stat"><div class="statLabel">Resting HR</div><div class="statVal">'+(typeof h.rhr==='number'?Math.round(h.rhr)+'<small> bpm</small>':'—')+'</div></div>'
+      +'</div></section>'
+
+      +'<section class="card"><div class="chartHead"><p class="eyebrow" style="margin:0">Trends</p>'
+      +'<div class="seg">'+[7,14,30].map(n=>'<button class="segBtn '+(range===n?'on':'')+'" data-range="'+n+'">'+n+'d</button>').join('')+'</div></div>'
+      + chartSvg() + '</section>'
+
+      +'<section class="card"><p class="eyebrow">Today\'s guidance</p>'
+      + tips(rec,h).map(t=>'<div class="tip"><span class="tipIcon">'+t[0]+'</span><span class="tipText">'+t[1]+'</span></div>').join('')
+      +'</section>';
+  }
+  document.getElementById('app').innerHTML =
+    '<header class="header"><div><h1 class="title">Recovery</h1><p class="subtitle">readiness · sleep · trends</p></div>'
+    +'<a class="backLink" href="index.html">← Liam</a></header>' + body;
+}
+
+document.addEventListener('click',e=>{ const b=e.target.closest('[data-range]'); if(b){ range=parseInt(b.dataset.range,10)||14; render(); } });
+
+snapshotToday();
+render();
+
+/* cloud hydrate */
+(async function(){ if(!window.PatronDB||!PatronDB.isCloud())return; try{ const cs=await PatronDB.get('recovery'); if(cs&&Array.isArray(cs.history)){ state={history:cs.history}; try{localStorage.setItem(LS,JSON.stringify(state));}catch(e){} snapshotToday(); render(); } else { PatronDB.set('recovery',state); } }catch(e){} })();
+</script>
+<script src="brand.js?v=16"></script>
+</body>
+</html>

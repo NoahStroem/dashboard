@@ -1,0 +1,1634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Patron" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="icon" type="image/svg+xml" href="icon.svg" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<style id="pwa-mobile">
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+img{max-width:100%;height:auto}
+@media (max-width:480px){input,select,textarea{font-size:16px !important}}
+</style>
+<meta name="theme-color" content="#0C0C12">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script>try{document.documentElement.setAttribute("data-theme",localStorage.getItem("patron_theme")||"nocturne");}catch(e){document.documentElement.setAttribute("data-theme","nocturne");}</script>
+<title>Dashboard · Liam</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #0C0C12;
+  --text-primary: #F3F2F8;
+  --text-secondary: rgba(243,242,248,0.74);
+  --text-tertiary: rgba(243,242,248,0.46);
+  --success: #46E0A8; --success-rgb: 70,224,168;
+  --warning: #FBBF24; --warning-rgb: 251,191,36;
+  --danger: #FB7185;
+  --brand: #8B7CFF; --brand-2: #C7BBFF; --brand-ink: #130E2E;
+  --brand-soft: color-mix(in srgb, #8B7CFF 14%, transparent);
+  --brand-line: color-mix(in srgb, #8B7CFF 30%, transparent);
+  --brand-glow: color-mix(in srgb, #8B7CFF 45%, transparent);
+  --surface: color-mix(in srgb, #ffffff 4%, transparent);
+  --surface-1: color-mix(in srgb, #ffffff 3%, transparent);
+  --border: color-mix(in srgb, #ffffff 8%, transparent);
+  --border-strong: color-mix(in srgb, #ffffff 13%, transparent);
+  --line-2: color-mix(in srgb, #ffffff 18%, transparent);
+  --line-3: color-mix(in srgb, #8B7CFF 50%, transparent);
+  --input-bg: color-mix(in srgb, #000000 28%, transparent);
+  --card-shadow-c: rgba(0,0,0,0.45);
+  --body-glow: color-mix(in srgb, #8B7CFF 16%, transparent);
+  --font: 'Hanken Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: 'Space Grotesk', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+[data-theme="aurora"] {
+  color-scheme: dark;
+  --bg: #080913;
+  --text-primary: #EEF0FF; --text-secondary: rgba(220,225,255,0.76); --text-tertiary: rgba(220,225,255,0.48);
+  --success: #4FE3D0; --success-rgb: 79,227,208;
+  --warning: #FFC65C; --warning-rgb: 255,198,92;
+  --danger: #FF6FA5;
+  --brand: #8B7BFF; --brand-2: #B9ABFF; --brand-ink: #0A0922;
+  --brand-soft: color-mix(in srgb, #8B7BFF 16%, transparent);
+  --brand-line: color-mix(in srgb, #8B7BFF 34%, transparent);
+  --brand-glow: color-mix(in srgb, #7C6BFF 60%, transparent);
+  --surface: color-mix(in srgb, #96A0FF 5%, transparent);
+  --surface-1: color-mix(in srgb, #96A0FF 4%, transparent);
+  --border: color-mix(in srgb, #96A0FF 12%, transparent);
+  --border-strong: color-mix(in srgb, #96A0FF 20%, transparent);
+  --line-2: color-mix(in srgb, #96A0FF 26%, transparent);
+  --line-3: color-mix(in srgb, #8B7BFF 52%, transparent);
+  --input-bg: color-mix(in srgb, #000010 30%, transparent);
+  --card-shadow-c: rgba(8,8,30,0.5);
+  --body-glow: color-mix(in srgb, #7C6BFF 22%, transparent);
+}
+[data-theme="daylight"] {
+  color-scheme: light;
+  --bg: #F3F2FA;
+  --text-primary: #171622; --text-secondary: rgba(23,22,34,0.72); --text-tertiary: rgba(23,22,34,0.50);
+  --success: #0E9E64; --success-rgb: 14,158,100;
+  --warning: #B4690E; --warning-rgb: 180,105,14;
+  --danger: #E11D63;
+  --brand: #6A45FF; --brand-2: #8E6BFF; --brand-ink: #FFFFFF;
+  --brand-soft: color-mix(in srgb, #6A45FF 8%, transparent);
+  --brand-line: color-mix(in srgb, #6A45FF 24%, transparent);
+  --brand-glow: color-mix(in srgb, #6A45FF 28%, transparent);
+  --surface: #FFFFFF;
+  --surface-1: color-mix(in srgb, #17163C 3%, transparent);
+  --border: color-mix(in srgb, #17163C 9%, transparent);
+  --border-strong: color-mix(in srgb, #17163C 16%, transparent);
+  --line-2: color-mix(in srgb, #17163C 20%, transparent);
+  --line-3: color-mix(in srgb, #6A45FF 45%, transparent);
+  --input-bg: color-mix(in srgb, #17163C 4%, transparent);
+  --card-shadow-c: rgba(23,22,60,0.12);
+  --body-glow: color-mix(in srgb, #6A45FF 7%, transparent);
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  background: var(--bg);
+  color: var(--text-secondary);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+  padding: max(28px, env(safe-area-inset-top)) 20px 60px;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(circle at 82% 14%, var(--body-glow), transparent 45%),
+    radial-gradient(circle at 18% 90%, color-mix(in srgb, var(--success) 7%, transparent), transparent 50%);
+  filter: blur(40px);
+  pointer-events: none;
+  z-index: -2;
+  animation: drift 36s ease-in-out infinite alternate;
+}
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: radial-gradient(rgba(255,255,255,0.014) 1px, transparent 1px);
+  background-size: 3px 3px;
+  pointer-events: none;
+  z-index: -1;
+}
+@keyframes drift {
+  0%   { transform: translate3d(0,0,0); }
+  100% { transform: translate3d(-22px, 14px, 0); }
+}
+
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* ===== Component 1: page title ===== */
+.dash-title {
+  margin: 0 0 14px;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  background: linear-gradient(120deg, var(--text-primary), var(--brand));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+@media (max-width: 480px) { .dash-title { font-size: 22px; } }
+
+/* ===== Component 2: Goal Ticker ===== */
+.ticker-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4px;
+  margin-bottom: 18px;
+}
+.goal-ticker {
+  position: relative; overflow: hidden;
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 12px;
+  border-radius: 12px;
+  background:
+    var(--surface),
+    repeating-linear-gradient(0deg, var(--surface-1) 0, var(--surface-1) 1px, transparent 1px, transparent 3px);
+  box-shadow: inset 0 1px 0 var(--surface);
+}
+.goal-ticker::after {
+  content: '';
+  position: absolute; top: 0; bottom: 0;
+  width: 30%;
+  background: linear-gradient(90deg, transparent, var(--surface), transparent);
+  pointer-events: none;
+  animation: ticker-sweep 8s linear infinite;
+}
+@keyframes ticker-sweep {
+  0%   { left: -40%; }
+  100% { left: 110%; }
+}
+.goal-ticker-led { display: inline-flex; align-items: center; }
+.goal-ticker-led-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 8px rgba(var(--success-rgb),0.7);
+  animation: led-pulse 1.6s ease-in-out infinite;
+}
+@keyframes led-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.45; transform: scale(0.85); }
+}
+.goal-ticker-label {
+  font-family: var(--font-mono);
+  font-size: 9.5px; font-weight: 800;
+  letter-spacing: 0.18em;
+  color: var(--text-tertiary);
+}
+.goal-ticker-stage {
+  position: relative; overflow: hidden;
+  flex: 1; height: 22px;
+}
+.goal-ticker-row {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 12.5px; font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  white-space: nowrap;
+  opacity: 1;
+  transition: opacity 0.22s ease;
+}
+.goal-ticker-row.is-fading { opacity: 0; }
+.goal-ticker-status {
+  display: inline-flex; justify-content: center;
+  width: 18px;
+  color: var(--text-tertiary);
+}
+.goal-ticker-status[data-status="done"]    { color: var(--success); }
+.goal-ticker-status[data-status="pending"] { color: var(--text-tertiary); }
+.goal-ticker-text {
+  flex: 1;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.goal-ticker-meta {
+  font-family: var(--font-mono);
+  font-size: 11px; font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--surface);
+}
+@media (max-width: 480px) {
+  .goal-ticker { padding: 9px 12px; }
+  .goal-ticker-label { font-size: 9px; letter-spacing: 0.14em; }
+  .goal-ticker-row { font-size: 12px; }
+  .goal-ticker-meta { font-size: 10px; padding: 2px 7px; }
+}
+
+/* ===== Component 3: Day Ring ===== */
+.day-ring-wrap {
+  position: relative;
+  display: flex; flex-wrap: wrap;
+  align-items: center; justify-content: center;
+  gap: 26px;
+  padding: 22px;
+  margin-bottom: 22px;
+  border-radius: 16px;
+  background: var(--surface);
+  backdrop-filter: blur(24px) saturate(1.2);
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  box-shadow: 0 12px 40px var(--card-shadow-c);
+}
+.day-ring {
+  position: relative;
+  width: 168px; height: 168px;
+  flex-shrink: 0;
+}
+.day-ring svg { width: 100%; height: 100%; display: block; }
+.day-ring-track { fill: none; stroke: var(--border); stroke-width: 8; }
+.day-ring-fill {
+  fill: none;
+  stroke-width: 8;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: 60px 60px;
+  transition: stroke 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+              stroke-dashoffset 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.day-ring-overlay {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.day-ring-percent {
+  font-size: 40px; font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  color: var(--text-primary);
+  line-height: 1;
+}
+.day-ring-phase {
+  margin-top: 5px;
+  font-family: var(--font-mono);
+  font-size: 9.5px; font-weight: 800;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+.day-ring-clock {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+.day-ring-text {
+  display: flex; flex-direction: column;
+  gap: 6px;
+  max-width: 280px;
+}
+.day-ring-status { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+.day-ring-remaining { font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); }
+.day-ring-hours { font-family: var(--font-mono); font-size: 11px; color: var(--text-tertiary); }
+@media (max-width: 480px) {
+  .day-ring { width: 144px; height: 144px; }
+  .day-ring-percent { font-size: 32px; }
+  .day-ring-status { font-size: 13px; }
+}
+/* Estimated sleep line — recommended bedtime derived from vitals */
+.day-ring-est {
+  display: inline-flex; align-items: center; gap: 7px;
+  margin-top: 2px; padding: 5px 11px;
+  border-radius: 999px;
+  background: var(--brand-soft); border: 1px solid var(--brand-line);
+  font-family: var(--font-mono); font-size: 11px; color: var(--brand-2);
+  white-space: nowrap; align-self: flex-start;
+}
+.day-ring-est b { color: var(--text-primary); font-weight: 700; }
+.day-ring-est-sub { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-tertiary); margin-top: 1px; }
+/* Settings gear + popover */
+.day-ring-gear {
+  position: absolute; top: 12px; right: 12px;
+  width: 30px; height: 30px; display: grid; place-items: center;
+  border-radius: 50%; cursor: pointer;
+  background: var(--surface-1); border: 1px solid var(--border);
+  color: var(--text-secondary); font-size: 14px; line-height: 1;
+  transition: border-color .2s, color .2s, background .2s;
+}
+.day-ring-gear:hover { color: var(--text-primary); border-color: var(--border-strong); background: var(--surface); }
+.day-pop {
+  position: absolute; top: 48px; right: 12px; z-index: 30;
+  width: min(310px, calc(100% - 24px));
+  padding: 16px;
+  border-radius: 14px;
+  background: var(--bg); border: 1px solid var(--border-strong);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+.day-pop[hidden] { display: none; }
+.day-pop-title { font-size: 12px; font-weight: 700; letter-spacing: 0.04em; color: var(--text-primary); margin-bottom: 3px; }
+.day-pop-note { font-family: var(--font-mono); font-size: 10.5px; line-height: 1.5; color: var(--text-tertiary); margin-bottom: 12px; }
+.day-pop-seg { display: flex; gap: 6px; margin-bottom: 13px; }
+.day-pop-seg button {
+  flex: 1; padding: 8px 6px; cursor: pointer;
+  border-radius: 9px; border: 1px solid var(--border); background: var(--surface-1);
+  color: var(--text-secondary); font-family: inherit; font-size: 11px; font-weight: 600;
+  transition: all .18s;
+}
+.day-pop-seg button.active { border-color: var(--brand); background: var(--brand-soft); color: var(--text-primary); }
+.day-pop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.day-pop-field { display: flex; flex-direction: column; gap: 5px; }
+.day-pop-field label { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-tertiary); }
+.day-pop-field input {
+  width: 100%; padding: 8px 9px; box-sizing: border-box;
+  border-radius: 8px; border: 1px solid var(--border); background: var(--surface-1);
+  color: var(--text-primary); font-family: var(--font-mono); font-size: 13px;
+}
+.day-pop-field input:disabled { opacity: 0.5; }
+.day-pop-field input:focus { outline: none; border-color: var(--brand-line); }
+.day-pop-src { margin-top: 11px; font-family: var(--font-mono); font-size: 10px; color: var(--text-tertiary); }
+.day-pop-src b { color: var(--brand-2); }
+.day-pop-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+.day-pop-actions button {
+  padding: 8px 14px; cursor: pointer; border-radius: 9px;
+  font-family: inherit; font-size: 12px; font-weight: 700; border: 1px solid transparent;
+}
+.day-pop-save { background: var(--brand); color: var(--brand-ink); }
+.day-pop-cancel { background: transparent; border-color: var(--border); color: var(--text-secondary); }
+
+/* ===== Component 4: section + To Do List ===== */
+.section { margin-top: 8px; }
+.section-title {
+  font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--text-tertiary);
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 12px;
+}
+.section-title::before {
+  content: ''; width: 18px; height: 1px;
+  background: var(--text-tertiary); opacity: 0.6;
+}
+.section-title::after {
+  content: ''; flex: 1; height: 1px;
+  background: linear-gradient(90deg, var(--border-strong), transparent);
+}
+
+.gm-card {
+  position: relative;
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 14px;
+  backdrop-filter: blur(24px) saturate(1.2);
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  box-shadow: 0 12px 40px var(--card-shadow-c);
+  transition: background 0.4s;
+  overflow: hidden;
+}
+.gm-card.gm-all-done::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(var(--success-rgb),0.10), transparent 60%);
+  pointer-events: none;
+}
+.gm-card.gm-all-done .gm-progress-num,
+.gm-card.gm-all-done .gm-progress-label { color: var(--success); }
+
+.gm-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px;
+  margin-bottom: 14px;
+  position: relative;
+}
+.gm-header-left { display: flex; flex-direction: column; }
+.gm-eyebrow {
+  font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin-bottom: 6px;
+}
+.gm-progress-row { display: flex; align-items: baseline; gap: 6px; }
+.gm-progress-num {
+  font-size: 42px; font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.045em;
+  color: var(--text-primary);
+  line-height: 1;
+}
+.gm-progress-total {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  color: var(--text-tertiary);
+}
+.gm-progress-label {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.10em; text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin-left: 4px;
+}
+.gm-tomorrow-sub { font-size: 12px; color: var(--text-tertiary); margin-top: 4px; }
+.gm-tomorrow-count {
+  font-family: var(--font-mono);
+  font-size: 11px; font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+.gm-card-tomorrow .gm-progress-row { display: none; }
+
+.gm-streak {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-tertiary);
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.10em; text-transform: uppercase;
+  transition: background 0.25s, color 0.25s, border-color 0.25s;
+}
+.gm-streak-icon { font-size: 13px; }
+.gm-streak-num {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.gm-streak.gm-streak-active {
+  background: rgba(var(--warning-rgb),0.10);
+  color: var(--warning);
+  border-color: rgba(var(--warning-rgb),0.32);
+}
+.gm-streak.gm-streak-active .gm-streak-icon {
+  filter: drop-shadow(0 0 6px rgba(var(--warning-rgb),0.6));
+}
+
+.gm-bar {
+  display: flex; gap: 4px;
+  height: 6px;
+  margin-bottom: 16px;
+}
+.gm-bar:empty { display: none; }
+.gm-bar-seg {
+  flex: 1;
+  background: var(--border);
+  border-radius: 3px;
+  transition: background 0.3s, box-shadow 0.3s;
+}
+.gm-bar-seg-done {
+  background: var(--success);
+  box-shadow: 0 0 6px rgba(var(--success-rgb),0.40);
+}
+
+.goal-list { list-style: none; margin: 0; padding: 0; }
+.empty-state {
+  text-align: center;
+  font-size: 12px; font-style: italic;
+  color: var(--text-tertiary);
+  padding: 14px 0;
+}
+
+.gm-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px;
+  margin-bottom: 6px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: background 0.2s, opacity 0.3s;
+  position: relative;
+}
+.gm-row:hover { background: var(--border); }
+.gm-row.gm-row-done {
+  opacity: 0.45;
+  background: rgba(var(--success-rgb),0.04);
+}
+.gm-row.gm-row-done .gm-text {
+  text-decoration: line-through;
+  text-decoration-color: rgba(255,255,255,0.4);
+}
+.gm-row.gm-row-queued {
+  background: rgba(var(--warning-rgb),0.10);
+  box-shadow: inset 3px 0 0 0 var(--warning);
+}
+.gm-row.gm-row-queued .gm-text { color: var(--warning); }
+.gm-row.is-drag-over { border-top: 2px solid var(--success); }
+.gm-row.is-queue-flashing { animation: gm-queue-flash 0.48s ease-out; }
+@keyframes gm-queue-flash {
+  0%   { background: var(--surface-1); transform: scale(1); }
+  40%  { background: rgba(var(--warning-rgb),0.32); transform: scale(1.015); }
+  100% { background: var(--surface-1); transform: scale(1); }
+}
+
+.gm-handle {
+  width: 14px; flex-shrink: 0;
+  color: var(--text-tertiary);
+  font-weight: 700; font-size: 14px;
+  letter-spacing: -2px;
+  cursor: grab;
+  opacity: 0;
+  transition: opacity 0.2s;
+  user-select: none;
+}
+.gm-row:hover .gm-handle { opacity: 1; }
+.gm-handle:active { cursor: grabbing; }
+
+.gm-check {
+  appearance: none; -webkit-appearance: none;
+  width: 22px; height: 22px; flex-shrink: 0;
+  margin: 0;
+  border: 1.5px solid var(--line-2);
+  background: var(--input-bg);
+  border-radius: 7px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.25s;
+}
+.gm-check:checked {
+  background: var(--success);
+  border-color: var(--success);
+  box-shadow: 0 0 12px rgba(var(--success-rgb),0.40);
+}
+.gm-check:checked::after {
+  content: '';
+  position: absolute; left: 6px; top: 2px;
+  width: 6px; height: 11px;
+  border: solid #0A0A0B;
+  border-width: 0 2.5px 2.5px 0;
+  transform: rotate(45deg);
+  animation: gm-check-pop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes gm-check-pop {
+  from { transform: rotate(45deg) scale(0); }
+  to   { transform: rotate(45deg) scale(1); }
+}
+.gm-check:disabled { cursor: not-allowed; opacity: 0.55; }
+
+.gm-text {
+  flex: 1;
+  font-size: 14px;
+  color: var(--text-primary);
+  cursor: text;
+  outline: none;
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin: -2px -4px;
+}
+.gm-text[contenteditable="true"] {
+  outline: 1px solid var(--line-2);
+  background: var(--input-bg);
+}
+
+.gm-queue-btn {
+  border: 0; background: transparent;
+  color: var(--text-tertiary);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+  opacity: 0.55;
+  transition: opacity 0.2s, color 0.2s, transform 0.1s;
+}
+.gm-queue-btn:hover { opacity: 1; }
+.gm-queue-btn.gm-queue-active {
+  color: var(--warning);
+  opacity: 1;
+  filter: drop-shadow(0 0 4px rgba(var(--warning-rgb),0.65));
+}
+.gm-queue-btn:disabled { cursor: not-allowed; opacity: 0.3; }
+
+.goal-delete {
+  border: 0; background: transparent;
+  color: var(--text-tertiary);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0 4px;
+  opacity: 0.5;
+  transition: opacity 0.2s, color 0.2s;
+}
+.gm-row:hover .goal-delete { opacity: 1; }
+.goal-delete:hover { color: var(--danger); }
+
+.gm-show-toggle {
+  width: 100%;
+  margin: 6px 0 0;
+  padding: 9px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-family: inherit;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+.gm-show-toggle:hover { color: var(--text-primary); border-color: var(--line-3); }
+
+.gm-push-btn {
+  width: 100%;
+  margin-top: 14px;
+  padding: 11px;
+  border: 1px dashed var(--line-2);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-family: inherit;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.10em; text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+.gm-push-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--line-3);
+  border-style: solid;
+  background: var(--surface);
+}
+
+.goal-input-wrap.gm-input-wrap {
+  display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.gm-input {
+  flex: 1; min-width: 0;
+  padding: 11px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: var(--input-bg);
+  color: var(--text-primary);
+  font-family: inherit; font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+}
+.gm-input::placeholder { color: var(--text-tertiary); }
+.gm-input:focus { border-color: var(--line-3); background: var(--input-bg); }
+
+.gm-add {
+  padding: 11px 20px;
+  border: 0; border-radius: 12px;
+  background: var(--brand);
+  color: var(--brand-ink);
+  font-family: inherit; font-size: 13px; font-weight: 700;
+  cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.9),
+    0 2px 8px rgba(0,0,0,0.35),
+    0 8px 22px rgba(0,0,0,0.25);
+  transition: transform 0.1s, filter 0.15s;
+}
+.gm-add:hover { filter: brightness(1.06); transform: translateY(-1px); }
+.gm-add:active { transform: translateY(0); }
+
+.gm-polish {
+  padding: 11px 18px;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text-primary);
+  font-family: inherit; font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.gm-polish:hover {
+  background: var(--border);
+  border-color: var(--line-2);
+}
+
+.gm-status {
+  flex-basis: 100%;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  min-height: 14px;
+  margin-top: 4px;
+}
+.gm-status.gm-status-error { color: var(--danger); }
+
+@media (max-width: 480px) {
+  body { padding: max(20px, env(safe-area-inset-top)) 14px 50px; }
+  .gm-card { padding: 16px; }
+  .gm-progress-num { font-size: 36px; }
+}
+
+/* --- Patron display type --- */
+.dash-title, .day-ring-percent, .gm-progress-num { font-family: var(--font-display); }
+/* --- header + theme switcher --- */
+.back { display:inline-flex; align-items:center; gap:6px; align-self:flex-start; padding:6px 13px 6px 9px; background:var(--brand-soft); border:1px solid var(--brand-line); border-radius:999px; color:var(--brand); font-size:12px; font-weight:600; letter-spacing:.01em; text-decoration:none; margin-bottom:14px; transition:background .2s ease, border-color .2s ease; }
+.back:hover { border-color:var(--brand); background:color-mix(in srgb, var(--brand) 18%, transparent); }
+.backArrow { font-size:14px; line-height:1; }
+.dash-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.dash-head .dash-title { margin: 0; }
+.themeSeg { display: inline-flex; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 3px; gap: 2px; }
+.themeBtn { appearance: none; background: transparent; border: 0; color: var(--text-tertiary); font-family: var(--font); font-size: 11px; font-weight: 700; letter-spacing: 0.02em; padding: 5px 10px 5px 7px; border-radius: 999px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: background 0.18s, color 0.18s; }
+.themeBtn:hover { color: var(--text-secondary); }
+.themeSwatch { width: 11px; height: 11px; border-radius: 50%; box-shadow: 0 0 0 1px var(--border-strong) inset; flex-shrink: 0; }
+.themeBtnActive, .themeBtnActive:hover { background: var(--brand-soft); color: var(--text-primary); }
+.themeBtnActive .themeSwatch { box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--brand); }
+@media (max-width: 480px) { .themeBtn .themeBtnLabel { display: none; } .themeBtn { padding: 6px; } }
+</style>
+<link rel="stylesheet" href="skin.css?v=1">
+</head>
+<body>
+<div class="page">
+
+  <a class="back" href="index.html"><span class="backArrow">←</span> Liam</a>
+  <div class="dash-head"><h1 class="dash-title" id="dashTitle">Dashboard</h1><div class="themeSeg" role="radiogroup" aria-label="Theme"><button type="button" class="themeBtn" data-theme="nocturne"><span class="themeSwatch" style="background:#8B7CFF"></span><span class="themeBtnLabel">Nocturne</span></button><button type="button" class="themeBtn" data-theme="aurora"><span class="themeSwatch" style="background:linear-gradient(135deg,#8B7BFF,#4FE3D0)"></span><span class="themeBtnLabel">Aurora</span></button><button type="button" class="themeBtn" data-theme="daylight"><span class="themeSwatch" style="background:#6A45FF"></span><span class="themeBtnLabel">Daylight</span></button></div></div>
+
+  <div class="ticker-row">
+    <div class="goal-ticker" id="goalTicker" aria-live="polite" aria-atomic="true">
+      <div class="goal-ticker-led"><span class="goal-ticker-led-dot"></span></div>
+      <div class="goal-ticker-label">GOALS</div>
+      <div class="goal-ticker-stage" id="goalTickerStage">
+        <div class="goal-ticker-row">
+          <span class="goal-ticker-status" data-status="">—</span>
+          <span class="goal-ticker-text">Loading…</span>
+        </div>
+      </div>
+      <div class="goal-ticker-meta" id="goalTickerMeta">0/0</div>
+    </div>
+  </div>
+
+  <div class="day-ring-wrap">
+    <button type="button" class="day-ring-gear" id="dayRingGear" title="Wake &amp; sleep settings" aria-label="Wake and sleep settings">⚙</button>
+    <div class="day-pop" id="dayPop" hidden>
+      <div class="day-pop-title">Wake &amp; sleep window</div>
+      <div class="day-pop-note" id="dayPopNote">Pulls your times from Whoop / Apple Watch. Switch to Manual to set them yourself.</div>
+      <div class="day-pop-seg" id="dayPopSeg">
+        <button type="button" data-mode="auto">Auto from vitals</button>
+        <button type="button" data-mode="manual">Manual</button>
+      </div>
+      <div class="day-pop-grid">
+        <div class="day-pop-field"><label for="dayPopWake">Wake time</label><input type="time" id="dayPopWake"></div>
+        <div class="day-pop-field"><label for="dayPopSleep">Bedtime</label><input type="time" id="dayPopSleep"></div>
+      </div>
+      <div class="day-pop-src" id="dayPopSrc"></div>
+      <div class="day-pop-actions">
+        <button type="button" class="day-pop-cancel" id="dayPopCancel">Cancel</button>
+        <button type="button" class="day-pop-save" id="dayPopSave">Save</button>
+      </div>
+    </div>
+    <div class="day-ring">
+      <svg viewBox="0 0 120 120">
+        <defs>
+          <filter id="dayRingGlow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="2.4" result="b" />
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <circle class="day-ring-track" cx="60" cy="60" r="52" />
+        <circle class="day-ring-fill"  cx="60" cy="60" r="52" id="dayRingFill" filter="url(#dayRingGlow)" />
+      </svg>
+      <div class="day-ring-overlay">
+        <div class="day-ring-percent" id="dayRingPercent">—</div>
+        <div class="day-ring-phase"   id="dayRingPhase">—</div>
+        <div class="day-ring-clock"   id="dayRingClock">—</div>
+      </div>
+    </div>
+    <div class="day-ring-text">
+      <div class="day-ring-status"    id="dayRingStatus">Loading…</div>
+      <div class="day-ring-remaining" id="dayRingRemaining">—</div>
+      <div class="day-ring-hours"     id="dayRingHours">8:00 AM – 12:00 AM</div>
+      <div class="day-ring-est"       id="dayRingEst" hidden></div>
+      <div class="day-ring-est-sub"   id="dayRingEstSub"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">To Do List</div>
+
+    <!-- TODAY -->
+    <div class="gm-card" id="gmCardToday">
+      <div class="gm-header">
+        <div class="gm-header-left">
+          <div class="gm-eyebrow" id="todayLabel">Today —</div>
+          <div class="gm-progress-row">
+            <span class="gm-progress-num"   id="gmProgressNum">0</span>
+            <span class="gm-progress-total" id="gmProgressTotal">/ 0</span>
+            <span class="gm-progress-label" id="gmProgressLabel">no goals yet</span>
+          </div>
+        </div>
+        <div class="gm-streak" id="gmStreak">
+          <span class="gm-streak-icon">⚡</span>
+          <span class="gm-streak-num" id="gmStreakNum">0</span>
+          <span>day streak</span>
+        </div>
+      </div>
+      <div class="gm-bar" id="gmBar"></div>
+      <ul id="goalList" class="goal-list gm-list"></ul>
+      <div id="emptyState" class="empty-state">No goals for today yet — add one below.</div>
+      <button type="button" id="gmPushBtn" class="gm-push-btn" style="display:none;">Push remaining to tomorrow</button>
+      <div class="goal-input-wrap gm-input-wrap">
+        <input id="goalInput" class="gm-input" type="text" placeholder="Add a goal for today…" autocomplete="off">
+        <button type="button" id="goalAddBtn"    class="gm-add">+ Add</button>
+        <button type="button" id="goalPolishBtn" class="gm-polish">✨ Polish</button>
+        <div class="gm-status" id="polishStatus"></div>
+      </div>
+    </div>
+
+    <!-- PLAN TOMORROW -->
+    <div class="gm-card gm-card-tomorrow" id="gmCardTomorrow">
+      <div class="gm-header">
+        <div class="gm-header-left">
+          <div class="gm-eyebrow" id="tomorrowLabel">Plan tomorrow —</div>
+          <div class="gm-tomorrow-sub">Write tonight, locked until 6 AM.</div>
+        </div>
+        <div class="gm-tomorrow-count" id="gmTomorrowCount">0 planned</div>
+      </div>
+      <ul id="tomorrowList" class="goal-list gm-list"></ul>
+      <div id="tomorrowEmpty" class="empty-state">Nothing planned for tomorrow yet</div>
+      <div class="goal-input-wrap gm-input-wrap">
+        <input id="tomorrowInput" class="gm-input" type="text" placeholder="Add a goal for tomorrow…" autocomplete="off">
+        <button type="button" id="tomorrowAddBtn"    class="gm-add">+ Add</button>
+        <button type="button" id="tomorrowPolishBtn" class="gm-polish">✨ Polish</button>
+        <div class="gm-status" id="tomorrowStatus"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // Anthropic key for ✨ Polish is read from your Finance settings — entered in the
+  // app and stored only in this browser. It is NEVER hardcoded here, so it can't
+  // leak when the repo is public/forked. (Finance → settings → Anthropic key.)
+  function getAnthropicKey(){ try { return (JSON.parse(localStorage.getItem('finance_settings_v1') || '{}').anthropicKey || '').trim(); } catch (e) { return ''; } }
+
+  // Day window is dynamic: pulled from the suite-wide vitals record (Whoop / Apple
+  // Watch / manual entry), or overridden manually via the ⚙ popover. Defaults 8 / 24.
+  let WAKE_HOUR  = 8;
+  let SLEEP_HOUR = 24;
+  const DAY_WINDOW_KEY = 'goals:dayWindow';
+  const SUITE_HEALTH_KEY = 'patron_health_v1';
+  const LEGACY_WHOOP_KEY = 'patron_whoop_data_v1';
+
+  function readHealth() {
+    try {
+      let r = localStorage.getItem(SUITE_HEALTH_KEY);
+      if (r) { const d = JSON.parse(r); if (d && d.connected) return d; }
+      r = localStorage.getItem(LEGACY_WHOOP_KEY);
+      if (r) { const d = JSON.parse(r); if (d && d.connected) return Object.assign({ source: 'whoop' }, d); }
+    } catch (e) {}
+    return null;
+  }
+  function readWindowPrefs() {
+    const d = storeGet(DAY_WINDOW_KEY);
+    return (d && typeof d === 'object') ? d : { mode: 'auto', wake: '', sleep: '' };
+  }
+  function hm2dec(str) { if (!str) return null; const p = String(str).split(':'); const h = Number(p[0]), m = Number(p[1] || 0); return isFinite(h) ? h + (m || 0) / 60 : null; }
+  function dec2hm(dec) { let h = Math.floor(((dec % 24) + 24) % 24); let m = Math.round(((dec % 1) + 1) % 1 * 60); if (m === 60) { m = 0; h = (h + 1) % 24; } return pad2(h) + ':' + pad2(m); }
+  function dec2clock(dec) { const h = Math.floor(((dec % 24) + 24) % 24); let m = Math.round(((dec % 1) + 1) % 1 * 60); let hh = h; if (m === 60) { m = 0; hh = (hh + 1) % 24; } const ap = hh < 12 ? 'AM' : 'PM'; let h12 = hh % 12; if (h12 === 0) h12 = 12; return h12 + ':' + pad2(m) + ' ' + ap; }
+  function sourceLabel(s) { return s === 'apple' ? 'Apple Watch' : s === 'manual' ? 'Manual entry' : s === 'whoop' ? 'Whoop' : ''; }
+
+  // Resolve the active wake/sleep window from prefs + vitals. Sleep hour is
+  // normalised to be > wake hour (a 1am bedtime becomes 25 for the day-arc math).
+  function resolveWindow() {
+    const prefs = readWindowPrefs();
+    const health = readHealth();
+    let wakeStr = null, sleepStr = null, source = 'default';
+    if (prefs.mode === 'manual' && (prefs.wake || prefs.sleep)) {
+      wakeStr = prefs.wake || '08:00'; sleepStr = prefs.sleep || '00:00'; source = 'manual-override';
+    } else if (health && (health.wakeTime || health.bedtime)) {
+      wakeStr = health.wakeTime || '08:00'; sleepStr = health.bedtime || '00:00'; source = health.source || 'whoop';
+    } else {
+      wakeStr = '08:00'; sleepStr = '00:00'; source = 'default';
+    }
+    let wakeHour = hm2dec(wakeStr); if (wakeHour == null) wakeHour = 8;
+    let sleepHour = hm2dec(sleepStr); if (sleepHour == null) sleepHour = 24;
+    if (sleepHour <= wakeHour) sleepHour += 24; // bedtime after midnight
+    return { wakeHour, sleepHour, wakeStr, sleepStr, source, health, prefs };
+  }
+  function applyWindow() {
+    const w = resolveWindow();
+    WAKE_HOUR = w.wakeHour; SLEEP_HOUR = w.sleepHour;
+    return w;
+  }
+
+  // ---------- storage helpers ----------
+  function storeGet(key) {
+    try { return JSON.parse(localStorage.getItem(key)); } catch (e) { return null; }
+  }
+  function storeSet(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
+    if (typeof key === 'string' && key.indexOf('goals:') === 0) {
+      window.dispatchEvent(new CustomEvent('goals-changed'));
+    }
+  }
+  function storeDelete(key) { try { localStorage.removeItem(key); } catch (e) {} }
+  function storeListKeys(prefix) {
+    const out = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.indexOf(prefix) === 0) out.push(k);
+    }
+    return out;
+  }
+
+  // ---------- date helpers ----------
+  function pad2(n) { return String(n).padStart(2, '0'); }
+  function dateToKey(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
+  function getActiveDateString() {
+    const now = new Date();
+    if (now.getHours() < 6) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - 1);
+      return dateToKey(d);
+    }
+    return dateToKey(now);
+  }
+  function getTomorrowDateString() {
+    const now = new Date();
+    const d = new Date(now);
+    if (now.getHours() >= 6) d.setDate(d.getDate() + 1);
+    return dateToKey(d);
+  }
+  function formatDate(yyyy_mm_dd) {
+    const parts = yyyy_mm_dd.split('-').map(Number);
+    const d = new Date(parts[0], parts[1] - 1, parts[2]);
+    const wk = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
+    const mo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()];
+    return wk + ', ' + mo + ' ' + d.getDate();
+  }
+
+  function todayKey()    { return 'goals:' + getActiveDateString(); }
+  function tomorrowKey() { return 'goals:' + getTomorrowDateString(); }
+
+  function getGoals(key) {
+    const g = storeGet(key);
+    return Array.isArray(g) ? g : [];
+  }
+  function setGoals(key, list) { storeSet(key, list); }
+
+  // ---------- rollover: pull undone older goals into today ----------
+  function rollover() {
+    const todayDateStr = getActiveDateString();
+    const todayK = 'goals:' + todayDateStr;
+    let today = getGoals(todayK);
+    const texts = new Set(today.map(g => g.text));
+
+    storeListKeys('goals:').forEach(k => {
+      const dateStr = k.slice('goals:'.length);
+      if (dateStr >= todayDateStr) return;
+      const old = getGoals(k);
+      old.forEach(g => {
+        if (!g.done && g.text && !texts.has(g.text)) {
+          today.push({ text: g.text, done: false });
+          texts.add(g.text);
+        }
+      });
+      storeDelete(k);
+    });
+    setGoals(todayK, today);
+  }
+
+  // ---------- streak ----------
+  function loadStreak() {
+    const s = storeGet('goal_streak_v1');
+    if (s && typeof s.count === 'number') return s;
+    return { count: 0, lastProcessedDate: '' };
+  }
+  function saveStreak(s) { storeSet('goal_streak_v1', s); }
+
+  function processStreak() {
+    const s = loadStreak();
+    const todayDateStr = getActiveDateString();
+    const keys = storeListKeys('goals:')
+      .map(k => k.slice('goals:'.length))
+      .filter(d => d < todayDateStr)
+      .sort();
+    keys.forEach(dateStr => {
+      if (s.lastProcessedDate && dateStr <= s.lastProcessedDate) return;
+      const list = getGoals('goals:' + dateStr);
+      if (list.length === 0) { /* don't break the streak on empty days */ }
+      else if (list.every(g => g.done)) s.count += 1;
+      else s.count = 0;
+      s.lastProcessedDate = dateStr;
+    });
+    saveStreak(s);
+  }
+
+  // ---------- Goal Ticker ----------
+  const tickerStage = document.getElementById('goalTickerStage');
+  const tickerMeta  = document.getElementById('goalTickerMeta');
+  let cycleIdx = 0;
+  let tickerTimer = null;
+
+  function buildTickerItems() {
+    const goals = getGoals(todayKey());
+    const total = goals.length;
+    const done  = goals.filter(g => g.done).length;
+    if (total === 0) return { items: [{ status: 'empty',   text: 'No goals set for today — add one to get rolling.' }], done, total };
+    if (done === total) return { items: [{ status: 'done', text: '✓ All goals done — solid day.' }], done, total };
+    const items = goals.filter(g => !g.done).map(g => ({ status: 'pending', text: g.text }));
+    return { items, done, total };
+  }
+
+  function statusGlyph(status) {
+    if (status === 'done') return '✓';
+    if (status === 'pending') return '○';
+    return '·';
+  }
+
+  // Single-row crossfade: keep one row in the DOM, fade it out, swap
+  // its text, fade it back in. No overlap, no orphaned animation states.
+  let firstTick = true;
+  function tick() {
+    const { items, done, total } = buildTickerItems();
+    if (cycleIdx >= items.length) cycleIdx = 0;
+    const item = items[cycleIdx];
+    cycleIdx = (cycleIdx + 1) % items.length;
+    tickerMeta.textContent = done + '/' + total;
+
+    let row = tickerStage.querySelector('.goal-ticker-row');
+    if (!row) {
+      row = document.createElement('div');
+      row.className = 'goal-ticker-row';
+      row.innerHTML =
+        '<span class="goal-ticker-status"></span>' +
+        '<span class="goal-ticker-text"></span>';
+      tickerStage.appendChild(row);
+    }
+
+    const statusEl = row.querySelector('.goal-ticker-status');
+    const textEl   = row.querySelector('.goal-ticker-text');
+
+    const apply = () => {
+      statusEl.setAttribute('data-status', item.status);
+      statusEl.textContent = statusGlyph(item.status);
+      textEl.textContent = item.text;
+      row.classList.remove('is-fading');
+    };
+
+    if (firstTick) { apply(); firstTick = false; return; }
+    row.classList.add('is-fading');
+    setTimeout(apply, 220);
+  }
+
+  function startTicker() {
+    tick();
+    if (tickerTimer) clearInterval(tickerTimer);
+    tickerTimer = setInterval(tick, 5000);
+  }
+
+  window.addEventListener('goals-changed', () => {
+    cycleIdx = 0;
+    tick();
+  });
+
+  // ---------- Day Ring ----------
+  const PALETTE = [
+    [0,    [199, 187, 255]],
+    [12.5, [183, 168, 255]],
+    [25,   [167, 150, 255]],
+    [37.5, [150, 132, 250]],
+    [50,   [139, 124, 255]],
+    [62.5, [150, 108, 230]],
+    [75,   [146,  92, 205]],
+    [87.5, [110,  78, 175]],
+    [100,  [ 72,  64, 140]]
+  ];
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function paletteAt(p) {
+    if (p <= PALETTE[0][0]) return PALETTE[0][1];
+    if (p >= PALETTE[PALETTE.length - 1][0]) return PALETTE[PALETTE.length - 1][1];
+    for (let i = 0; i < PALETTE.length - 1; i++) {
+      const [p0, c0] = PALETTE[i];
+      const [p1, c1] = PALETTE[i + 1];
+      if (p >= p0 && p <= p1) {
+        const t = (p - p0) / (p1 - p0);
+        return [lerp(c0[0], c1[0], t), lerp(c0[1], c1[1], t), lerp(c0[2], c1[2], t)];
+      }
+    }
+    return [255,255,255];
+  }
+  function rgb(c) { return 'rgb(' + Math.round(c[0]) + ',' + Math.round(c[1]) + ',' + Math.round(c[2]) + ')'; }
+
+  function formatClock(d) {
+    let h = d.getHours();
+    const m = d.getMinutes();
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12;
+    if (h === 0) h = 12;
+    return h + ':' + pad2(m) + ' ' + ampm;
+  }
+  function formatRemaining(totalMin) {
+    const h = Math.floor(totalMin / 60);
+    const m = Math.floor(totalMin % 60);
+    return h + 'h ' + m + 'm';
+  }
+
+  const C = 2 * Math.PI * 52;
+  const fillEl = document.getElementById('dayRingFill');
+  fillEl.setAttribute('stroke-dasharray', C);
+  fillEl.setAttribute('stroke-dashoffset', C);
+
+  // Recommended bedtime from sleep need (target nudged up when recovery is low).
+  function estimatedBedtime(w) {
+    const h = w.health;
+    if (!h && w.source !== 'manual-override') return null; // nothing personalised to base it on
+    let need = (h && h.sleepTargetHours) || 8;
+    let basis;
+    if (h && h.recovery != null) {
+      const r = h.recovery;
+      need += r < 34 ? 1 : r < 50 ? 0.5 : r < 67 ? 0.25 : 0;
+      need = Math.round(need * 10) / 10;
+      basis = 'for ' + need + 'h — tuned to your ' + Math.round(r) + '% recovery';
+    } else {
+      need = Math.round(need * 10) / 10;
+      basis = 'for your ' + need + 'h sleep target';
+    }
+    const bedDec = (WAKE_HOUR + 24) - need; // the night before the next wake-up
+    return { bedDec, need, basis };
+  }
+  function renderWindowExtras(w) {
+    const hoursEl = document.getElementById('dayRingHours');
+    const estEl   = document.getElementById('dayRingEst');
+    const estSub  = document.getElementById('dayRingEstSub');
+    if (hoursEl) hoursEl.textContent = dec2clock(WAKE_HOUR) + ' – ' + dec2clock(SLEEP_HOUR);
+    if (!estEl || !estSub) return;
+    const est = estimatedBedtime(w);
+    if (est) {
+      estEl.hidden = false;
+      estEl.innerHTML = '💤 Sleep by <b>' + dec2clock(est.bedDec) + '</b>';
+      estSub.textContent = est.basis + (w.source && w.source !== 'manual-override' && w.source !== 'default' ? ' · via ' + sourceLabel(w.source) : '');
+    } else {
+      estEl.hidden = true;
+      estSub.textContent = 'Add vitals (Whoop / Apple Watch) to estimate your ideal bedtime.';
+    }
+  }
+
+  function updateDayRing() {
+    const w = applyWindow();
+    renderWindowExtras(w);
+    const now = new Date();
+    let hours = now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
+    // Past-midnight bedtime (SLEEP_HOUR > 24): if it's the small hours but still
+    // before bedtime, treat as "late evening" of the same day rather than asleep.
+    if (hours < WAKE_HOUR && SLEEP_HOUR > 24 && (hours + 24) < SLEEP_HOUR) hours += 24;
+    const percentEl   = document.getElementById('dayRingPercent');
+    const phaseEl     = document.getElementById('dayRingPhase');
+    const clockEl     = document.getElementById('dayRingClock');
+    const statusEl    = document.getElementById('dayRingStatus');
+    const remainingEl = document.getElementById('dayRingRemaining');
+
+    clockEl.textContent = formatClock(now);
+
+    if (hours < WAKE_HOUR) {
+      fillEl.setAttribute('stroke-dashoffset', C);
+      fillEl.style.stroke = '#4D4B47';
+      percentEl.textContent = '—';
+      phaseEl.textContent   = 'SLEEPING';
+      statusEl.textContent  = '😴 Still sleeping';
+      const minsUntil = (WAKE_HOUR - hours) * 60;
+      remainingEl.textContent = formatRemaining(minsUntil) + ' until wake-up';
+      return;
+    }
+
+    if (hours >= SLEEP_HOUR) {
+      fillEl.setAttribute('stroke-dashoffset', 0);
+      fillEl.style.stroke = '#FB7185';
+      percentEl.textContent = '100%';
+      phaseEl.textContent   = 'PAST BEDTIME';
+      statusEl.textContent  = '⚠️ Past bedtime';
+      remainingEl.textContent = 'Sleep!';
+      return;
+    }
+
+    const span = SLEEP_HOUR - WAKE_HOUR;
+    const percent = (hours - WAKE_HOUR) / span * 100;
+    fillEl.setAttribute('stroke-dashoffset', C * (1 - percent / 100));
+    fillEl.style.stroke = rgb(paletteAt(percent));
+    percentEl.textContent = Math.floor(percent) + '%';
+
+    let phase, status;
+    if (percent < 25)      { phase = 'MORNING';   status = '☀️ Morning — fresh start'; }
+    else if (percent < 50) { phase = 'MIDDAY';    status = '⚡ Midday — keep moving'; }
+    else if (percent < 75) { phase = 'AFTERNOON'; status = '🔥 Afternoon — push it'; }
+    else if (percent < 90) { phase = 'EVENING';   status = '⏳ Evening — wrap up'; }
+    else                   { phase = 'BEDTIME';   status = '🌙 Bedtime soon'; }
+    phaseEl.textContent  = phase;
+    statusEl.textContent = status;
+
+    const minsLeft = (SLEEP_HOUR - hours) * 60;
+    remainingEl.textContent = formatRemaining(minsLeft) + ' awake time left';
+  }
+
+  // ---------- Row building ----------
+  function makeInlineEdit(textEl, goals, idx, key, reload) {
+    textEl.addEventListener('click', () => {
+      if (textEl.getAttribute('contenteditable') === 'true') return;
+      const original = textEl.textContent;
+      textEl.setAttribute('contenteditable', 'true');
+      textEl.focus();
+      const range = document.createRange();
+      range.selectNodeContents(textEl);
+      range.collapse(false);
+      const sel = window.getSelection();
+      sel.removeAllRanges(); sel.addRange(range);
+
+      function commit() {
+        const next = textEl.textContent.trim();
+        textEl.removeAttribute('contenteditable');
+        if (next && next !== original) {
+          const list = getGoals(key);
+          if (list[idx]) { list[idx].text = next; setGoals(key, list); }
+          reload();
+        } else {
+          textEl.textContent = original;
+        }
+      }
+      function cancel() {
+        textEl.removeAttribute('contenteditable');
+        textEl.textContent = original;
+      }
+      textEl.addEventListener('blur', commit, { once: true });
+      textEl.addEventListener('keydown', function onKey(e) {
+        if (e.key === 'Enter') { e.preventDefault(); textEl.removeEventListener('keydown', onKey); textEl.blur(); }
+        else if (e.key === 'Escape') { e.preventDefault(); textEl.removeEventListener('keydown', onKey); cancel(); }
+      });
+    });
+  }
+
+  function wireDragReorder(row, listEl, key, reload) {
+    row.setAttribute('draggable', 'true');
+    row.addEventListener('dragstart', (e) => {
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', row.dataset.idx);
+    });
+    row.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      row.classList.add('is-drag-over');
+    });
+    row.addEventListener('dragleave', () => row.classList.remove('is-drag-over'));
+    row.addEventListener('drop', (e) => {
+      e.preventDefault();
+      row.classList.remove('is-drag-over');
+      const from = parseInt(e.dataTransfer.getData('text/plain'), 10);
+      const to   = parseInt(row.dataset.idx, 10);
+      if (isNaN(from) || isNaN(to) || from === to) return;
+      const list = getGoals(key);
+      const [moved] = list.splice(from, 1);
+      list.splice(to, 0, moved);
+      setGoals(key, list);
+      reload();
+    });
+  }
+
+  function buildGoalRow(goal, idx, key, readOnly, reload) {
+    const li = document.createElement('li');
+    li.className = 'gm-row';
+    li.dataset.idx = String(idx);
+    if (goal.done) li.classList.add('gm-row-done');
+    if (goal.queued) li.classList.add('gm-row-queued');
+
+    const handle = document.createElement('span');
+    handle.className = 'gm-handle';
+    handle.textContent = '⋮⋮';
+    li.appendChild(handle);
+
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.className = 'gm-check';
+    cb.checked = !!goal.done;
+    if (readOnly) { cb.disabled = true; cb.title = 'Activates at 6 AM tomorrow'; }
+    cb.addEventListener('change', () => {
+      const list = getGoals(key);
+      if (!list[idx]) return;
+      list[idx].done = cb.checked;
+      if (cb.checked) list[idx].doneAt = Date.now();
+      else delete list[idx].doneAt;
+      setGoals(key, list);
+      reload();
+    });
+    li.appendChild(cb);
+
+    const text = document.createElement('span');
+    text.className = 'gm-text';
+    text.textContent = goal.text;
+    li.appendChild(text);
+    makeInlineEdit(text, null, idx, key, reload);
+
+    const queueBtn = document.createElement('button');
+    queueBtn.type = 'button';
+    queueBtn.className = 'gm-queue-btn' + (goal.queued ? ' gm-queue-active' : '');
+    queueBtn.textContent = '⚡';
+    queueBtn.title = 'Queue for productivity window';
+    if (readOnly) queueBtn.disabled = true;
+    queueBtn.addEventListener('click', () => {
+      const list = getGoals(key);
+      if (!list[idx]) return;
+      list[idx].queued = !list[idx].queued;
+      setGoals(key, list);
+      li.classList.add('is-queue-flashing');
+      setTimeout(reload, 480);
+    });
+    li.appendChild(queueBtn);
+
+    const del = document.createElement('button');
+    del.type = 'button';
+    del.className = 'goal-delete';
+    del.setAttribute('aria-label', 'Delete goal');
+    del.textContent = '×';
+    del.addEventListener('click', () => {
+      const list = getGoals(key);
+      list.splice(idx, 1);
+      setGoals(key, list);
+      reload();
+    });
+    li.appendChild(del);
+
+    wireDragReorder(li, null, key, reload);
+    return li;
+  }
+
+  // ---------- Renderers ----------
+  function renderTodayHeader() {
+    const goals = getGoals(todayKey());
+    const total = goals.length;
+    const done  = goals.filter(g => g.done).length;
+    document.getElementById('gmProgressNum').textContent   = done;
+    document.getElementById('gmProgressTotal').textContent = '/ ' + total;
+    const label = document.getElementById('gmProgressLabel');
+    if (total === 0)        label.textContent = 'no goals yet';
+    else if (done === total) label.textContent = 'all done — solid day';
+    else                     label.textContent = 'complete';
+
+    document.getElementById('todayLabel').textContent =
+      'Today — ' + formatDate(getActiveDateString());
+
+    const bar = document.getElementById('gmBar');
+    bar.innerHTML = '';
+    goals.forEach(g => {
+      const seg = document.createElement('div');
+      seg.className = 'gm-bar-seg' + (g.done ? ' gm-bar-seg-done' : '');
+      bar.appendChild(seg);
+    });
+
+    const card = document.getElementById('gmCardToday');
+    card.classList.toggle('gm-all-done', total > 0 && done === total);
+
+    const pushBtn = document.getElementById('gmPushBtn');
+    pushBtn.style.display = (total > 0 && done < total) ? 'block' : 'none';
+  }
+
+  function renderStreak() {
+    const s = loadStreak();
+    document.getElementById('gmStreakNum').textContent = s.count;
+    document.getElementById('gmStreak').classList.toggle('gm-streak-active', s.count > 0);
+  }
+
+  function renderTomorrowCount() {
+    const list = getGoals(tomorrowKey());
+    document.getElementById('gmTomorrowCount').textContent = list.length + ' planned';
+    document.getElementById('tomorrowLabel').textContent =
+      'Plan tomorrow — ' + formatDate(getTomorrowDateString());
+  }
+
+  function renderListInto(goals, listEl, emptyEl, key, readOnly) {
+    listEl.innerHTML = '';
+    emptyEl.style.display = goals.length === 0 ? 'block' : 'none';
+    const reload = () => (key === todayKey() ? loadToday() : loadTomorrow());
+
+    const visible = goals.length > 5 ? goals.slice(0, 5) : goals;
+    visible.forEach((g, i) => listEl.appendChild(buildGoalRow(g, i, key, readOnly, reload)));
+
+    if (goals.length > 5) {
+      let expanded = false;
+      const toggle = document.createElement('button');
+      toggle.type = 'button';
+      toggle.className = 'gm-show-toggle';
+      const updateLabel = () => {
+        toggle.textContent = expanded ? 'Show less ▴' : ('Show ' + (goals.length - 5) + ' more ▾');
+      };
+      updateLabel();
+      toggle.addEventListener('click', () => {
+        expanded = !expanded;
+        if (expanded) {
+          goals.slice(5).forEach((g, i) => {
+            const row = buildGoalRow(g, i + 5, key, readOnly, reload);
+            listEl.insertBefore(row, toggle);
+          });
+        } else {
+          Array.from(listEl.querySelectorAll('.gm-row')).slice(5).forEach(r => r.remove());
+        }
+        updateLabel();
+      });
+      listEl.appendChild(toggle);
+    }
+
+    if (key === todayKey()) renderTodayHeader();
+    else                    renderTomorrowCount();
+  }
+
+  function loadToday() {
+    const goals = getGoals(todayKey());
+    renderListInto(goals, document.getElementById('goalList'), document.getElementById('emptyState'), todayKey(), false);
+  }
+  function loadTomorrow() {
+    const goals = getGoals(tomorrowKey());
+    renderListInto(goals, document.getElementById('tomorrowList'), document.getElementById('tomorrowEmpty'), tomorrowKey(), true);
+  }
+
+  // ---------- Push remaining ----------
+  document.getElementById('gmPushBtn').addEventListener('click', () => {
+    const today    = getGoals(todayKey());
+    const remaining = today.filter(g => !g.done);
+    if (remaining.length === 0) return;
+    if (!confirm('Move ' + remaining.length + ' unchecked goal' + (remaining.length === 1 ? '' : 's') + ' to tomorrow?')) return;
+    const tomorrow = getGoals(tomorrowKey());
+    const seen = new Set(tomorrow.map(g => g.text));
+    remaining.forEach(g => {
+      if (!seen.has(g.text)) { tomorrow.push({ text: g.text, done: false }); seen.add(g.text); }
+    });
+    setGoals(tomorrowKey(), tomorrow);
+    setGoals(todayKey(), today.filter(g => g.done));
+    loadToday(); loadTomorrow();
+  });
+
+  // ---------- Add + Polish handlers ----------
+  function showStatus(el, message, isError) {
+    el.textContent = message;
+    el.classList.toggle('gm-status-error', !!isError);
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.textContent = ''; el.classList.remove('gm-status-error'); }, 3500);
+  }
+
+  async function polishOne(text) {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': getAnthropicKey(),
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-5',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content:
+            'Rewrite this single goal so it is concrete, action-oriented, and under 60 characters. ' +
+            'Return ONLY a JSON array with exactly one string, no preamble, no code fences.\n\nGoal: ' + text
+        }]
+      })
+    });
+    const data = await res.json();
+    const content = (data && data.content && data.content[0] && data.content[0].text) || '';
+    const arr = JSON.parse(content);
+    if (!Array.isArray(arr) || arr.length < 1 || typeof arr[0] !== 'string') throw new Error('bad response');
+    return arr[0].trim();
+  }
+
+  function makeAddHandlers(input, addBtn, polishBtn, key, statusEl, reload) {
+    function plainAdd(text) {
+      const list = getGoals(key);
+      list.push({ text, done: false });
+      setGoals(key, list);
+      input.value = '';
+      reload();
+    }
+    addBtn.addEventListener('click', () => {
+      const text = input.value.trim();
+      if (!text) return;
+      plainAdd(text);
+    });
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); addBtn.click(); }
+    });
+    polishBtn.addEventListener('click', async () => {
+      const text = input.value.trim();
+      if (!text) return;
+      if (!getAnthropicKey()) {
+        plainAdd(text);
+        showStatus(statusEl, 'Polish needs an Anthropic API key — added as-typed.', false);
+        return;
+      }
+      polishBtn.disabled = true;
+      try {
+        const polished = await polishOne(text);
+        plainAdd(polished);
+      } catch (e) {
+        plainAdd(text);
+        showStatus(statusEl, 'Polish failed — added as-typed.', true);
+      } finally {
+        polishBtn.disabled = false;
+      }
+    });
+  }
+
+  makeAddHandlers(
+    document.getElementById('goalInput'),
+    document.getElementById('goalAddBtn'),
+    document.getElementById('goalPolishBtn'),
+    todayKey(),
+    document.getElementById('polishStatus'),
+    loadToday
+  );
+  makeAddHandlers(
+    document.getElementById('tomorrowInput'),
+    document.getElementById('tomorrowAddBtn'),
+    document.getElementById('tomorrowPolishBtn'),
+    tomorrowKey(),
+    document.getElementById('tomorrowStatus'),
+    loadTomorrow
+  );
+
+  // ---------- Wake/sleep settings popover ----------
+  function setupDayWindowPopover() {
+    const gear   = document.getElementById('dayRingGear');
+    const pop     = document.getElementById('dayPop');
+    const seg      = document.getElementById('dayPopSeg');
+    const wakeIn   = document.getElementById('dayPopWake');
+    const sleepIn  = document.getElementById('dayPopSleep');
+    const srcEl    = document.getElementById('dayPopSrc');
+    const noteEl   = document.getElementById('dayPopNote');
+    const saveBtn  = document.getElementById('dayPopSave');
+    const cancelBtn= document.getElementById('dayPopCancel');
+    if (!gear || !pop) return;
+    let draftMode = 'auto';
+
+    function paintMode() {
+      seg.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.mode === draftMode));
+      const auto = draftMode === 'auto';
+      wakeIn.disabled = auto; sleepIn.disabled = auto;
+      noteEl.textContent = auto
+        ? 'Auto pulls your times from Whoop / Apple Watch. Switch to Manual to set them yourself.'
+        : 'Manual: these times drive your day ring regardless of vitals.';
+    }
+    function fillFromState() {
+      const prefs = readWindowPrefs();
+      const w = resolveWindow();
+      draftMode = prefs.mode === 'manual' ? 'manual' : 'auto';
+      // show the currently-active resolved times in the inputs
+      wakeIn.value  = dec2hm(w.wakeHour);
+      sleepIn.value = dec2hm(w.sleepHour);
+      const hasVitals = !!w.health && (w.health.wakeTime || w.health.bedtime);
+      srcEl.innerHTML = hasVitals
+        ? 'Vitals source: <b>' + sourceLabel(w.health.source) + '</b>' + (w.health.wakeTime && w.health.bedtime ? ' — wake ' + dec2clock(hm2dec(w.health.wakeTime)) + ', bed ' + dec2clock(hm2dec(w.health.bedtime)) : '')
+        : 'No wake/sleep times in your vitals yet — add them on the dashboard or set Manual.';
+      paintMode();
+    }
+    function open()  { fillFromState(); pop.hidden = false; }
+    function close() { pop.hidden = true; }
+
+    gear.addEventListener('click', (e) => { e.stopPropagation(); pop.hidden ? open() : close(); });
+    seg.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; draftMode = b.dataset.mode; paintMode(); });
+    cancelBtn.addEventListener('click', close);
+    saveBtn.addEventListener('click', () => {
+      const prefs = { mode: draftMode, wake: wakeIn.value || '', sleep: sleepIn.value || '' };
+      storeSet(DAY_WINDOW_KEY, prefs);
+      close();
+      updateDayRing();
+    });
+    // close on outside click / Esc
+    document.addEventListener('click', (e) => { if (!pop.hidden && !pop.contains(e.target) && e.target !== gear) close(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !pop.hidden) close(); });
+  }
+
+  // ---------- Boot ----------
+  rollover();
+  processStreak();
+  loadToday();
+  loadTomorrow();
+  renderStreak();
+  setupDayWindowPopover();
+  updateDayRing();
+  setInterval(updateDayRing, 60 * 1000);
+  startTicker();
+
+  // Re-render when storage changes from another tab (or our bridged parent).
+  window.addEventListener('storage', (e) => {
+    loadToday(); loadTomorrow(); renderStreak();
+    // vitals updated elsewhere (dashboard / Whoop tab) → refresh the day window
+    if (!e || !e.key || e.key === SUITE_HEALTH_KEY || e.key === LEGACY_WHOOP_KEY || e.key === DAY_WINDOW_KEY) updateDayRing();
+  });
+})();
+</script>
+
+<script>(function(){function cur(){try{return localStorage.getItem("patron_theme")||"nocturne";}catch(e){return "nocturne";}}function paint(){var c=cur();document.querySelectorAll(".themeBtn").forEach(function(b){b.classList.toggle("themeBtnActive",b.dataset.theme===c);});}document.addEventListener("click",function(e){var b=e.target.closest(".themeBtn");if(!b)return;var n=b.dataset.theme;document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("patron_theme",n);}catch(e){}paint();});paint();})();</script>
+<script>(function(){try{var p=JSON.parse(localStorage.getItem('patron_profile_v1')||'null');var n=(p&&p.name)?String(p.name).trim():'';var el=document.getElementById('dashTitle');if(el)el.textContent=(n?n+'’s':'Your')+' Dashboard';}catch(e){}})();</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="db.js?v=15"></script>
+<script src="brand.js?v=16"></script>
+</body>
+</html>

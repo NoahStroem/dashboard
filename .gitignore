@@ -1,15 +1,8 @@
-# Your keys. Never committed, never shared, never on camera.
-.env.local
+Patron-Rowan4/
 .env
-.env.*
-!.env.example
 
-# OS + editor noise
+.env.local
+
 .DS_Store
-Thumbs.db
-.vscode/
-.idea/
-
-# Node
-node_modules/
-npm-debug.log*
+__pycache__/
+*.pyc
