@@ -4,7 +4,7 @@
        your dashboard, running on this computer, with your name on it
 - [x] 2. My name                                                      REQUIRED
        the greeting is yours. goals come later, with tiles
-- [ ] 3. GitHub. one browser sign in, the mentor does the git         RECOMMENDED
+- [x] 3. GitHub. one browser sign in, the mentor does the git         RECOMMENDED
        your work is saved, and it is the door to going live
 - [ ] 4. Supabase. free project, run supabase/sync.sql               RECOMMENDED
        your vault tables, made and waiting. the board runs on this device
