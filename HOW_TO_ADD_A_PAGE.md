@@ -45,7 +45,30 @@ Claude does all 4 steps below for you. Or do them by hand:
      their icon from `icons.js` automatically via `iconSvg(file)`.
 
 That's it — the new page already has the neon theme, fonts, the
-back-to-dashboard link, and `brand.js` (so it shows the current user's name).
+back-to-dashboard link, `brand.js` (so it shows the current user's name), and
+**cross-device sync**.
+
+## Sync comes for free — don't drop the scripts
+
+`_template.html` ends with three lines that make the page sync:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="db.js?v=15"></script>
+<script src="cloud-sync.js?v=1"></script>
+```
+
+`db.js` snapshots this device's whole `localStorage` to Supabase and adopts a
+newer snapshot from another device (newest device wins), so **anything you save
+under a normal `localStorage` key syncs automatically** — you don't write any
+sync code. `cloud-sync.js` just adds the ☁ status button.
+
+If you delete those lines, the page still *works*, but edits made on it never
+reach your other devices — and a newer snapshot from another device can
+overwrite them. Keep them on every page that saves data.
+
+Two deliberate exceptions, already handled in `db.js`: `patron_theme` (theme is
+per-device) and `peak_schedule_v1` (regenerated from the file).
 
 ## Show a live stat on the card (optional)
 The card can show a number instead of its tagline. In `index.html`, add a

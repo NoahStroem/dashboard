@@ -38,13 +38,20 @@
     '#csCancel{background:transparent;border-color:var(--border,rgba(255,255,255,.12));color:var(--fg,#fff)}' +
     '#csDisconnect{background:transparent;border:0;color:var(--muted,rgba(243,242,248,.5));font-size:12px;cursor:pointer;margin-top:12px;text-decoration:underline}' +
     '#csStatus{font-family:var(--font-mono,monospace);font-size:11px;margin:0 0 14px}' +
-    '#csCard a{color:var(--brand,#8B7CFF)}';
+    '#csCard a{color:var(--brand,#8B7CFF)}' +
+    '.csMerge{display:flex;gap:10px}' +
+    '.csMerge button{flex:1;padding:11px;border-radius:11px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;background:var(--card-elevated,rgba(255,255,255,.055));border:1px solid var(--border-strong,rgba(255,255,255,.17));color:var(--fg,#fff)}' +
+    '.csMerge button:disabled{opacity:.55;cursor:default}' +
+    '#csMergeNote{font-size:11px;line-height:1.5;color:var(--muted,rgba(243,242,248,.5));margin:9px 0 0}';
   document.head.appendChild(style);
 
   var btn = document.createElement('button');
   btn.id = 'csBtn'; btn.type = 'button';
   function paint() { btn.textContent = connected() ? '☁ Synced' : '☁ Cloud sync'; btn.setAttribute('data-on', connected() ? '1' : '0'); }
   paint();
+  // db.js may connect a moment after us: on the env-var path it has to fetch
+  // /api/config first, so the first paint() above always sees "local-only".
+  window.addEventListener('patrondb:ready', paint);
   btn.addEventListener('click', openPanel);
   // Mount once <body> exists (so this include can sit in <head> or <body>).
   if (document.body) document.body.appendChild(btn);
@@ -58,6 +65,16 @@
       '<h2>Cloud sync</h2>' +
       '<p>Sync your data + photos across devices with your own free <a href="https://supabase.com" target="_blank" rel="noopener">Supabase</a> project. Run <code>supabase-schema.sql</code> once, then paste your keys below. Leave blank to keep everything on this device.</p>' +
       '<p id="csStatus">' + (connected() ? '✓ Connected — syncing automatically across your devices.' : 'Local-only — data stays on this device.') + '</p>' +
+      // First-merge controls: only useful once a connection exists. Normal
+      // operation is automatic (newest device wins) — these are the manual
+      // override for the initial "which device has my real data?" step.
+      (connected()
+        ? '<div class="csMerge">' +
+          '<button id="csPush" type="button">&#10514; Push this device up</button>' +
+          '<button id="csPull" type="button">&#10515; Pull cloud down</button>' +
+          '</div>' +
+          '<p id="csMergeNote">Only needed once, to pick a winner the first time you connect a second device.</p>'
+        : '') +
       '<details style="margin-top:14px"><summary style="cursor:pointer;font-size:12px;opacity:.7">Advanced: use your own Supabase project</summary>' +
       '<label style="margin-top:10px">Project URL</label><input id="csUrl" type="text" autocomplete="off" spellcheck="false" placeholder="https://YOUR-PROJECT.supabase.co" value="' + getU().replace(/"/g, '&quot;') + '">' +
       '<label>Anon public key</label><input id="csKey" type="password" autocomplete="off" spellcheck="false" placeholder="paste the anon public key" value="' + getK().replace(/"/g, '&quot;') + '">' +
@@ -76,6 +93,32 @@
     };
     var dc = document.getElementById('csDisconnect');
     if (dc) dc.onclick = function () { localStorage.removeItem(URL_KEY); localStorage.removeItem(ANON_KEY); location.reload(); };
+
+    var push = document.getElementById('csPush'), pull = document.getElementById('csPull');
+    var note = document.getElementById('csMergeNote'), status = document.getElementById('csStatus');
+    function busy(on, msg) {
+      if (push) push.disabled = on;
+      if (pull) pull.disabled = on;
+      if (note && msg) note.textContent = msg;
+    }
+    if (push) push.onclick = function () {
+      if (!window.PatronDB || !PatronDB.pushAll) return;
+      busy(true, 'Pushing…');
+      PatronDB.pushAll().then(function (r) {
+        busy(false, r && r.ok
+          ? '✓ Pushed ' + r.n + ' saved items up. Open the ☁ panel on your other device and tap “Pull cloud down”.'
+          : 'Push failed — check your connection and try again.');
+        if (r && r.ok && status) status.textContent = '✓ Connected — this device is now the source of truth.';
+      });
+    };
+    if (pull) pull.onclick = function () {
+      if (!window.PatronDB || !PatronDB.pullAll) return;
+      busy(true, 'Pulling…');
+      PatronDB.pullAll().then(function (r) {
+        if (r && r.ok) { busy(false, '✓ Pulled ' + r.n + ' items down. Reloading…'); setTimeout(function () { location.reload(); }, 600); }
+        else busy(false, 'Nothing in the cloud yet — push from the device that has your data first.');
+      });
+    };
     function close() { ov.remove(); }
   }
 })();

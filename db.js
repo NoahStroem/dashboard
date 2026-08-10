@@ -218,7 +218,14 @@ window.PatronDB = (function () {
       if (!r.ok) return;
       const cfg = await r.json();
       const u = (cfg && cfg.url || '').trim(), k = (cfg && cfg.key || '').trim();
-      if (u && k && !ready) { URL = u; KEY = k; _connect(u, k); _startSync(); }
+      if (u && k && !ready) {
+        URL = u; KEY = k; _connect(u, k); _startSync();
+        // Tell the UI sync just came online. Without this anything that read
+        // isCloud() at load time (the ☁ button) would be stuck showing
+        // "local-only" forever on the env-var path, where this fetch — not a
+        // pasted key — is what connects us.
+        if (ready) { try { window.dispatchEvent(new Event('patrondb:ready')); } catch (_) {} }
+      }
     } catch (_) {}
   })();
 

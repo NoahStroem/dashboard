@@ -1364,6 +1364,8 @@ img, video, canvas, svg { max-width: 100%; }
 @media (prefers-reduced-motion: reduce) { .lt-track, .lt-dot { animation: none; } }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="db.js?v=15"></script>
+<script src="cloud-sync.js?v=1"></script>
 <link rel="stylesheet" href="skin.css?v=1">
 </head>
 <body>
@@ -3051,21 +3053,56 @@ img, video, canvas, svg { max-width: 100%; }
   }
   // Upload a compressed data URL to the Supabase Storage bucket
   // 'progress-photos' and return its public URL (or null on failure).
-  async function uploadPhotoToStorage(dataUrl) {
-    if (!pcSupa) return null;
-    try {
-      const res = await fetch(dataUrl);
-      const blob = await res.blob();
-      const filename = 'photo_' + Date.now() + '_' +
-        Math.random().toString(36).slice(2, 10) + '.jpg';
-      const { error } = await pcSupa.storage
-        .from('progress-photos')
-        .upload(filename, blob, { contentType: 'image/jpeg', upsert: false });
-      if (error) return null;
-      const { data } = pcSupa.storage.from('progress-photos').getPublicUrl(filename);
-      return data ? data.publicUrl : null;
-    } catch (e) { return null; }
+  // Photos go to Supabase Storage and only the resulting URL is kept locally —
+  // otherwise the base64 would sit in localStorage forever, bloat the synced
+  // snapshot and eventually hit iOS Safari's ~5MB quota.
+  //
+  // This goes through PatronDB (db.js), which owns the only live Supabase
+  // connection on this page. It used to use this page's own `pcSupa` client,
+  // but that engine is retired (see pcInitCloudSync) — and on the env-var setup
+  // path pcSupa was never non-null anyway, so uploads silently no-op'd and every
+  // photo stayed base64.
+  // db.js connects only after it has fetched /api/config, so a photo added in
+  // the first moments after load would otherwise hit a null client and stay
+  // base64. Wait a beat for the connection instead of failing outright.
+  function pcWaitForCloud(ms) {
+    return new Promise((resolve) => {
+      const deadline = Date.now() + (ms || 8000);
+      (function poll() {
+        if (window.PatronDB && PatronDB.isCloud && PatronDB.isCloud()) return resolve(true);
+        if (Date.now() > deadline) return resolve(false);
+        setTimeout(poll, 300);
+      })();
+    });
   }
+
+  async function uploadPhotoToStorage(dataUrl) {
+    if (!(await pcWaitForCloud())) return null;
+    const filename = 'photo_' + Date.now() + '_' +
+      Math.random().toString(36).slice(2, 10) + '.jpg';
+    try { return await PatronDB.uploadImage('progress-photos', filename, dataUrl, 'image/jpeg'); }
+    catch (e) { return null; }
+  }
+
+  // Heal photos whose upload never succeeded (offline, or added before sync was
+  // configured): they still carry a base64 dataUrl and therefore have no URL to
+  // show on your other devices. Retry them once the connection is up.
+  async function pcRetryStuckPhotos() {
+    if (!(await pcWaitForCloud(15000))) return;
+    let stuck;
+    try { stuck = photos.filter(p => p && p.dataUrl && !p.url); } catch (_) { return; }
+    for (const p of stuck) {
+      const url = await uploadPhotoToStorage(p.dataUrl);
+      if (!url) continue;
+      const e = photos.find(x => x.id === p.id);
+      if (!e) continue;
+      e.url = url;
+      delete e.dataUrl;
+      photosSave();
+    }
+    if (stuck.length) { try { photosRender(); } catch (_) {} }
+  }
+  pcRetryStuckPhotos();
 
   async function photosAdd(dataUrl) {
     let compressed = dataUrl;
@@ -3340,6 +3377,9 @@ img, video, canvas, svg { max-width: 100%; }
   const SUPABASE_URL = ((localStorage.getItem('po_supabase_url') || '').trim()) || ((window.PatronDB && PatronDB.cfgUrl && PatronDB.cfgUrl()) || '');
   const SUPABASE_KEY = ((localStorage.getItem('po_supabase_key') || '').trim()) || ((window.PatronDB && PatronDB.cfgKey && PatronDB.cfgKey()) || '');
   const APP_KEY = 'po-coach';
+  // Set true only to resurrect this page's standalone sync engine (see
+  // pcInitCloudSync below for why it is off). db.js owns sync now.
+  const PC_LEGACY_SYNC = false;
   // Note: po_coach_photos IS synced, but only URL-pointer entries ride
   // the wire. The actual JPEG lives in Supabase Storage. pcCollectState
   // strips any base64 dataUrl entries before push so the payload stays
@@ -3511,6 +3551,20 @@ img, video, canvas, svg { max-width: 100%; }
   // Initial sync: connect Supabase, pull current state, subscribe to
   // realtime updates so other devices' changes appear instantly.
   (async function pcInitCloudSync() {
+    // RETIRED — db.js now syncs this page along with every other one.
+    //
+    // This page used to be the only one without db.js, so it carried its own
+    // engine writing gym keys to a separate `po-coach` row. Running both is
+    // worse than running either: db.js can adopt a newer whole-device snapshot
+    // and reload, and this engine would then apply its own older `po-coach`
+    // row over the fresh data — and the snapshot engine would push that stale
+    // state back up. One engine, one row, newest device wins.
+    //
+    // Everything below is left in place (it is the only writer of pcRerender,
+    // the photo dataUrl merge and the editing-aware apply logic) but stays
+    // dormant with pcSupa === null: pcPushNow/pcFlushPushOnUnload no-op, and
+    // the localStorage wrappers just schedule pushes that never fire.
+    if (!PC_LEGACY_SYNC) return;
     if (!window.supabase || !SUPABASE_URL || !SUPABASE_KEY) return;
     // Skip if the placeholder values are still in place (local-only mode)
     if (SUPABASE_URL.indexOf('PASTE-') === 0 || SUPABASE_KEY.indexOf('PASTE-') === 0) return;

@@ -59,11 +59,27 @@ end $$;
 - Copy **Project URL**  (looks like https://xxxx.supabase.co)
 - Copy **anon public** key  (NOT the service_role key)
 
-## 5. Connect each device (do on PHONE and PC)
+## 5. Connect your devices
+
+### Option A — once for all devices (recommended)
+Set the keys as Vercel environment variables and every device that opens your
+deployed site picks them up automatically — nothing to paste on the phone.
+
+- Vercel → your project → **Settings** → **Environment Variables**, add:
+  - `SUPABASE_URL` = your Project URL
+  - `SUPABASE_ANON_KEY` = your anon public key
+- **Redeploy** (env vars only take effect on a new deploy)
+- Open the app on each device — **☁ Synced** in the corner means it worked
+
+### Option B — per device
+Use this if you're opening the files locally instead of via your Vercel deploy.
+
 - Open the app, tap **☁ Cloud sync** (bottom-right)
 - Click **"Advanced: use your own Supabase project"**
 - Paste **Project URL** + **anon key** → **Save & sync**
 - Button turns green → **☁ Synced**
+
+Do this on PHONE and PC.
 
 ## 6. First merge
 - Device that HAS your data → ☁ → **⤒ Push this device up**

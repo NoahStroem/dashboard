@@ -139,8 +139,15 @@ body{ background:var(--bg); color:var(--fg); font-family:var(--font-ui),-apple-s
 
   /* ---- Your page's JavaScript goes here. ----
      Tip: persist data with a uniquely-named localStorage key,
-     e.g. 'mypage_standalone_v1'. */
+     e.g. 'mypage_standalone_v1'. Anything you put in localStorage rides
+     the cross-device snapshot automatically — see the scripts below. */
 </script>
+<!-- Cross-device sync. db.js snapshots this device's localStorage to Supabase
+     (newest device wins); cloud-sync.js adds the ☁ status button. Keep all three
+     lines on every page that saves data, or its edits won't reach your other devices. -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="db.js?v=15"></script>
+<script src="cloud-sync.js?v=1"></script>
 <script src="brand.js?v=16"></script>
 </body>
 </html>
