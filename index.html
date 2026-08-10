@@ -200,9 +200,16 @@ body { background: var(--bg); color: var(--fg); font-family: var(--font-ui), -ap
 .vitalsEmptyTitle { font-family: var(--font-display); font-weight: 600; font-size: var(--text-xl); letter-spacing: -0.02em; }
 .vitalsEmptyBody { font-size: 13px; color: var(--muted-strong); line-height: 1.55; max-width: 42ch; }
 
-/* Life goals tile — same anatomy as the vitals tile (ring left, stacked rows right) */
+/* Life goals tile — no ring; every goal is its own row with its own bar */
 .goalsTile .vitalsEyebrow { color: var(--brand-2); }
-.gRow { align-items: center; }
+.goalsTile .vitalsBody { display:block; }
+.goalsTile .vMetrics { gap: var(--space-4); }
+.gRow { flex-direction: column; align-items: stretch; gap: 7px; }
+.gRowTop { display:flex; align-items:center; justify-content:space-between; gap: var(--space-3); }
+.gBar { position:relative; height: 7px; border-radius: var(--radius-pill); background: var(--track); overflow:hidden; }
+.gBarFill { position:absolute; top:0; bottom:0; left:0; border-radius:inherit; background: linear-gradient(90deg, var(--brand-2), var(--brand)); box-shadow: 0 0 12px -2px var(--brand-glow); transition: width 700ms var(--ease-premium); }
+.gBarFill[data-tone="good"] { background: var(--pos); }
+.gBarFill[data-tone="idle"] { background: var(--muted); box-shadow:none; }
 .gRowMain { display:flex; flex-direction:column; gap: 3px; min-width: 0; }
 .gRowNote { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.06em; color: var(--muted); }
 .gRowRight { display:flex; align-items:baseline; gap: var(--space-3); flex-shrink:0; }
@@ -593,9 +600,8 @@ function vitalsTileHtml(){
 }
 
 /* ============================================================
- * Life goals tile — long-term goals, same anatomy as the vitals
- * tile: one progression ring on the left, goals stacked on the
- * right with their own percentage and totals. Progress is derived
+ * Life goals tile — long-term goals stacked full width, each with
+ * its own percentage, totals and progress bar. Progress is derived
  * from the Finance tile, not hand-entered; goals.html owns the
  * config (which account, which ceiling).
  * ============================================================ */
@@ -658,32 +664,29 @@ function lifeGoalsData(){
       value: fmtGoalAmt(invested, ccy), note: 'of ' + fmtGoalAmt(netTarget, ccy) + ' target' });
   }
 
-  const scored = rows.filter(r => r.pct != null);
-  return {
-    pct: scored.length ? scored.reduce((s, r) => s + r.pct, 0) / scored.length : 0,
-    rows: rows, ccy: ccy, empty: !holdings.length
-  };
+  return { rows: rows, ccy: ccy, empty: !holdings.length };
 }
 
 function goalsTileHtml(){
   const d = lifeGoalsData();
-  const pct = d.pct;
-  const tone = pct == null ? 'muted' : pct >= 100 ? 'good' : pct >= 50 ? 'watch' : '';
-  const circ = 2 * Math.PI * 56;
-  const ring = '<div class="recRing" data-tone="' + tone + '"><svg viewBox="0 0 132 132" aria-hidden><circle cx="66" cy="66" r="56" class="recTrack"/>'
-    + (pct != null ? '<circle cx="66" cy="66" r="56" class="recFill" style="stroke-dasharray:' + circ + ';stroke-dashoffset:' + (circ * (1 - pct / 100)) + ';"/>' : '')
-    + '</svg><div style="text-align:center"><div class="recNum">' + (pct != null ? Math.round(pct) : '—') + (pct != null ? '<span class="recUnit">%</span>' : '') + '</div><div class="recCap">Become rich</div></div></div>';
+  // One row per goal: label + note on the left, value + % on the right, and each
+  // goal's own progress bar underneath. No aggregate ring — averaging unrelated
+  // goals into a single "become rich" number said less than the goals themselves.
   const rows = '<div class="vMetrics">' + d.rows.map(r =>
       '<div class="vRow gRow">'
+    + '<div class="gRowTop">'
     + '<span class="gRowMain"><span class="vLabel">' + esc(r.label) + '</span>'
     + '<span class="gRowNote">' + esc(r.note) + '</span></span>'
     + '<span class="gRowRight"><span class="vVal">' + r.value + '</span>'
     + '<span class="gPct" data-tone="' + goalPctTone(r.pct) + '">' + (r.pct == null ? '—' : Math.round(r.pct) + '%') + '</span></span>'
+    + '</div>'
+    + '<div class="gBar" role="progressbar" aria-label="' + esc(r.label) + '" aria-valuenow="' + (r.pct == null ? 0 : Math.round(r.pct)) + '" aria-valuemin="0" aria-valuemax="100">'
+    + '<span class="gBarFill" data-tone="' + goalPctTone(r.pct) + '" style="width:' + (r.pct == null ? 0 : Math.max(0, Math.min(100, r.pct))) + '%"></span></div>'
     + '</div>').join('') + '</div>';
   return '<section class="vitals goalsTile">'
     + '<div class="vitalsHead"><span class="vitalsEyebrow">Life goals</span>'
     + '<span class="srcBadge"><span class="srcDot"></span>Finance</span></div>'
-    + '<div class="vitalsBody">' + ring + rows + '</div>'
+    + '<div class="vitalsBody">' + rows + '</div>'
     + '<div class="vitalsFoot"><span class="vitalsSync">' + (d.empty ? 'no holdings yet — add them in Finance' : 'live from your balances') + '</span>'
     + '<a class="btn btn-ghost" href="' + (d.empty ? 'finance.html' : 'goals.html') + '">' + (d.empty ? 'Add holdings' : 'Open goals') + '</a></div></section>';
 }
