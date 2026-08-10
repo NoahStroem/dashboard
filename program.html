@@ -725,6 +725,51 @@ tbody tr.isToday td { background:rgba(var(--success-rgb),0.10); box-shadow:inset
     return points;
   }
 
+  /* ---- publish squat + bench maxes for the Progress page --------------
+   * Progress shouldn't have to re-implement this sheet parser, so the two
+   * numbers it wants get written to their own localStorage key whenever this
+   * page renders. db.js syncs that key like any other, so the phone shows the
+   * same figures without opening the program itself.
+   *   oneRm — the "E1RM <lift>" reference in the sheet header: the max the
+   *           percentages are built on. Last week that declares one wins.
+   *   e1rm  — Epley on the most recently logged sets, plus the block's best.
+   * ------------------------------------------------------------------ */
+  const MAXES_KEY = 'patron_program_maxes_v1';
+  function publishMaxes() {
+    const lifts = {};
+    SERIES.forEach(s => { lifts[s.key] = { label: s.label, oneRm: null, oneRmWeek: null, e1rm: null, e1rmWhen: null, e1rmBest: null }; });
+
+    state.sources.forEach(src => {
+      const c = state.cache[src.id];
+      if (!c || !c.csv) return;
+      const prog = parseProgram(tidy(parseCsv(c.csv)));
+      if (!prog) return;
+      (prog.maxes || []).forEach(m => {
+        const s = SERIES.find(x => x.match.test(m.lift));
+        const v = midNum(m.value);
+        if (s && v != null) { lifts[s.key].oneRm = v; lifts[s.key].oneRmWeek = src.label; }
+      });
+    });
+
+    // Points come back in week/day order, so a later one simply overwrites —
+    // leaving the most recent day that actually has logged sets.
+    e1rmSeries().forEach(p => {
+      SERIES.forEach(s => {
+        const v = p[s.key];
+        if (v == null) return;
+        const L = lifts[s.key];
+        L.e1rm = v; L.e1rmWhen = p.label;
+        if (L.e1rmBest == null || v > L.e1rmBest) L.e1rmBest = v;
+      });
+    });
+
+    const any = SERIES.some(s => lifts[s.key].oneRm != null || lifts[s.key].e1rm != null);
+    try {
+      if (any) localStorage.setItem(MAXES_KEY, JSON.stringify({ updatedAt: Date.now(), lifts: lifts }));
+      else localStorage.removeItem(MAXES_KEY);
+    } catch (e) {}
+  }
+
   /* Round tick values (1 / 2 / 5 × 10ⁿ) inside the plotted range. */
   function niceTicks(min, max, target) {
     const span = max - min;
@@ -943,6 +988,7 @@ tbody tr.isToday td { background:rgba(var(--success-rgb),0.10); box-shadow:inset
 
     app.innerHTML = bar + body;
     wire();
+    publishMaxes(); // keep the Progress page's strength card current
   }
 
   function addSource() {
