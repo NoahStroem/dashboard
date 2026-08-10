@@ -58,14 +58,19 @@ back-to-dashboard link, `brand.js` (so it shows the current user's name), and
 <script src="cloud-sync.js?v=1"></script>
 ```
 
-`db.js` snapshots this device's whole `localStorage` to Supabase and adopts a
-newer snapshot from another device (newest device wins), so **anything you save
-under a normal `localStorage` key syncs automatically** — you don't write any
-sync code. `cloud-sync.js` just adds the ☁ status button.
+`db.js` syncs your `localStorage` to Supabase **key by key**, so **anything you
+save under a normal `localStorage` key syncs automatically** — you don't write
+any sync code. `cloud-sync.js` just adds the ☁ status button.
+
+Per-key means two devices editing different pages both keep their work; only the
+same key edited on both sides is a conflict, and there the newer edit wins.
+Deleting a key deletes it on your other devices too, instead of it coming back.
 
 If you delete those lines, the page still *works*, but edits made on it never
-reach your other devices — and a newer snapshot from another device can
-overwrite them. Keep them on every page that saves data.
+reach your other devices. Keep them on every page that saves data.
+
+Use one `localStorage` key per thing that can change independently. A page that
+crams everything into one giant key turns every edit into a whole-page conflict.
 
 Two deliberate exceptions, already handled in `db.js`: `patron_theme` (theme is
 per-device) and `peak_schedule_v1` (regenerated from the file).

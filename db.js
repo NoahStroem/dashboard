@@ -1,17 +1,25 @@
 /* ============================================================
- * db.js — whole-device SNAPSHOT sync for the Patron / Liam suite.
+ * db.js — cross-device sync for the Patron / Liam suite.
  *
- * Design (deliberately simple so it can't half-work):
- *   The ENTIRE device's localStorage is stored in ONE Supabase row
- *   as a single JSON blob with a timestamp. Newest timestamp wins.
- *   - On load / focus / realtime event: if the cloud snapshot is newer
- *     than this device's last sync point, adopt it (write every key back
- *     into localStorage) and reload once so pages re-render. Otherwise,
- *     if this device has unpushed edits, push the whole snapshot up.
- *   - On any change: debounced push of the whole snapshot.
+ * Design: PER-KEY last-write-wins.
+ *   One Supabase row holds a map of { localStorage key -> { s: value, t: ts } }.
+ *   Each device tracks, per key, the value-hash + timestamp it last agreed with
+ *   the cloud on. A key whose local hash no longer matches is a local edit and
+ *   gets a fresh timestamp; everything else is left alone. Sync = fetch the
+ *   cloud map, overlay this device's edits, write back, adopt the result.
  *
- * There is NO per-key reconciliation, NO seed flags, NO merge — the old
- * approach that kept breaking. It syncs the whole device or nothing.
+ * Why not the old whole-blob snapshot: with one timestamp for the entire device,
+ * any push overwrote every key. Device A logs water, device B (whose tab still
+ * held yesterday's state) pushes for an unrelated reason, and A's water is gone —
+ * "my changes never arrive". Per-key stamps mean two devices editing different
+ * pages both keep their work; only the same key edited on both sides conflicts,
+ * and there the newer edit wins.
+ *
+ * Deletions ride along as tombstones ({ s: null }), so removing an entry on one
+ * device actually removes it on the other instead of being resurrected.
+ *
+ * Timestamps are monotonic per device (always greater than the highest ts seen,
+ * cloud included) so a device whose clock is wrong can't win — or lose — forever.
  *
  * Include once per page, AFTER the Supabase library:
  *   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -34,9 +42,11 @@ window.PatronDB = (function () {
   let ready = false;
   let sb = null;
 
-  const SNAP_KEY = 'patron-device-snapshot'; // the single row holding the device blob
-  const TS_KEY = 'po_snapshot_ts';           // ts of the snapshot we're in sync with
-  const PH_KEY = 'po_snapshot_hash';         // hash of the data we last synced
+  const SNAP_KEY = 'patron-device-snapshot'; // the single row holding the key map
+  const MAP_KEY = 'po_sync_map';             // {key: [hash, ts]} we last agreed with the cloud
+  const TS_KEY = 'po_snapshot_ts';           // highest ts this device has ever seen
+  const PH_KEY = 'po_snapshot_hash';         // legacy (v1) — removed on first run
+  const TOMB_MS = 30 * 24 * 3600 * 1000;     // forget tombstones after 30 days
 
   function _connect(u, k) {
     ready = !!(u && k && window.supabase && u.indexOf('PASTE-') !== 0);
@@ -48,16 +58,16 @@ window.PatronDB = (function () {
   function cfgUrl() { return URL || ''; }
   function cfgKey() { return KEY || ''; }
 
-  /* ---- which localStorage keys ride in the snapshot ----
+  /* ---- which localStorage keys ride in the sync ----
    * Everything EXCEPT this device's connection/bookkeeping settings and
    * per-device preferences. All actual app data rides along. */
   function _skip(k) {
     return !k
       || k.indexOf('po_supabase') === 0
-      || k === TS_KEY || k === PH_KEY
+      || k === TS_KEY || k === PH_KEY || k === MAP_KEY
       || k === 'patron_theme'                   // theme is a per-device preference
       || k === 'peak_schedule_v1'               // schedule is regenerated from the file (seed) — never sync stale tasks
-      || k === 'po_sched_purged'                // per-device flag for the one-time cloud schedule purge
+      || k === 'po_sched_purged'                // legacy per-device flag
       || k.indexOf('patron_hydrated_') === 0
       || k.indexOf('patron_initreload_') === 0
       || k.indexOf('patron_snapadopt_') === 0;
@@ -71,7 +81,7 @@ window.PatronDB = (function () {
   function subscribe(_key, _cb) { return function () {}; } // adopt-path reloads; shim is enough
 
   /* ---- progress photos: file -> Supabase Storage, only the URL is kept locally
-   * (and therefore rides in the snapshot). ---- */
+   * (and therefore rides in the sync). ---- */
   async function uploadImage(bucket, path, dataUrl, contentType) {
     if (!sb) return null;
     try {
@@ -88,8 +98,18 @@ window.PatronDB = (function () {
   }
 
   /* ============================================================
-   * SNAPSHOT ENGINE
+   * SYNC ENGINE
    * ============================================================ */
+
+  // djb2. The v1 engine used the entire concatenated localStorage as its
+  // "hash" AND stored that string back into localStorage — doubling usage and
+  // throwing QuotaExceeded on phones, which silently wedged sync.
+  function _h(s) {
+    let h = 5381;
+    for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+    return (h >>> 0).toString(36);
+  }
+
   function _gather() {
     const blob = {};
     for (let i = 0; i < localStorage.length; i++) {
@@ -100,112 +120,193 @@ window.PatronDB = (function () {
     }
     return blob;
   }
-  function _hash(blob) {
-    const keys = Object.keys(blob).sort();
-    let s = '';
-    for (const k of keys) s += k + '' + blob[k] + '';
-    return s;
-  }
-  function _localTs() { const n = parseInt(localStorage.getItem(TS_KEY) || '0', 10); return isNaN(n) ? 0 : n; }
-  function _setSynced(ts, hash) {
-    try { localStorage.setItem(TS_KEY, String(ts)); localStorage.setItem(PH_KEY, hash); } catch (_) {}
-    _lastSyncedHash = hash;
-  }
 
-  let _lastSyncedHash = localStorage.getItem(PH_KEY);
-  let _pushTimer = null;
+  function _loadMap() { try { return JSON.parse(localStorage.getItem(MAP_KEY) || 'null') || null; } catch (_) { return null; } }
+  function _saveMap(m) { try { localStorage.setItem(MAP_KEY, JSON.stringify(m)); } catch (_) {} }
 
-  async function _pushNow() {
-    if (!sb) return 0;
-    const blob = _gather();
-    const hash = _hash(blob);
-    const ts = Date.now();
-    try {
-      await sb.from('app_state').upsert(
-        { key: SNAP_KEY, data: { blob: blob, ts: ts }, updated_at: new Date(ts).toISOString() },
-        { onConflict: 'key' }
-      );
-      _setSynced(ts, hash);
-      return ts;
-    } catch (_) { return 0; }
-  }
-  function _schedulePush() {
-    if (!ready) return;
-    if (_pushTimer) clearTimeout(_pushTimer);
-    _pushTimer = setTimeout(function () { _pushTimer = null; _pushIfChanged(); }, 1200);
-  }
-  function _pushIfChanged() {
-    if (!ready) return;
-    if (_hash(_gather()) !== _lastSyncedHash) _pushNow();
-  }
+  // Monotonic clock: never emit a ts <= the highest one we've seen anywhere, so
+  // a device with a skewed clock can't stamp the future and win every conflict
+  // from then on.
+  let _hiTs = (function () { const n = parseInt(localStorage.getItem(TS_KEY) || '0', 10); return isNaN(n) ? 0 : n; })();
+  // The ts we booted with, captured before any sync moves _hiTs. The one-time
+  // migration below has to compare the cloud against where this device *was*,
+  // not against a value this run already advanced.
+  const _bootTs = _hiTs;
+  function _seeTs(t) { if (t > _hiTs) { _hiTs = t; try { localStorage.setItem(TS_KEY, String(t)); } catch (_) {} } }
+  function _now() { const t = Math.max(Date.now(), _hiTs + 1); _seeTs(t); return t; }
 
-  async function _fetchSnapshot() {
+  // Keys changed on THIS device since we last agreed with the cloud.
+  // { key: {s: value|null, h: hash|null} } — s === null means deleted here.
+  function _localEdits(map) {
+    const blob = _gather(), out = {};
+    for (const k in blob) {
+      const h = _h(blob[k]);
+      const e = map[k];
+      if (!e || e[0] !== h) out[k] = { s: blob[k], h: h };
+    }
+    for (const k in map) {
+      if (map[k][0] !== null && !(k in blob)) out[k] = { s: null, h: null };
+    }
+    return out;
+  }
+  function _hasLocalEdits() { const m = _loadMap(); return !m || Object.keys(_localEdits(m)).length > 0; }
+
+  // Read the cloud row. Returns null on a failed request (so we never mistake a
+  // network error for "the cloud is empty" and clobber it).
+  async function _fetchCloud() {
     if (!sb) return null;
     try {
       const { data, error } = await sb.from('app_state').select('data').eq('key', SNAP_KEY).maybeSingle();
-      if (!error && data && data.data && data.data.blob) return { blob: data.data.blob, ts: data.data.ts || 0 };
-    } catch (_) {}
-    return null;
+      if (error) return null;
+      const d = data && data.data;
+      const keys = {};
+      if (d && d.v === 2 && d.keys) {
+        for (const k in d.keys) { if (!_skip(k)) keys[k] = d.keys[k]; }
+      } else if (d && d.blob) {
+        // v1 whole-blob snapshot: one timestamp for everything.
+        const t = d.ts || 1;
+        for (const k in d.blob) { if (!_skip(k)) keys[k] = { s: d.blob[k], t: t }; }
+      }
+      let hi = 0;
+      for (const k in keys) if (keys[k].t > hi) hi = keys[k].t;
+      return { keys: keys, ts: (d && d.ts) || hi, legacy: !!(d && d.v !== 2) };
+    } catch (_) { return null; }
   }
-  // Write a cloud snapshot's keys into localStorage. Additive/overwrite — never
-  // deletes local-only keys, so it can't wipe data the cloud hasn't seen.
-  function _adopt(blob) {
+
+  async function _writeCloud(keys) {
+    let hi = 0;
+    for (const k in keys) if (keys[k].t > hi) hi = keys[k].t;
+    try {
+      const { error } = await sb.from('app_state').upsert(
+        { key: SNAP_KEY, data: { v: 2, keys: keys, ts: hi }, updated_at: new Date().toISOString() },
+        { onConflict: 'key' }
+      );
+      return !error;
+    } catch (_) { return false; }
+  }
+
+  // Write a merged map into localStorage. Returns true if anything actually
+  // changed here (i.e. the cloud told us something new) — that's what decides
+  // whether the page needs a reload to re-render.
+  function _adopt(keys) {
     let changed = false;
-    for (const k in blob) {
+    for (const k in keys) {
       if (_skip(k)) continue;
-      if (localStorage.getItem(k) !== blob[k]) { try { localStorage.setItem(k, blob[k]); changed = true; } catch (_) {} }
+      const s = keys[k].s;
+      try {
+        if (s === null) {
+          if (localStorage.getItem(k) !== null) { localStorage.removeItem(k); changed = true; }
+        } else if (localStorage.getItem(k) !== s) {
+          localStorage.setItem(k, s); changed = true;
+        }
+      } catch (_) {}
     }
     return changed;
   }
 
-  // Newest snapshot wins. cloud newer -> adopt (+reload once). else, if this
-  // device has unpushed edits (or the cloud has no snapshot yet) -> push up.
-  async function _reconcile(allowReload) {
-    if (!ready) return;
-    const localTs = _localTs();
-    const dirty = (_hash(_gather()) !== _lastSyncedHash); // unpushed local edits?
-    const snap = await _fetchSnapshot();
+  function _mapFrom(keys) {
+    const m = {};
+    for (const k in keys) m[k] = [keys[k].s === null ? null : _h(keys[k].s), keys[k].t];
+    return m;
+  }
 
-    if (snap && snap.ts > localTs) {
-      const changed = _adopt(snap.blob);
-      _setSynced(snap.ts, _hash(_gather()));
-      if (changed && allowReload) {
-        const guard = 'patron_snapadopt_' + snap.ts;
-        try {
-          if (!sessionStorage.getItem(guard)) { sessionStorage.setItem(guard, '1'); location.reload(); return; }
-        } catch (_) { location.reload(); return; }
-      }
-      return;
+  function _prune(keys) {
+    const cut = Date.now() - TOMB_MS;
+    for (const k in keys) if (keys[k].s === null && keys[k].t < cut) delete keys[k];
+    return keys;
+  }
+
+  /* ---- one-time migration off the v1 whole-blob format ----
+   * No local map yet, so we can't tell an edit from a value we simply never
+   * pushed. Fall back to v1's own rule for this single transition: if the cloud
+   * snapshot is newer than the last one this device synced, the cloud wins;
+   * otherwise this device's state is the truth. After this, per-key stamps take
+   * over and the question never comes up again. */
+  function _seedMap(cloud) {
+    if (cloud && cloud.ts > _bootTs && Object.keys(cloud.keys).length) {
+      // Cloud won. Seed the map from it and report "no local edits" — the normal
+      // merge path below then adopts those values (and reloads) for us.
+      _saveMap(_mapFrom(cloud.keys));
+      _seeTs(cloud.ts);
+      return true;
     }
-    if (!snap || dirty) { await _pushNow(); }
-    else if (_lastSyncedHash == null) { _setSynced(localTs, _hash(_gather())); }
+    // This device is the truth: seed from the cloud so unchanged keys aren't
+    // re-stamped, and let _localEdits pick up everything that differs.
+    _saveMap(cloud ? _mapFrom(cloud.keys) : {});
+    return false;
+  }
+
+  let _pushTimer = null;
+  let _syncing = false;
+
+  async function _sync(allowReload) {
+    if (!ready || _syncing) return false;
+    _syncing = true;
+    try {
+      const cloud = await _fetchCloud();
+      if (cloud === null) return false; // offline / error — do NOT overwrite the cloud
+      _seeTs(cloud.ts || 0);
+
+      let map = _loadMap();
+      let seeded = false;
+      if (!map) { seeded = _seedMap(cloud); map = _loadMap() || {}; }
+      try { localStorage.removeItem(PH_KEY); } catch (_) {} // free the v1 shadow copy
+
+      const edits = seeded ? {} : _localEdits(map);
+      const merged = {};
+      for (const k in cloud.keys) merged[k] = cloud.keys[k];
+
+      const editKeys = Object.keys(edits);
+      if (editKeys.length) {
+        const t = _now();
+        for (const k of editKeys) merged[k] = { s: edits[k].s, t: t };
+      }
+      _prune(merged);
+
+      const changed = _adopt(merged);
+      _saveMap(_mapFrom(merged));
+      for (const k in merged) _seeTs(merged[k].t);
+
+      // Push when we have edits, or when the cloud is still on the v1 format.
+      if (editKeys.length || cloud.legacy) {
+        if (!(await _writeCloud(merged))) _saveMap(map); // failed: stay dirty, retry later
+      }
+
+      // `changed` is only ever true for values the cloud brought us — our own
+      // edits were already in localStorage before we adopted. allowReload is
+      // false on the debounced save path, so a sync triggered by typing never
+      // yanks the page out from under you; only load / focus / realtime can.
+      if (changed && allowReload) {
+        const guard = 'patron_snapadopt_' + _hiTs;
+        try {
+          if (!sessionStorage.getItem(guard)) { sessionStorage.setItem(guard, '1'); location.reload(); }
+        } catch (_) { location.reload(); }
+      }
+      return true;
+    } finally { _syncing = false; }
+  }
+
+  function _schedulePush() {
+    if (!ready) return;
+    if (_pushTimer) clearTimeout(_pushTimer);
+    _pushTimer = setTimeout(function () { _pushTimer = null; _sync(false); }, 1200);
   }
 
   function _startSync() {
     if (!ready) return;
     (async function () {
-      await _reconcile(true);
-      // one-time purge: the legacy peak_schedule_v1 key used to ride in the cloud
-      // blob and kept syncing a stale 6am schedule back onto every device. _gather()
-      // now skips it, so a single forced push replaces the cloud snapshot with a
-      // clean one. Runs once per device; the flag itself is excluded from sync.
-      try {
-        if (localStorage.getItem('po_sched_purged') !== 'v1') {
-          localStorage.removeItem('peak_schedule_v1');
-          localStorage.removeItem('patron_db_peaksched');
-          await _pushNow();
-          localStorage.setItem('po_sched_purged', 'v1');
-        }
-      } catch (_) {}
-      setInterval(_pushIfChanged, 2500);
+      await _sync(true);
+      // Cheap local check first — only talk to the network when this device
+      // actually has something to say.
+      setInterval(function () { if (_hasLocalEdits()) _sync(false); }, 2500);
       window.addEventListener('storage', _schedulePush);
-      function refresh() { if (!document.hidden) _reconcile(true); }
+      function refresh() { if (!document.hidden) _sync(true); }
       document.addEventListener('visibilitychange', refresh);
       window.addEventListener('focus', refresh);
       try {
         sb.channel('snap').on('postgres_changes',
           { event: '*', schema: 'public', table: 'app_state', filter: 'key=eq.' + SNAP_KEY },
-          function () { _reconcile(true); }).subscribe();
+          function () { _sync(true); }).subscribe();
       } catch (_) {}
     })();
   }
@@ -229,14 +330,32 @@ window.PatronDB = (function () {
     } catch (_) {}
   })();
 
-  /* ---- explicit helpers (kept for the ☁ panel / any caller) ---- */
-  async function pushAll() { const ts = await _pushNow(); return { ok: !!ts, n: Object.keys(_gather()).length }; }
+  /* ---- explicit helpers (the ☁ panel's manual override) ---- */
+  // Make the cloud match THIS device exactly, including deleting keys the cloud
+  // has and we don't.
+  async function pushAll() {
+    if (!ready) return { ok: false, n: 0 };
+    const cloud = await _fetchCloud();
+    const blob = _gather(), t = _now(), keys = {};
+    if (cloud) { for (const k in cloud.keys) if (!(k in blob)) keys[k] = { s: null, t: t }; }
+    for (const k in blob) keys[k] = { s: blob[k], t: t };
+    _prune(keys);
+    const ok = await _writeCloud(keys);
+    if (ok) _saveMap(_mapFrom(keys));
+    return { ok: ok, n: Object.keys(blob).length };
+  }
+  // Make THIS device match the cloud exactly.
   async function pullAll() {
-    const snap = await _fetchSnapshot();
-    if (!snap) return { ok: false, n: 0 };
-    _adopt(snap.blob); _setSynced(snap.ts, _hash(_gather()));
-    try { sessionStorage.setItem('patron_snapadopt_' + snap.ts, '1'); } catch (_) {}
-    return { ok: true, n: Object.keys(snap.blob).length };
+    const cloud = await _fetchCloud();
+    if (!cloud || !Object.keys(cloud.keys).length) return { ok: false, n: 0 };
+    const blob = _gather(), keys = {};
+    for (const k in cloud.keys) keys[k] = cloud.keys[k];
+    for (const k in blob) if (!(k in keys)) keys[k] = { s: null, t: cloud.ts || _now() };
+    _adopt(keys);
+    _saveMap(_mapFrom(keys));
+    _seeTs(cloud.ts || 0);
+    try { sessionStorage.setItem('patron_snapadopt_' + _hiTs, '1'); } catch (_) {}
+    return { ok: true, n: Object.keys(cloud.keys).length };
   }
 
   return { isCloud, cfgUrl, cfgKey, get, set, subscribe, uploadImage, deleteImage, pushAll, pullAll };

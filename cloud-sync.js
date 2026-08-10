@@ -66,7 +66,7 @@
       '<p>Sync your data + photos across devices with your own free <a href="https://supabase.com" target="_blank" rel="noopener">Supabase</a> project. Run <code>supabase-schema.sql</code> once, then paste your keys below. Leave blank to keep everything on this device.</p>' +
       '<p id="csStatus">' + (connected() ? '✓ Connected — syncing automatically across your devices.' : 'Local-only — data stays on this device.') + '</p>' +
       // First-merge controls: only useful once a connection exists. Normal
-      // operation is automatic (newest device wins) — these are the manual
+      // operation is automatic (per key, newest edit wins) — these are the manual
       // override for the initial "which device has my real data?" step.
       (connected()
         ? '<div class="csMerge">' +
