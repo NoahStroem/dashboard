@@ -383,19 +383,62 @@ function themeSegHtml(){
  * reads it to drive its recovery/sleep recommendations.
  * ============================================================ */
 const HEALTH_KEY = 'patron_health_v1';
+const HEALTH_LOG_KEY = 'patron_health_log_v1';   // { '2026-08-10': {…} } — every day you've logged
 const LEGACY_WHOOP_KEY = 'patron_whoop_data_v1';
+
+/* The tile holds exactly ONE day's numbers. A record stamped with an earlier
+ * day gets filed into the log and cleared, so every morning starts on a blank
+ * form — nothing you see on the dashboard is ever yesterday's. */
+function healthDateKey(d){ return d ? (d.dateKey || (d.ts ? localDateKey(new Date(d.ts)) : null)) : null; }
+function loadHealthLog(){ try { const r = localStorage.getItem(HEALTH_LOG_KEY); const o = r ? JSON.parse(r) : null; return (o && typeof o === 'object') ? o : {}; } catch(e){ return {}; } }
+function logHealth(d){
+  const k = healthDateKey(d);
+  if (!k) return;
+  try {
+    const log = loadHealthLog();
+    log[k] = d;
+    // Keep the last ~2 years of mornings; drop the rest so the key stays small.
+    const keys = Object.keys(log).sort();
+    while (keys.length > 730) delete log[keys.shift()];
+    localStorage.setItem(HEALTH_LOG_KEY, JSON.stringify(log));
+  } catch(e){}
+}
+// Today's record passes through; an older one is archived and wiped.
+function freshOrArchive(d, storageKey){
+  const k = healthDateKey(d);
+  if (k && k !== localDateKey()) {
+    logHealth(d);
+    try { localStorage.removeItem(storageKey); } catch(e){}
+    return null;
+  }
+  return d;
+}
 function loadHealth(){
   try {
     let r = localStorage.getItem(HEALTH_KEY);
-    if (r) { const d = JSON.parse(r); if (d && d.connected) return d; }
+    if (r) { const d = JSON.parse(r); if (d && d.connected) return freshOrArchive(d, HEALTH_KEY); }
     r = localStorage.getItem(LEGACY_WHOOP_KEY);
-    if (r) { const d = JSON.parse(r); if (d && d.connected) return Object.assign({ source: 'whoop' }, d); }
+    if (r) { const d = JSON.parse(r); if (d && d.connected) return freshOrArchive(Object.assign({ source: 'whoop' }, d), LEGACY_WHOOP_KEY); }
   } catch(e){}
   return null;
 }
-function saveHealth(d){ try { localStorage.setItem(HEALTH_KEY, JSON.stringify(d)); } catch(e){} }
+// Saving stamps the day and keeps a copy in the log, so the numbers survive the
+// nightly reset (and ride the cloud sync like every other key).
+function saveHealth(d){
+  try {
+    if (d && !d.dateKey) d.dateKey = localDateKey(d.ts ? new Date(d.ts) : new Date());
+    localStorage.setItem(HEALTH_KEY, JSON.stringify(d));
+    logHealth(d);
+  } catch(e){}
+}
 function clearHealth(){ try { localStorage.removeItem(HEALTH_KEY); } catch(e){} }
 let health = loadHealth();
+// Page left open overnight: roll the tile over as soon as the date flips.
+setInterval(function(){
+  if (!health) return;
+  const k = healthDateKey(health);
+  if (k && k !== localDateKey()) { health = loadHealth(); render(); }
+}, 60000);
 
 /* ---- Live WHOOP sync via the /api serverless OAuth flow (deployed host only) ---- */
 const ON_SERVER = location.protocol === 'http:' || location.protocol === 'https:';
@@ -523,8 +566,8 @@ function vitalsTileHtml(){
   if (!h) {
     return '<section class="vitals">'
       + '<div class="vitalsHead"><span class="vitalsEyebrow">Today’s vitals</span></div>'
-      + '<div class="vitalsEmpty"><div class="vitalsEmptyTitle">No vitals yet</div>'
-      + '<p class="vitalsEmptyBody">Type in this morning’s HRV, resting heart rate and hours slept. Your numbers power the rest of the suite — the supplement recommender reads recovery &amp; sleep automatically.</p>'
+      + '<div class="vitalsEmpty"><div class="vitalsEmptyTitle">No vitals for today</div>'
+      + '<p class="vitalsEmptyBody">Type in this morning’s HRV, resting heart rate and time slept. The tile resets every day, so this is always today’s reading — yesterday’s is kept in your history. Your numbers power the rest of the suite: the supplement recommender reads recovery &amp; sleep automatically.</p>'
       + '<div class="vitalsFoot"><button type="button" class="btn btn-primary" data-action="open-vitals">Add vitals</button></div></div></section>';
   }
   const rec = estRecovery(h);
@@ -777,14 +820,22 @@ function render(){
 }
 
 /* ---- Manual entry: the three numbers you read off your watch each morning ---- */
+// Split a decimal hours value into whole hours + minutes for the two sleep boxes.
+function splitHM(v){
+  if (v == null || v === '' || !isFinite(Number(v))) return { h: '', m: '' };
+  const tm = Math.round(Number(v) * 60);
+  return { h: Math.floor(tm / 60), m: tm % 60 };
+}
 function manualFormHtml(h){
   const g = (k) => (h && h[k] != null ? h[k] : '');
+  const s = splitHM(h && h.sleepHours);
   return '<div class="fieldGrid">'
     + '<div class="field"><label class="fieldLabel" for="f-hrv">HRV (ms)</label><input id="f-hrv" class="fieldInput" type="number" min="0" max="300" inputmode="numeric" placeholder="42" value="' + esc(g('hrv')) + '" /></div>'
     + '<div class="field"><label class="fieldLabel" for="f-rhr">Resting HR (bpm)</label><input id="f-rhr" class="fieldInput" type="number" min="20" max="150" inputmode="numeric" placeholder="56" value="' + esc(g('rhr')) + '" /></div>'
-    + '<div class="field fieldFull"><label class="fieldLabel" for="f-sleep">Hours slept</label><input id="f-sleep" class="fieldInput" type="number" min="0" max="24" step="0.1" inputmode="decimal" placeholder="7.5" value="' + esc(g('sleepHours')) + '" /></div>'
+    + '<div class="field"><label class="fieldLabel" for="f-sleep-h">Slept — hours</label><input id="f-sleep-h" class="fieldInput" type="number" min="0" max="24" step="1" inputmode="numeric" placeholder="7" value="' + esc(s.h) + '" /></div>'
+    + '<div class="field"><label class="fieldLabel" for="f-sleep-m">Slept — minutes</label><input id="f-sleep-m" class="fieldInput" type="number" min="0" max="59" step="1" inputmode="numeric" placeholder="30" value="' + esc(s.m) + '" /></div>'
     + '</div>'
-    + '<p class="howtoFoot" style="margin-top:var(--space-3)">Read them off your watch and type them in. The readiness ring is estimated from these three — HRV weighted heaviest, then resting HR, then sleep.</p>';
+    + '<p class="howtoFoot" style="margin-top:var(--space-3)">Read them off your watch and type them in. The readiness ring is estimated from these three — HRV weighted heaviest, then resting HR, then sleep. The tile clears itself each morning, so these are always today’s numbers (every day you save is kept in your history).</p>';
 }
 
 /* ============================================================
@@ -871,11 +922,14 @@ function saveVitals(){
   if (ui.draftSource === 'manual') {
     const hrv = num('f-hrv');
     const rhr = num('f-rhr');
-    const sleepHours = num('f-sleep');
-    if (hrv == null && rhr == null && sleepHours == null) { alert('Enter at least one of HRV, resting HR or hours slept.'); return; }
+    // Two boxes → one decimal-hours value. Either box on its own is fine.
+    const sh = num('f-sleep-h'), sm = num('f-sleep-m');
+    const sleepHours = (sh == null && sm == null) ? null
+      : Math.round((Math.max(0, sh || 0) + Math.max(0, sm || 0) / 60) * 100) / 100;
+    if (hrv == null && rhr == null && sleepHours == null) { alert('Enter at least one of HRV, resting HR or time slept.'); return; }
     const target = (health && health.sleepTargetHours) || 8;
     const sleepPerf = sleepHours != null ? Math.round(Math.min(100, (sleepHours / target) * 100)) : null;
-    health = { source: 'manual', connected: true, ts: Date.now(), recovery: null,
+    health = { source: 'manual', connected: true, ts: Date.now(), dateKey: localDateKey(), recovery: null,
       hrv, rhr, sleepHours, sleepPerf, sleepTargetHours: target, strain: null };
     saveHealth(health);
     ui.modalOpen = false;
