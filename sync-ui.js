@@ -110,7 +110,9 @@
   paint();
 
   /* ---------- panel ---------- */
-  var pendingEmail = '';
+  var pendingEmail = '';   // an OTP email has been sent to this address
+  var useLink = false;     // the user asked for the email-link path instead
+  var lastEmail = '';      // keep what was typed across re-renders
 
   function openPanel() {
     if (document.getElementById('syOv')) return;
@@ -143,9 +145,16 @@
            (s.rescue ? 'Automatic sync is off for this page load, so nothing has been pulled down over this device. Sign in, then use Push this device up under Advanced. '
                      : '') +
            'Sign in once on each device. Your login is what keeps your data yours — without it the database is readable by anyone with the public key.</p>';
-      if (!pendingEmail) {
-        h += '<label>Email</label><input id="syEmail" type="email" autocomplete="email" placeholder="you@example.com">' +
-             '<div class="syBtns"><button class="syGhost" id="syClose" type="button">Close</button>' +
+      if (!useLink) {
+        h += '<label>Email</label><input id="syEmail" type="email" autocomplete="email" placeholder="you@example.com" value="' + esc(lastEmail) + '">' +
+             '<label>Password</label><input id="syPass" type="password" autocomplete="current-password" placeholder="••••••••">' +
+             '<div class="syBtns"><button class="syGhost" id="syCreate" type="button">Create account</button>' +
+             '<button class="syPrimary" id="syLogin" type="button">Sign in</button></div>' +
+             '<p id="syNote">First device? Use <strong>Create account</strong>, then sign in with the same email and password everywhere else. ' +
+             '<a href="#" id="syUseLink">Email me a link instead</a></p>';
+      } else if (!pendingEmail) {
+        h += '<label>Email</label><input id="syEmail" type="email" autocomplete="email" placeholder="you@example.com" value="' + esc(lastEmail) + '">' +
+             '<div class="syBtns"><button class="syGhost" id="syUsePass" type="button">Back</button>' +
              '<button class="syPrimary" id="sySend" type="button">Send sign-in email</button></div>';
       } else {
         h += '<p id="syNote" style="margin:0 0 12px">Sent to ' + esc(pendingEmail) + '. Open the link in that email, ' +
@@ -210,6 +219,44 @@
     function done(el) { if (el && el.dataset.prev) { el.disabled = false; el.textContent = el.dataset.prev; } }
 
     on('syClose', close);
+
+    function creds() {
+      var e = (card.querySelector('#syEmail') || {}).value || '';
+      var p = (card.querySelector('#syPass') || {}).value || '';
+      lastEmail = e.trim();
+      return { email: lastEmail, pass: p };
+    }
+    on('syLogin', function () {
+      var c = creds();
+      if (!c.email || !c.pass) return alert('Enter your email and password.');
+      var b = card.querySelector('#syLogin'); busy(b, 'Signing in…');
+      PatronDB.signInPassword(c.email, c.pass).then(function (r) {
+        done(b);
+        if (r.ok) { renderPanel(); return; }
+        alert(r.badCreds
+          ? 'That email and password don’t match an account.\n\nIf this is your first device, use “Create account” instead.'
+          : r.error);
+      });
+    });
+    on('syCreate', function () {
+      var c = creds();
+      if (!c.email || !c.pass) return alert('Enter the email and password you want to use.');
+      if (c.pass.length < 8) return alert('Use at least 8 characters — this password is the only thing standing between your data and anyone with the public key.');
+      var b = card.querySelector('#syCreate'); busy(b, 'Creating…');
+      PatronDB.signUpPassword(c.email, c.pass).then(function (r) {
+        done(b);
+        if (!r.ok) return alert(r.error);
+        if (r.needsConfirm) {
+          alert('Account created, but the project still requires email confirmation.\n\nSupabase → Authentication → Providers → Email → turn OFF “Confirm email”, then sign in.');
+          return;
+        }
+        renderPanel();
+      });
+    });
+    var useLinkEl = card.querySelector('#syUseLink');
+    if (useLinkEl) useLinkEl.onclick = function (e) { e.preventDefault(); useLink = true; renderPanel(); };
+    on('syUsePass', function () { useLink = false; pendingEmail = ''; renderPanel(); });
+
     on('syNow', function () {
       var b = card.querySelector('#syNow'); busy(b, 'Syncing…');
       PatronDB.syncNow().then(function () { done(b); renderPanel(); });

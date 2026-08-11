@@ -20,7 +20,7 @@ each fix below points back to it.
 | Transport | Supabase JS client → PostgREST + RPC | You're on **11 of 12** Vercel Hobby serverless functions. Four REST endpoints would blow the cap. Talking to Postgres directly costs zero functions and gets Realtime and row-level security for free. |
 | Database | Supabase Postgres | Already provisioned and paid for (free tier). |
 | Realtime | Supabase Realtime (Postgres logical replication) | Sub-second propagation with no polling loop and no extra service. |
-| Auth | Supabase Auth, email one-time code | Zero server code; Supabase sends the mail. It's what scopes rows to you — see [Security](#security). |
+| Auth | Supabase Auth, email + password | It's what scopes rows to you — see [Security](#security). Password rather than magic link because Supabase's built-in mail service won't let you edit the email template without custom SMTP, and the stock template sends a link with no code — unusable on a phone, where a link tapped in a mail app opens a different browser than the one holding the unfinished sign-in. Password needs no email delivery at all. |
 
 Nothing here needs a server you have to run, and nothing adds a build step.
 
@@ -238,7 +238,9 @@ it's why sync now requires a login.
 
 - **RLS** on `sync_items`: `user_id = auth.uid()`, for read and write. `auth.uid()`
   comes from a signed JWT, not from anything the browser can assert.
-- **Auth**: Supabase email one-time code. Sign in once per device.
+- **Auth**: Supabase email + password. Sign in once per device. Your password is
+  the only thing between your data and anyone holding the public anon key, so
+  make it a real one — the panel refuses anything under 8 characters.
 - **`sync_push` is `security invoker`** — RLS still applies inside it. It cannot
   be used to reach another account's rows.
 - **The anon key stays public and that's fine** — it grants nothing without a
@@ -256,31 +258,39 @@ it's why sync now requires a login.
 ## Rolling it out
 
 1. **Run the schema.** Supabase → SQL Editor → paste [sync-schema.sql](sync-schema.sql) → Run.
-2. **Turn on email auth**, and configure these three things — the defaults do not
-   work for a deployed site:
+2. **Set up auth.** Supabase → Authentication → Providers → Email:
 
-   - **Authentication → Providers → Email**: on.
-   - **Authentication → URL Configuration**: set **Site URL** to your real site
-     (`https://your-site.vercel.app`). Out of the box it is `http://localhost:3000`,
-     so every sign-in link in every email points at a machine that isn't running.
-     Add the same URL under **Redirect URLs** too.
-   - **Authentication → Emails → Magic Link**: the default template only contains
-     `{{ .ConfirmationURL }}` — a link, no code. Add the code:
+   - **Enable email provider**: on.
+   - **Confirm email**: **off**. Otherwise creating the account sends a
+     confirmation email, and you're back to the link problem below.
 
-     ```html
-     <p>Your sign-in code: <strong>{{ .Token }}</strong></p>
-     <p>Or <a href="{{ .ConfirmationURL }}">open the dashboard</a>.</p>
-     ```
+   That's all sync needs — you sign in with an email and a password, and no mail
+   is ever sent.
 
-     The code matters most on a phone: a link opened from a mail app often lands
-     in a different browser than the one that started the sign-in, and then it
-     can't complete. The code works in whatever browser you're already in.
+   *Optional hardening:* once your account exists, turn **Allow new users to
+   sign up** off. New signups only ever get their own empty rows (RLS sees to
+   that), but there's no reason to leave the door open.
+
+   *If you'd rather use magic links* — the panel still offers them under "Email
+   me a link instead" — you need two more things, and Supabase's built-in mail
+   service is not enough:
+
+   - **Authentication → URL Configuration → Site URL**: your real site
+     (`https://your-site.vercel.app`). It ships as `http://localhost:3000`, so
+     every link in every auth email points at a machine that isn't running. Add
+     the same URL under **Redirect URLs**.
+   - **Custom SMTP**, then **Authentication → Emails → Magic Link**: add
+     `{{ .Token }}` to the template. Templates are read-only until SMTP is
+     configured, and the stock one contains only `{{ .ConfirmationURL }}` — a
+     link, no code. The code is what works on a phone; a link tapped in a mail
+     app opens that app's browser, not the one holding your unfinished sign-in.
 3. **Deploy.** `git push`; Vercel redeploys in ~1 min.
 4. **Recover the vitals first, if the phone still has them.** Before signing in
    anywhere else, open `index.html?rescue=1` on the phone — automatic sync stays
    off, so nothing is pulled down over it — then the status pill → Advanced →
    **Push this device up**.
-5. **Sign in on each device.** Status pill → email → 6-digit code.
+5. **Sign in on each device.** Status pill → email + password. On the first
+   device use **Create account**; everywhere else, **Sign in** with the same two.
 6. **Check the migration.** Your old `app_state` blob is imported once, unioned
    with whatever the device already had. Nothing is overwritten.
 7. **Drop `app_state`** in Supabase once you're happy. Keep it a week first.
@@ -320,8 +330,9 @@ bookkeeping, `patron_theme` (per-device), and `peak_schedule_v1` (regenerated).
 | Pill says **Sync failed** | Open it — the server's message is shown. `sync_items does not exist` means step 1 wasn't run. |
 | Pill says **Offline** with a count | Nothing is lost. It uploads on reconnect. |
 | Pill says **Sign in to sync** | This device has no session. |
-| Sign-in email lands on `localhost:3000` | **Site URL** is still the default. Step 2. |
-| Sign-in email has a link but no code | The Magic Link template has no `{{ .Token }}`. Step 2. |
-| The link opens but sign-in doesn't complete | It opened in a different browser than the one you started in. Use the code instead. |
+| "That email and password don't match" on the first device | Use **Create account**, not Sign in. |
+| "Project still requires email confirmation" | **Confirm email** is still on. Step 2. |
+| Sign-in email lands on `localhost:3000` | **Site URL** is still the default — only affects the magic-link path. Step 2. |
+| Can't edit the Magic Link template | Supabase locks templates until custom SMTP is configured. Use the password path instead. |
 | One device has data the server lost | `?rescue=1` on that device, then Advanced → Push this device up. |
 | You want to start one device over | Advanced → Pull server down. |

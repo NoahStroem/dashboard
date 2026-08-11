@@ -164,7 +164,30 @@ window.PatronDB = (function () {
   function cfgUrl() { return url || ''; }
   function cfgKey() { return key || ''; }
 
-  /* ---- auth: one login per device, and that login is what scopes your rows ---- */
+  /* ---- auth: one login per device, and that login is what scopes your rows ----
+   *
+   * Password is the primary path. Supabase's built-in mail service won't let you
+   * edit the email template without custom SMTP, and the stock template sends a
+   * link with no code in it — which is unusable on a phone, where tapping a link
+   * in a mail app opens a different browser than the one holding the unfinished
+   * sign-in. Password needs no email delivery at all.
+   *
+   * The one-time-code path below still works if you ever set up SMTP. */
+  async function signInPassword(email, password) {
+    if (!sb) return { ok: false, error: 'No Supabase project configured.' };
+    var r = await sb.auth.signInWithPassword({ email: String(email).trim(), password: password });
+    if (r.error) return { ok: false, error: r.error.message, badCreds: /invalid login credentials/i.test(r.error.message) };
+    return { ok: true };
+  }
+  async function signUpPassword(email, password) {
+    if (!sb) return { ok: false, error: 'No Supabase project configured.' };
+    var r = await sb.auth.signUp({ email: String(email).trim(), password: password });
+    if (r.error) return { ok: false, error: r.error.message };
+    // No session back means the project still requires email confirmation.
+    if (!r.data || !r.data.session) return { ok: true, needsConfirm: true };
+    return { ok: true };
+  }
+
   // One call sends the email; what arrives depends on the Supabase template.
   // A template containing {{ .Token }} gives a 6-digit code, which is the
   // reliable path on a phone — a magic link opened from a mail app can land in
@@ -717,6 +740,7 @@ window.PatronDB = (function () {
     // status + control
     status: status, syncNow: syncNow, onChange: onChange, isRescue: function () { return RESCUE; },
     // auth
+    signInPassword: signInPassword, signUpPassword: signUpPassword,
     signIn: signIn, verifyCode: verifyCode, signOut: signOut,
     // explicit writes
     write: write, remove: remove, derive: derive,
