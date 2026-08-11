@@ -176,14 +176,28 @@ window.PatronDB = (function () {
   async function signInPassword(email, password) {
     if (!sb) return { ok: false, error: 'No Supabase project configured.' };
     var r = await sb.auth.signInWithPassword({ email: String(email).trim(), password: password });
-    if (r.error) return { ok: false, error: r.error.message, badCreds: /invalid login credentials/i.test(r.error.message) };
+    if (r.error) {
+      var m = r.error.message || '', code = r.error.code || '';
+      return {
+        ok: false,
+        error: m + (code ? ' (' + code + ')' : ''),
+        badCreds: /invalid login credentials/i.test(m),
+        // Supabase often reports an unconfirmed account as bad credentials
+        // rather than saying so, to avoid confirming which emails exist.
+        unconfirmed: code === 'email_not_confirmed' || /not confirmed/i.test(m)
+      };
+    }
     return { ok: true };
   }
   async function signUpPassword(email, password) {
     if (!sb) return { ok: false, error: 'No Supabase project configured.' };
     var r = await sb.auth.signUp({ email: String(email).trim(), password: password });
-    if (r.error) return { ok: false, error: r.error.message };
-    // No session back means the project still requires email confirmation.
+    if (r.error) {
+      var msg = r.error.message || '';
+      return { ok: false, error: msg, exists: /already registered|already exists/i.test(msg) };
+    }
+    // No session back means the project still requires email confirmation, so
+    // the account exists but cannot sign in yet.
     if (!r.data || !r.data.session) return { ok: true, needsConfirm: true };
     return { ok: true };
   }

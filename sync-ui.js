@@ -109,6 +109,20 @@
   setInterval(function () { if (document.getElementById('syOv')) renderPanel(); }, 20000);
   paint();
 
+  /* Supabase reports an unverified account the same way it reports a wrong
+   * password, so this covers both — and names the trap: switching "Confirm
+   * email" off does not verify accounts that already exist. */
+  var UNVERIFIED_HELP =
+    'That email and password don’t match a usable account.\n\n' +
+    'Either the password is wrong — retype it — or the account was created ' +
+    'while “Confirm email” was still switched on, which leaves it unverified ' +
+    'and unable to sign in.\n\n' +
+    'Turning that setting off does NOT verify accounts that already exist. To ' +
+    'clear it:\n\n' +
+    '1. Supabase → Authentication → Providers → Email → Confirm email: OFF\n' +
+    '2. Supabase → Authentication → Users → delete the user you just made\n' +
+    '3. Come back here and use “Create account” again';
+
   /* ---------- panel ---------- */
   var pendingEmail = '';   // an OTP email has been sent to this address
   var useLink = false;     // the user asked for the email-link path instead
@@ -233,9 +247,7 @@
       PatronDB.signInPassword(c.email, c.pass).then(function (r) {
         done(b);
         if (r.ok) { renderPanel(); return; }
-        alert(r.badCreds
-          ? 'That email and password don’t match an account.\n\nIf this is your first device, use “Create account” instead.'
-          : r.error);
+        alert(r.badCreds || r.unconfirmed ? UNVERIFIED_HELP : r.error);
       });
     });
     on('syCreate', function () {
@@ -245,9 +257,18 @@
       var b = card.querySelector('#syCreate'); busy(b, 'Creating…');
       PatronDB.signUpPassword(c.email, c.pass).then(function (r) {
         done(b);
-        if (!r.ok) return alert(r.error);
+        if (!r.ok) {
+          alert(r.exists
+            ? 'There is already an account with that email.\n\nUse “Sign in” instead. If the password isn’t working, that account is probably unverified — see below.\n\n' + UNVERIFIED_HELP
+            : r.error);
+          return;
+        }
         if (r.needsConfirm) {
-          alert('Account created, but the project still requires email confirmation.\n\nSupabase → Authentication → Providers → Email → turn OFF “Confirm email”, then sign in.');
+          alert('Account created — but the project still requires email confirmation, so it cannot sign in yet.\n\n' +
+                '1. Supabase → Authentication → Providers → Email → Confirm email: OFF\n' +
+                '2. Supabase → Authentication → Users → delete the user just created\n' +
+                '3. Use “Create account” again — it will sign you straight in\n\n' +
+                'Step 2 matters: switching the setting off does not verify accounts that already exist.');
           return;
         }
         renderPanel();
