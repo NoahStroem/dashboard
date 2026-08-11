@@ -135,8 +135,14 @@
 
     if (s.error) h += '<div id="syErr">' + esc(s.error) + '</div>';
 
-    if (s.state === 'signed-out') {
-      h += '<p id="syNote" style="margin:0 0 14px">Sign in once on each device. Your login is what keeps your data yours — without it the database is readable by anyone with the public key.</p>';
+    // Keyed on "no session" rather than on the signed-out state: a device opened
+    // in rescue mode reports state 'rescue' but still has to be able to sign in,
+    // or Push this device up — the whole point of rescue mode — can't run.
+    if (s.state !== 'local' && !s.email) {
+      h += '<p id="syNote" style="margin:0 0 14px">' +
+           (s.rescue ? 'Automatic sync is off for this page load, so nothing has been pulled down over this device. Sign in, then use Push this device up under Advanced. '
+                     : '') +
+           'Sign in once on each device. Your login is what keeps your data yours — without it the database is readable by anyone with the public key.</p>';
       if (!pendingEmail) {
         h += '<label>Email</label><input id="syEmail" type="email" autocomplete="email" placeholder="you@example.com">' +
              '<div class="syBtns"><button class="syGhost" id="syClose" type="button">Close</button>' +
@@ -146,7 +152,7 @@
              '<div class="syBtns"><button class="syGhost" id="syBack" type="button">Back</button>' +
              '<button class="syPrimary" id="syVerify" type="button">Verify &amp; sync</button></div>';
       }
-    } else if (s.state === 'local') {
+    } else if (s.state === 'local') {   // no project configured at all
       h += '<p id="syNote" style="margin:0 0 14px">No cloud project is configured, so everything stays on this device. Add your Supabase keys below to sync across devices.</p>' +
            '<div class="syBtns"><button class="syGhost" id="syClose" type="button">Close</button></div>';
     } else {
@@ -185,6 +191,15 @@
     } catch (_) { return ''; }
   }
 
+  // "Push failed." on its own sends you hunting. Say which of the two things it
+  // actually is: not signed in, or the request didn't get through.
+  function whyFailed() {
+    var s = st();
+    if (!s.email) return 'You need to sign in on this device first — the database only accepts writes from a signed-in account.';
+    if (s.error) return s.error;
+    return 'That did not get through. Check your connection and try again.';
+  }
+
   function wire(card) {
     function on(id, fn) { var el = card.querySelector('#' + id); if (el) el.onclick = fn; return el; }
     function close() { var ov = document.getElementById('syOv'); if (ov) ov.remove(); }
@@ -221,7 +236,11 @@
     on('syPush', function () {
       if (!confirm('Replace the server’s copy with this device’s data?\n\nAnything that exists only on another device will be removed.')) return;
       var b = card.querySelector('#syPush'); busy(b, 'Pushing…');
-      PatronDB.pushAll().then(function (r) { done(b); alert(r.ok ? 'Pushed ' + r.n + ' items up. Reload your other devices.' : 'Push failed.'); renderPanel(); });
+      PatronDB.pushAll().then(function (r) {
+        done(b);
+        alert(r.ok ? 'Pushed ' + r.n + ' items up. Reload your other devices.' : whyFailed());
+        renderPanel();
+      });
     });
     on('syPull', function () {
       if (!confirm('Replace this device’s data with the server’s copy?\n\nAnything that exists only here will be removed.')) return;
@@ -229,7 +248,7 @@
       PatronDB.pullAll().then(function (r) {
         done(b);
         if (r.ok) { alert('Pulled ' + r.n + ' items down. Reloading…'); location.reload(); }
-        else alert('Nothing on the server yet.');
+        else alert(st().email ? 'Nothing on the server yet.' : whyFailed());
       });
     });
     on('sySaveKeys', function () {
