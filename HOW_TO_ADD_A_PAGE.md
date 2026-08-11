@@ -50,30 +50,81 @@ back-to-dashboard link, `brand.js` (so it shows the current user's name), and
 
 ## Sync comes for free — don't drop the scripts
 
-`_template.html` ends with three lines that make the page sync:
+`_template.html` carries one line in `<head>`:
+
+```html
+<script src="sync-boot.js?v=1"></script>
+```
+
+and four at the end of the page:
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="db.js?v=15"></script>
-<script src="cloud-sync.js?v=1"></script>
+<script src="sync-merge.js?v=1"></script>
+<script src="sync.js?v=1"></script>
+<script src="sync-ui.js?v=1"></script>
 ```
 
-`db.js` syncs your `localStorage` to Supabase **key by key**, so **anything you
-save under a normal `localStorage` key syncs automatically** — you don't write
-any sync code. `cloud-sync.js` just adds the ☁ status button.
+**Anything you save under a normal `localStorage` key syncs automatically** —
+you write no sync code. Key by key, so two devices editing different pages both
+keep their work, and two devices editing the *same* key get merged rather than
+one of them losing. Deleting a key deletes it on your other devices too.
 
-Per-key means two devices editing different pages both keep their work; only the
-same key edited on both sides is a conflict, and there the newer edit wins.
-Deleting a key deletes it on your other devices too, instead of it coming back.
+`sync-boot.js` must stay first in `<head>`: it has to see storage before your
+page touches it. `sync-ui.js` adds the status pill. Full architecture:
+[SYNC.md](SYNC.md).
 
-If you delete those lines, the page still *works*, but edits made on it never
-reach your other devices. Keep them on every page that saves data.
+If you drop these lines the page still *works*, but nothing it saves reaches
+your other devices.
 
 Use one `localStorage` key per thing that can change independently. A page that
 crams everything into one giant key turns every edit into a whole-page conflict.
 
-Two deliberate exceptions, already handled in `db.js`: `patron_theme` (theme is
+Two deliberate exceptions, already handled in `sync.js`: `patron_theme` (theme is
 per-device) and `peak_schedule_v1` (regenerated from the file).
+
+### Don't rewrite storage while the page boots
+
+This one has already cost real data. A page that *changes* `localStorage` as it
+loads — rolling a tile over to a new day, clearing something stale, seeding
+defaults — does it long before the first server round-trip comes back. It looks
+like an edit you just made, and being newest it wins: open the dashboard on a
+laptop that has been closed for two days and its start-up rewrite overwrites what
+your phone saved.
+
+So: **decide at render time what's stale, don't delete it at load time.** Storage
+holds the last thing that was actually saved; the UI decides what to show. See
+`freshOrArchive()` in `index.html` — the vitals tile treats yesterday's record as
+empty but leaves it on disk.
+
+If a page genuinely must rewrite its own storage, say so:
+
+```js
+PatronDB.write(key, value)    // a real edit you made
+PatronDB.derive(key, value)   // the page tidying up after itself —
+                              // can never overwrite another device
+PatronDB.remove(key)          // a real deletion
+```
+
+`sync-boot.js` backstops this anyway (writes before the first pull can't win, and
+start-up *deletions* are discarded outright) — but that's a safety net, not
+permission.
+
+### Re-render instead of reloading
+
+Register a handler and the page updates in place when another device changes
+something. Without one the engine falls back to reloading the page.
+
+```js
+PatronDB.onChange(function(){ state = load(); render(); });
+```
+
+### Getting data back after a bad overwrite
+
+If one device still holds data the server has lost, open any page there with
+`?rescue=1` (e.g. `index.html?rescue=1`). Automatic sync is off for that load, so
+nothing is pulled down over it — then open the status pill → Advanced →
+**Push this device up**, and reload your other devices.
 
 ## Show a live stat on the card (optional)
 The card can show a number instead of its tagline. In `index.html`, add a

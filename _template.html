@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="sync-boot.js?v=1"></script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <link rel="manifest" href="manifest.webmanifest" />
@@ -142,12 +143,14 @@ body{ background:var(--bg); color:var(--fg); font-family:var(--font-ui),-apple-s
      e.g. 'mypage_standalone_v1'. Anything you put in localStorage rides
      the cross-device snapshot automatically — see the scripts below. */
 </script>
-<!-- Cross-device sync. db.js syncs this device's localStorage to Supabase key by
-     key (newest edit per key wins); cloud-sync.js adds the ☁ status button. Keep all three
-     lines on every page that saves data, or its edits won't reach your other devices. -->
+<!-- Cross-device sync. Anything this page saves under a normal localStorage key
+     syncs on its own, key by key, merged rather than overwritten when two devices
+     change the same thing. sync-ui.js adds the status pill. These four lines plus
+     sync-boot.js in <head> belong on every page that saves data — see SYNC.md. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="db.js?v=16"></script>
-<script src="cloud-sync.js?v=1"></script>
+<script src="sync-merge.js?v=1"></script>
+<script src="sync.js?v=1"></script>
+<script src="sync-ui.js?v=1"></script>
 <script src="brand.js?v=16"></script>
 </body>
 </html>

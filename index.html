@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="sync-boot.js?v=1"></script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <link rel="manifest" href="manifest.webmanifest" />
@@ -393,12 +394,29 @@ const HEALTH_KEY = 'patron_health_v1';
 const HEALTH_LOG_KEY = 'patron_health_log_v1';   // { '2026-08-10': {…} } — every day you've logged
 const LEGACY_WHOOP_KEY = 'patron_whoop_data_v1';
 
-/* The tile holds exactly ONE day's numbers. A record stamped with an earlier
- * day gets filed into the log and cleared, so every morning starts on a blank
- * form — nothing you see on the dashboard is ever yesterday's. */
+/* The tile shows exactly ONE day's numbers: a record stamped with an earlier day
+ * is filed into the log and treated as absent, so every morning starts on a
+ * blank form — nothing you see on the dashboard is ever yesterday's.
+ *
+ * It is filed but NOT deleted from storage. A delete that happens while the page
+ * boots is indistinguishable, to the cloud sync, from one you just made by hand —
+ * and as the newest edit it wins, erasing the record on every other device. This
+ * is exactly how opening the dashboard on a PC that had been closed for two days
+ * wiped two days of vitals typed on a phone. Rendering decides what's stale;
+ * storage only ever holds the last thing that was saved. */
 function healthDateKey(d){ return d ? (d.dateKey || (d.ts ? localDateKey(new Date(d.ts)) : null)) : null; }
 function loadHealthLog(){ try { const r = localStorage.getItem(HEALTH_LOG_KEY); const o = r ? JSON.parse(r) : null; return (o && typeof o === 'object') ? o : {}; } catch(e){ return {}; } }
-function logHealth(d){
+// `intent` tells the sync engine what kind of write this is. 'user' means you
+// saved something; 'derive' means the page reorganised its own storage and must
+// never win against another device. See sync-boot.js.
+function storeLog(log, intent){
+  const s = JSON.stringify(log);
+  try {
+    if (window.PatronDB && PatronDB[intent]) PatronDB[intent](HEALTH_LOG_KEY, s);
+    else localStorage.setItem(HEALTH_LOG_KEY, s);
+  } catch(e){}
+}
+function logHealth(d, intent){
   const k = healthDateKey(d);
   if (!k) return;
   try {
@@ -407,15 +425,18 @@ function logHealth(d){
     // Keep the last ~2 years of mornings; drop the rest so the key stays small.
     const keys = Object.keys(log).sort();
     while (keys.length > 730) delete log[keys.shift()];
-    localStorage.setItem(HEALTH_LOG_KEY, JSON.stringify(log));
+    storeLog(log, intent || 'write');
   } catch(e){}
 }
-// Today's record passes through; an older one is archived and wiped.
-function freshOrArchive(d, storageKey){
+// Today's record passes through; an older one is filed away and reads as empty.
+function freshOrArchive(d){
   const k = healthDateKey(d);
   if (k && k !== localDateKey()) {
-    logHealth(d);
-    try { localStorage.removeItem(storageKey); } catch(e){}
+    // Only write when the log is genuinely missing that day — every save already
+    // logs itself, so on most loads this touches nothing at all. Marked as a
+    // derived write: filing an old record away is the page tidying up after
+    // itself, and must never overwrite what another device has.
+    if (!loadHealthLog()[k]) logHealth(d, 'derive');
     return null;
   }
   return d;
@@ -423,9 +444,9 @@ function freshOrArchive(d, storageKey){
 function loadHealth(){
   try {
     let r = localStorage.getItem(HEALTH_KEY);
-    if (r) { const d = JSON.parse(r); if (d && d.connected) return freshOrArchive(d, HEALTH_KEY); }
+    if (r) { const d = JSON.parse(r); if (d && d.connected) return freshOrArchive(d); }
     r = localStorage.getItem(LEGACY_WHOOP_KEY);
-    if (r) { const d = JSON.parse(r); if (d && d.connected) return freshOrArchive(Object.assign({ source: 'whoop' }, d), LEGACY_WHOOP_KEY); }
+    if (r) { const d = JSON.parse(r); if (d && d.connected) return freshOrArchive(Object.assign({ source: 'whoop' }, d)); }
   } catch(e){}
   return null;
 }
@@ -434,8 +455,10 @@ function loadHealth(){
 function saveHealth(d){
   try {
     if (d && !d.dateKey) d.dateKey = localDateKey(d.ts ? new Date(d.ts) : new Date());
-    localStorage.setItem(HEALTH_KEY, JSON.stringify(d));
-    logHealth(d);
+    const s = JSON.stringify(d);
+    if (window.PatronDB && PatronDB.write) PatronDB.write(HEALTH_KEY, s);
+    else localStorage.setItem(HEALTH_KEY, s);
+    logHealth(d, 'write');
   } catch(e){}
 }
 function clearHealth(){ try { localStorage.removeItem(HEALTH_KEY); } catch(e){} }
@@ -1120,8 +1143,20 @@ applyTheme(currentTheme);
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="db.js?v=16"></script>
-<script src="cloud-sync.js?v=1"></script>
+<script src="sync-merge.js?v=1"></script>
+<script src="sync.js?v=1"></script>
+<script src="sync-ui.js?v=1"></script>
+<script>
+/* Data arriving from another device re-renders the dashboard in place. Without
+ * this the engine falls back to reloading the page, which works but is jarring
+ * and loses whatever you were part-way through. */
+(function(){
+  if (!window.PatronDB || !PatronDB.onChange) return;
+  PatronDB.onChange(function(){
+    try { health = loadHealth(); render(); } catch(e){}
+  });
+})();
+</script>
 <script src="brand.js?v=16"></script>
 <script>
 (function(){
