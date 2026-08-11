@@ -146,9 +146,12 @@
       if (!pendingEmail) {
         h += '<label>Email</label><input id="syEmail" type="email" autocomplete="email" placeholder="you@example.com">' +
              '<div class="syBtns"><button class="syGhost" id="syClose" type="button">Close</button>' +
-             '<button class="syPrimary" id="sySend" type="button">Email me a code</button></div>';
+             '<button class="syPrimary" id="sySend" type="button">Send sign-in email</button></div>';
       } else {
-        h += '<label>6-digit code sent to ' + esc(pendingEmail) + '</label><input id="syCode" inputmode="numeric" autocomplete="one-time-code" placeholder="123456">' +
+        h += '<p id="syNote" style="margin:0 0 12px">Sent to ' + esc(pendingEmail) + '. Open the link in that email, ' +
+             '<em>or</em> paste the 6-digit code if the mail has one. On a phone the code is more reliable — a link opened ' +
+             'from a mail app can land in a different browser than this one.</p>' +
+             '<label>6-digit code</label><input id="syCode" inputmode="numeric" autocomplete="one-time-code" placeholder="123456">' +
              '<div class="syBtns"><button class="syGhost" id="syBack" type="button">Back</button>' +
              '<button class="syPrimary" id="syVerify" type="button">Verify &amp; sync</button></div>';
       }

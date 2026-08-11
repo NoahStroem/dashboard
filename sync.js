@@ -165,9 +165,19 @@ window.PatronDB = (function () {
   function cfgKey() { return key || ''; }
 
   /* ---- auth: one login per device, and that login is what scopes your rows ---- */
+  // One call sends the email; what arrives depends on the Supabase template.
+  // A template containing {{ .Token }} gives a 6-digit code, which is the
+  // reliable path on a phone — a magic link opened from a mail app can land in
+  // a different browser than the one that started the sign-in, and then it
+  // can't complete. emailRedirectTo makes the link work too, by pointing back
+  // at the page you started from instead of the project's Site URL default.
   async function signIn(email) {
     if (!sb) return { ok: false, error: 'No Supabase project configured.' };
-    var r = await sb.auth.signInWithOtp({ email: email, options: { shouldCreateUser: true } });
+    var back = location.origin + location.pathname;
+    var r = await sb.auth.signInWithOtp({
+      email: email,
+      options: { shouldCreateUser: true, emailRedirectTo: back }
+    });
     if (r.error) return { ok: false, error: r.error.message };
     return { ok: true };
   }

@@ -256,7 +256,25 @@ it's why sync now requires a login.
 ## Rolling it out
 
 1. **Run the schema.** Supabase → SQL Editor → paste [sync-schema.sql](sync-schema.sql) → Run.
-2. **Turn on email auth.** Supabase → Authentication → Providers → Email.
+2. **Turn on email auth**, and configure these three things — the defaults do not
+   work for a deployed site:
+
+   - **Authentication → Providers → Email**: on.
+   - **Authentication → URL Configuration**: set **Site URL** to your real site
+     (`https://your-site.vercel.app`). Out of the box it is `http://localhost:3000`,
+     so every sign-in link in every email points at a machine that isn't running.
+     Add the same URL under **Redirect URLs** too.
+   - **Authentication → Emails → Magic Link**: the default template only contains
+     `{{ .ConfirmationURL }}` — a link, no code. Add the code:
+
+     ```html
+     <p>Your sign-in code: <strong>{{ .Token }}</strong></p>
+     <p>Or <a href="{{ .ConfirmationURL }}">open the dashboard</a>.</p>
+     ```
+
+     The code matters most on a phone: a link opened from a mail app often lands
+     in a different browser than the one that started the sign-in, and then it
+     can't complete. The code works in whatever browser you're already in.
 3. **Deploy.** `git push`; Vercel redeploys in ~1 min.
 4. **Recover the vitals first, if the phone still has them.** Before signing in
    anywhere else, open `index.html?rescue=1` on the phone — automatic sync stays
@@ -302,5 +320,8 @@ bookkeeping, `patron_theme` (per-device), and `peak_schedule_v1` (regenerated).
 | Pill says **Sync failed** | Open it — the server's message is shown. `sync_items does not exist` means step 1 wasn't run. |
 | Pill says **Offline** with a count | Nothing is lost. It uploads on reconnect. |
 | Pill says **Sign in to sync** | This device has no session. |
+| Sign-in email lands on `localhost:3000` | **Site URL** is still the default. Step 2. |
+| Sign-in email has a link but no code | The Magic Link template has no `{{ .Token }}`. Step 2. |
+| The link opens but sign-in doesn't complete | It opened in a different browser than the one you started in. Use the code instead. |
 | One device has data the server lost | `?rescue=1` on that device, then Advanced → Push this device up. |
 | You want to start one device over | Advanced → Pull server down. |
