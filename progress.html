@@ -24,7 +24,6 @@ img{max-width:100%;height:auto}
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-<script>try{document.documentElement.setAttribute("data-theme",localStorage.getItem("patron_theme")||"nocturne");}catch(e){document.documentElement.setAttribute("data-theme","nocturne");}</script>
 <style>
 /* ============================================================
  * Progress — standalone artifact.
@@ -51,8 +50,6 @@ img{max-width:100%;height:auto}
   --duration-fast:120ms;--duration:200ms;
   --font-inter:'Hanken Grotesk';--font-serif:'Space Grotesk';--font-mono:'JetBrains Mono';
 }
-[data-theme="aurora"]{color-scheme:dark;--bg:#080913;--bg-elevated:#12131F;--surface:rgba(150,160,255,.045);--surface-2:rgba(150,160,255,.08);--fg:#EEF0FF;--muted:rgba(220,225,255,.52);--muted-strong:rgba(220,225,255,.76);--border:rgba(150,160,255,.11);--border-strong:rgba(150,160,255,.22);--brand:#8B7BFF;--brand-2:#B9ABFF;--brand-ink:#0A0922;--brand-soft:rgba(139,123,255,.15);--brand-line:rgba(139,123,255,.32);--brand-glow:rgba(124,107,255,.6);--pos:#4FE3D0;--neg:#FF6FA5;--warn:#FFC65C;}
-[data-theme="daylight"]{color-scheme:light;--bg:#F3F2FA;--bg-elevated:#FFFFFF;--surface:#FFFFFF;--surface-2:#FAF9FF;--fg:#171622;--muted:rgba(23,22,34,.52);--muted-strong:rgba(23,22,34,.72);--border:rgba(23,22,60,.10);--border-strong:rgba(23,22,60,.18);--brand:#6A45FF;--brand-2:#8E6BFF;--brand-ink:#FFFFFF;--brand-soft:rgba(106,69,255,.08);--brand-line:rgba(106,69,255,.24);--brand-glow:rgba(106,69,255,.28);--pos:#0E9E64;--neg:#E11D63;--warn:#B4690E;}
 *{box-sizing:border-box}html,body{margin:0;padding:0}
 body{background:var(--bg);color:var(--fg);font-family:var(--font-inter),-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased}
 .grain-overlay{position:relative}
@@ -179,11 +176,6 @@ body{background:var(--bg);color:var(--fg);font-family:var(--font-inter),-apple-s
 .strengthDelta.up{color:var(--mint)}
 .strengthDelta.down{color:var(--amber)}
 
-.themeSeg{display:inline-flex;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-pill);padding:3px;gap:2px}
-.themeBtn{appearance:none;background:transparent;border:0;padding:5px 7px;border-radius:var(--radius-pill);cursor:pointer;display:inline-flex;align-items:center}
-.themeSwatch{width:12px;height:12px;border-radius:50%;box-shadow:0 0 0 1px var(--border-strong) inset}
-.themeBtnActive{background:var(--brand-soft)}
-.themeBtnActive .themeSwatch{box-shadow:0 0 0 2px var(--bg),0 0 0 3px var(--brand)}
 .headerRow{flex-wrap:wrap;gap:var(--space-3)}
 </style>
 <link rel="stylesheet" href="skin.css?v=1">
@@ -424,7 +416,10 @@ function compHtml(){
  * Two numbers per lift:
  *   1RM   — the "E1RM <lift>" figure in the program's header, i.e. the max
  *           the whole block's percentages are built on
- *   e1RM  — Epley on the sets actually logged: kg × (1 + reps/30)
+ *   e1RM  — Epley on the sets actually logged: kg × (1 + reps/30), taken at
+ *           your BEST session, not your latest. A deload or an off day would
+ *           otherwise read as a strength loss. The latest is shown beneath it
+ *           when the two differ.
  * Both are always in kg (that's how the program is written), so the kg/lb
  * toggle converts them for display like every other weight on the page.
  * No program loaded yet → the section hides itself. */
@@ -439,42 +434,43 @@ function strengthHtml(){
   const order=['squat','bench'];
   const cards=order.map(k=>{
     const L=d.lifts[k]; if(!L)return '';
-    if(L.oneRm==null&&L.e1rm==null)return '';
+    // Headline the best session. Older published data has no e1rmBest, so fall
+    // back to the latest rather than showing a blank card.
+    const best=L.e1rmBest!=null?L.e1rmBest:L.e1rm;
+    if(L.oneRm==null&&best==null)return '';
     const num=(v,cls)=>v==null
       ? '<span class="strengthValue isNone">—</span>'
       : '<span class="strengthValue'+(cls?' '+cls:'')+'">'+fmtDisp(v,u)+'<span class="strengthUnit">'+u+'</span></span>';
-    // How the logged estimate sits against the max the program assumes.
+    // How the best logged estimate sits against the max the program assumes.
     let foot='';
-    if(L.oneRm!=null&&L.e1rm!=null){
-      const diff=L.e1rm-L.oneRm;
+    if(L.oneRm!=null&&best!=null){
+      const diff=best-L.oneRm;
       const cls=Math.abs(diff)<0.5?'':(diff>0?'up':'down');
       const sign=Math.abs(diff)<0.5?'±':(diff>0?'+':'−');
       foot='<span class="strengthDelta '+cls+'">'+sign+Math.abs(kgToDisplay(diff,u)).toFixed(1)+' '+u+' vs 1RM</span>';
     }
-    const when=L.e1rmWhen?'<span>'+esc(L.e1rmWhen)+'</span>':'<span></span>';
+    // Date the headline number, falling back to the latest session's label when
+    // an older publish didn't record when the best happened.
+    const whenLbl=L.e1rmBestWhen||(L.e1rmBest==null?L.e1rmWhen:null);
+    const when=whenLbl?'<span>'+esc(whenLbl)+'</span>':'<span></span>';
     return '<div class="strengthCard"><h3 class="strengthName">'+esc(L.label||k)+'</h3>'
       +'<div class="strengthRow"><span class="strengthLabel">1RM</span>'+num(L.oneRm)+'</div>'
-      +'<div class="strengthRow"><span class="strengthLabel">e1RM</span>'+num(L.e1rm,'isEst')+'</div>'
-      +(L.e1rmBest!=null&&L.e1rm!=null&&L.e1rmBest>L.e1rm
-        ? '<div class="strengthRow"><span class="strengthLabel">e1RM best</span>'+num(L.e1rmBest,'isEst')+'</div>' : '')
+      +'<div class="strengthRow"><span class="strengthLabel">e1RM</span>'+num(best,'isEst')+'</div>'
+      +(L.e1rm!=null&&best!=null&&L.e1rm<best
+        ? '<div class="strengthRow"><span class="strengthLabel">latest</span>'+num(L.e1rm,'isEst')+'</div>' : '')
       +'<div class="strengthFoot">'+when+foot+'</div></div>';
   }).join('');
   if(!cards)return '';
   return '<section class="section"><div class="sectionEyebrowRow"><span class="sectionEyebrow">strength</span>'
     +'<span class="sectionEyebrowMeta">from your program</span></div>'
     +'<div class="strengthGrid">'+cards+'</div>'
-    +'<p class="noteLine">1RM is what the program’s percentages are built on. e1RM is Epley on your logged sets — open the Program page to refresh both.</p></section>';
+    +'<p class="noteLine">1RM is what the program’s percentages are built on. e1RM is Epley on your best logged session — open the Program page to refresh both.</p></section>';
 }
 
-const THEMES=[{key:'nocturne',label:'Nocturne',swatch:'#8B7CFF'},{key:'aurora',label:'Aurora',swatch:'linear-gradient(135deg,#8B7BFF,#4FE3D0)'},{key:'daylight',label:'Daylight',swatch:'#6A45FF'}];
-let currentTheme=(function(){try{return localStorage.getItem('patron_theme')||'nocturne';}catch(e){return 'nocturne';}})();
-if(!THEMES.some(t=>t.key===currentTheme))currentTheme='nocturne';
-function applyTheme(name){if(!THEMES.some(t=>t.key===name))name='nocturne';currentTheme=name;document.documentElement.setAttribute('data-theme',name);try{localStorage.setItem('patron_theme',name);}catch(e){}render();}
-function themeSegHtml(){return '<div class="themeSeg" role="radiogroup" aria-label="Theme">'+THEMES.map(t=>'<button type="button" class="themeBtn '+(t.key===currentTheme?'themeBtnActive':'')+'" data-act="theme" data-theme="'+t.key+'" title="'+t.label+'"><span class="themeSwatch" style="background:'+t.swatch+'"></span></button>').join('')+'</div>';}
 function render(){
   document.getElementById('app').innerHTML=
     '<header class="header"><a class="back" href="index.html"><span class="backArrow">←</span> Liam</a>'
-    +'<div class="headerRow"><h1 class="title">Progress</h1><div class="unitSeg"><button class="unitBtn '+(state.units==='kg'?'unitBtnActive':'')+'" data-act="units" data-u="kg">kg</button><button class="unitBtn '+(state.units==='lb'?'unitBtnActive':'')+'" data-act="units" data-u="lb">lb</button></div>'+themeSegHtml()+'</div>'
+    +'<div class="headerRow"><h1 class="title">Progress</h1><div class="unitSeg"><button class="unitBtn '+(state.units==='kg'?'unitBtnActive':'')+'" data-act="units" data-u="kg">kg</button><button class="unitBtn '+(state.units==='lb'?'unitBtnActive':'')+'" data-act="units" data-u="lb">lb</button></div></div>'
     +'<p class="subtitle">weight log · strength</p></header>'
     +heroHtml()+strengthHtml()+trainingHtml()+compHtml();
   const inp=document.getElementById('wInput');if(inp&&ui.editing)inp.focus();
@@ -482,7 +478,7 @@ function render(){
 
 /* ===================== Events ===================== */
 document.addEventListener('click',e=>{
-  const b=e.target.closest('[data-act]');if(!b)return;const act=b.dataset.act;if(act==='theme'){applyTheme(b.dataset.theme);return;}
+  const b=e.target.closest('[data-act]');if(!b)return;const act=b.dataset.act;
   if(act==='back'){e.preventDefault();}
   else if(act==='units')changeUnits(b.dataset.u);
   else if(act==='edit')startEdit();
@@ -491,7 +487,7 @@ document.addEventListener('submit',e=>{const f=e.target.closest('[data-act="save
 document.addEventListener('input',e=>{if(e.target.id==='wInput'){ui.draft=e.target.value;ui.error=null;}});
 document.addEventListener('keydown',e=>{if(e.target.id==='wInput'&&e.key==='Escape'){ui.editing=false;ui.error=null;render();}});
 
-applyTheme(currentTheme);
+render();
 
 /* ===================== Cloud hydrate (if Supabase keys are set) =====================
  * Render locally first (above), then pull cloud copies and re-render. If the cloud

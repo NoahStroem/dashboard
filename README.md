@@ -26,7 +26,7 @@ No fork, no setup — you get a live `your-app.vercel.app` link in about a minut
 | App | File | What it does |
 |---|---|---|
 | **Hub** | `index.html` | Bento launcher · onboarding · "Today's vitals" · live stats |
-| Finance | `finance.html` | Net worth, subscriptions, orders, wishlist (+ live FX, optional stock prices, AI statement import) |
+| Finance | `finance.html` | Net worth, subscriptions, orders (+ live FX, optional stock prices, AI statement import) |
 | Gym | `gym.html` | Progressive-overload coach (optional cloud sync via *your own* Supabase) |
 | Supplements | `supplements.html` | Your stack + a profile-driven recommender |
 | Whoop | `whoop.html` | Recovery / sleep / strain / HRV (real Whoop OAuth when deployed) |
@@ -55,8 +55,8 @@ and no account. Two consequences, stated plainly:
 - **Per-browser, not synced:** a different device = different data, and clearing your
   browser data erases it. Treat it like a local app, not a cloud service.
 
-Shared keys used across the suite: `patron_theme` (theme), `patron_profile_v1` (your
-profile), `patron_health_v1` (vitals — Whoop / Apple Watch / manual).
+Shared keys used across the suite: `patron_profile_v1` (your profile),
+`patron_health_v1` (vitals — Whoop / Apple Watch / manual).
 
 ## Optional integrations
 

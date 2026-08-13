@@ -80,8 +80,8 @@ your other devices.
 Use one `localStorage` key per thing that can change independently. A page that
 crams everything into one giant key turns every edit into a whole-page conflict.
 
-Two deliberate exceptions, already handled in `sync.js`: `patron_theme` (theme is
-per-device) and `peak_schedule_v1` (regenerated from the file).
+One deliberate exception, already handled in `sync.js`: `peak_schedule_v1`
+(regenerated from the file).
 
 ### Don't rewrite storage while the page boots
 

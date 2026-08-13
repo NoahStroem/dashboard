@@ -319,7 +319,7 @@ belongs in the page — see `freshOrArchive()` in [index.html](index.html), whic
 treats yesterday's vitals as empty without removing them.
 
 Keys are skipped from sync in `_skip()` in `sync.js`: the engine's own
-bookkeeping, `patron_theme` (per-device), and `peak_schedule_v1` (regenerated).
+bookkeeping and `peak_schedule_v1` (regenerated).
 
 ---
 

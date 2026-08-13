@@ -22,7 +22,6 @@ img{max-width:100%;height:auto}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<script>try{document.documentElement.setAttribute("data-theme",localStorage.getItem("patron_theme")||"nocturne");}catch(e){document.documentElement.setAttribute("data-theme","nocturne");}</script>
 <title>Progressive Overload Coach</title>
 
 <!-- =============================================================
@@ -137,34 +136,6 @@ const CONFIG = {
   --font: 'Hanken Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-display: 'Space Grotesk', -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SF Mono, Menlo, Consolas, monospace;
-}
-[data-theme="aurora"] {
-  color-scheme: dark;
-  --bg: #080913; --bg-card: #12131F;
-  --text-1: #EEF0FF; --text-2: rgba(220,225,255,0.76); --text-3: rgba(220,225,255,0.52); --text-4: rgba(220,225,255,0.30);
-  --border: rgba(150,160,255,0.11); --border-strong: rgba(150,160,255,0.22);
-  --accent: #8B7BFF; --good: #4FE3D0; --warn: #FFC65C; --bad: #FF6FA5;
-  --brand: #8B7BFF; --brand-2: #B9ABFF; --brand-ink: #0A0922;
-  --brand-soft: rgba(139,123,255,0.15); --brand-line: rgba(139,123,255,0.32); --brand-glow: rgba(124,107,255,0.6);
-  --good-rgb: 79,227,208;
-  --fill-1: rgba(150,160,255,0.05); --fill-2: rgba(150,160,255,0.08); --fill-3: rgba(150,160,255,0.11); --fill-4: rgba(150,160,255,0.15);
-  --body-glow: rgba(124,107,255,0.18);
-  --tabbar-grad: linear-gradient(180deg, rgba(8,9,19,0) 0%, rgba(8,9,19,0.82) 40%, rgba(8,9,19,0.96) 100%);
-  --tabbar-pill: rgba(18,19,32,0.85);
-}
-[data-theme="daylight"] {
-  color-scheme: light;
-  --bg: #F3F2FA; --bg-card: #FFFFFF;
-  --text-1: #171622; --text-2: rgba(23,22,34,0.72); --text-3: rgba(23,22,34,0.52); --text-4: rgba(23,22,34,0.34);
-  --border: rgba(23,22,60,0.10); --border-strong: rgba(23,22,60,0.18);
-  --accent: #6A45FF; --good: #0E9E64; --warn: #B4690E; --bad: #E11D63;
-  --brand: #6A45FF; --brand-2: #8E6BFF; --brand-ink: #FFFFFF;
-  --brand-soft: rgba(106,69,255,0.08); --brand-line: rgba(106,69,255,0.24); --brand-glow: rgba(106,69,255,0.28);
-  --good-rgb: 14,158,100;
-  --fill-1: rgba(23,22,60,0.028); --fill-2: rgba(23,22,60,0.05); --fill-3: rgba(23,22,60,0.07); --fill-4: rgba(23,22,60,0.10);
-  --body-glow: rgba(106,69,255,0.07);
-  --tabbar-grad: linear-gradient(180deg, rgba(243,242,250,0) 0%, rgba(243,242,250,0.85) 40%, rgba(243,242,250,0.97) 100%);
-  --tabbar-pill: rgba(255,255,255,0.92);
 }
 * { box-sizing: border-box; }
 html, body {
@@ -1331,18 +1302,7 @@ img, video, canvas, svg { max-width: 100%; }
   letter-spacing: -0.02em;
 }
 .po-title { font-weight: 600; }
-/* --- Theme switcher --- */
 .po-header-right { display: flex; align-items: center; gap: 10px; }
-.themeSeg { display: inline-flex; align-items: center; background: var(--fill-1); border: 1px solid var(--border); border-radius: 999px; padding: 3px; gap: 2px; }
-.themeBtn { appearance: none; background: transparent; border: 0; color: var(--text-3); font-family: var(--font); font-size: 11px; font-weight: 600; letter-spacing: 0.02em; padding: 5px 10px 5px 7px; border-radius: 999px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: background 0.18s, color 0.18s; -webkit-tap-highlight-color: transparent; }
-.themeBtn:hover { color: var(--text-2); }
-.themeSwatch { width: 11px; height: 11px; border-radius: 50%; box-shadow: 0 0 0 1px var(--border-strong) inset; flex-shrink: 0; }
-.themeBtnActive, .themeBtnActive:hover { background: var(--brand-soft); color: var(--text-1); }
-.themeBtnActive .themeSwatch { box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--brand); }
-@media (max-width: 560px) {
-  .themeBtn .themeBtnLabel { display: none; }
-  .themeBtn { padding: 6px; }
-}
 
 /* Live lift ticker — nasdaq-style scrolling strip of real PRs from logged sets */
 .ltHost { margin: 0 0 16px; }
@@ -1383,7 +1343,6 @@ img, video, canvas, svg { max-width: 100%; }
   <div class="po-header">
     <h1 class="po-title" id="appTitle">Progressive Overload Coach</h1>
     <div class="po-header-right">
-      <div class="themeSeg" role="radiogroup" aria-label="Theme"><button type="button" class="themeBtn" data-theme="nocturne"><span class="themeSwatch" style="background:#8B7CFF"></span><span class="themeBtnLabel">Nocturne</span></button><button type="button" class="themeBtn" data-theme="aurora"><span class="themeSwatch" style="background:linear-gradient(135deg,#8B7BFF,#4FE3D0)"></span><span class="themeBtnLabel">Aurora</span></button><button type="button" class="themeBtn" data-theme="daylight"><span class="themeSwatch" style="background:#6A45FF"></span><span class="themeBtnLabel">Daylight</span></button></div>
     <button class="po-icon-btn" id="settingsBtn" title="Settings" aria-label="Settings">
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </button>
@@ -3608,7 +3567,6 @@ img, video, canvas, svg { max-width: 100%; }
 })();
 </script>
 
-<script>(function(){function cur(){try{return localStorage.getItem("patron_theme")||"nocturne";}catch(e){return "nocturne";}}function paint(){var c=cur();document.querySelectorAll(".themeBtn").forEach(function(b){b.classList.toggle("themeBtnActive",b.dataset.theme===c);});}document.addEventListener("click",function(e){var b=e.target.closest(".themeBtn");if(!b)return;var n=b.dataset.theme;document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("patron_theme",n);}catch(e){}paint();});paint();})();</script>
 <script src="brand.js?v=16"></script>
 </body>
 </html>

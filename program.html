@@ -21,7 +21,6 @@ body{overflow-x:hidden;-webkit-tap-highlight-color:transparent}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<script>try{document.documentElement.setAttribute("data-theme",localStorage.getItem("patron_theme")||"nocturne");}catch(e){document.documentElement.setAttribute("data-theme","nocturne");}</script>
 <title>Program · Liam</title>
 <style>
 :root {
@@ -50,47 +49,6 @@ body{overflow-x:hidden;-webkit-tap-highlight-color:transparent}
   --series-1: #3987e5; --series-2: #d95926;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 }
-[data-theme="aurora"] {
-  --bg: #080913;
-  --text-primary: #EEF0FF; --text-secondary: rgba(220,225,255,0.76); --text-tertiary: rgba(220,225,255,0.48);
-  --success: #4FE3D0; --success-rgb: 79,227,208;
-  --warning: #FFC65C; --warning-rgb: 255,198,92;
-  --danger: #FF6FA5;
-  --brand: #8B7BFF; --brand-2: #B9ABFF; --brand-ink: #0A0922;
-  --brand-soft: color-mix(in srgb, #8B7BFF 16%, transparent);
-  --brand-line: color-mix(in srgb, #8B7BFF 34%, transparent);
-  --brand-glow: color-mix(in srgb, #7C6BFF 60%, transparent);
-  --surface: color-mix(in srgb, #96A0FF 5%, transparent);
-  --surface-1: color-mix(in srgb, #96A0FF 4%, transparent);
-  --border: color-mix(in srgb, #96A0FF 12%, transparent);
-  --border-strong: color-mix(in srgb, #96A0FF 20%, transparent);
-  --line-2: color-mix(in srgb, #96A0FF 26%, transparent);
-  --input-bg: color-mix(in srgb, #000010 30%, transparent);
-  --card-shadow-c: rgba(8,8,30,0.5);
-  --body-glow: color-mix(in srgb, #7C6BFF 22%, transparent);
-  --series-1: #3987e5; --series-2: #d95926;
-}
-[data-theme="daylight"] {
-  color-scheme: light;
-  --bg: #F3F2FA;
-  --text-primary: #171622; --text-secondary: rgba(23,22,34,0.72); --text-tertiary: rgba(23,22,34,0.50);
-  --success: #0E9E64; --success-rgb: 14,158,100;
-  --warning: #B4690E; --warning-rgb: 180,105,14;
-  --danger: #E11D63;
-  --brand: #6A45FF; --brand-2: #8E6BFF; --brand-ink: #FFFFFF;
-  --brand-soft: color-mix(in srgb, #6A45FF 8%, transparent);
-  --brand-line: color-mix(in srgb, #6A45FF 24%, transparent);
-  --brand-glow: color-mix(in srgb, #6A45FF 28%, transparent);
-  --surface: #FFFFFF;
-  --surface-1: color-mix(in srgb, #17163C 3%, transparent);
-  --border: color-mix(in srgb, #17163C 9%, transparent);
-  --border-strong: color-mix(in srgb, #17163C 16%, transparent);
-  --line-2: color-mix(in srgb, #17163C 20%, transparent);
-  --input-bg: color-mix(in srgb, #17163C 4%, transparent);
-  --card-shadow-c: rgba(23,22,60,0.12);
-  --body-glow: color-mix(in srgb, #6A45FF 7%, transparent);
-  --series-1: #2a78d6; --series-2: #d95926;
-}
 * { box-sizing: border-box; }
 html, body { margin:0; padding:0; background:var(--bg); color:var(--text-secondary); font-family:var(--font); -webkit-font-smoothing:antialiased; }
 body { min-height:100vh; position:relative; overflow-x:hidden; padding:max(28px, env(safe-area-inset-top)) 20px 60px; }
@@ -106,11 +64,6 @@ body::before {
 .dash-title { margin:0; font-family:var(--font-display); font-size:28px; font-weight:700; letter-spacing:-0.025em;
   background:linear-gradient(120deg, var(--text-primary), var(--brand)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent; }
 @media (max-width:480px){ .dash-title{ font-size:22px; } }
-.themeSeg { display:inline-flex; align-items:center; background:var(--surface); border:1px solid var(--border); border-radius:999px; padding:3px; gap:2px; }
-.themeBtn { appearance:none; background:transparent; border:0; color:var(--text-tertiary); font-family:var(--font); font-size:11px; font-weight:700; padding:5px 10px 5px 7px; border-radius:999px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
-.themeSwatch { width:11px; height:11px; border-radius:50%; box-shadow:0 0 0 1px var(--border-strong) inset; }
-.themeBtnActive { background:var(--brand-soft); color:var(--text-primary); }
-@media (max-width:480px){ .themeBtn .themeBtnLabel{ display:none; } .themeBtn{ padding:6px; } }
 
 .card { position:relative; background:var(--surface); border-radius:16px; padding:20px; margin-bottom:14px;
   backdrop-filter:blur(24px) saturate(1.2); -webkit-backdrop-filter:blur(24px) saturate(1.2); box-shadow:0 12px 40px var(--card-shadow-c); }
@@ -238,11 +191,6 @@ tbody tr.isToday td { background:rgba(var(--success-rgb),0.10); box-shadow:inset
   <a class="back" href="index.html"><span>←</span> Liam</a>
   <div class="dash-head">
     <h1 class="dash-title" id="dashTitle">Program</h1>
-    <div class="themeSeg" role="radiogroup" aria-label="Theme">
-      <button type="button" class="themeBtn" data-theme="nocturne"><span class="themeSwatch" style="background:#8B7CFF"></span><span class="themeBtnLabel">Nocturne</span></button>
-      <button type="button" class="themeBtn" data-theme="aurora"><span class="themeSwatch" style="background:linear-gradient(135deg,#8B7BFF,#4FE3D0)"></span><span class="themeBtnLabel">Aurora</span></button>
-      <button type="button" class="themeBtn" data-theme="daylight"><span class="themeSwatch" style="background:#6A45FF"></span><span class="themeBtnLabel">Daylight</span></button>
-    </div>
   </div>
   <div id="app"></div>
 </div>
@@ -733,12 +681,14 @@ tbody tr.isToday td { background:rgba(var(--success-rgb),0.10); box-shadow:inset
    * same figures without opening the program itself.
    *   oneRm — the "E1RM <lift>" reference in the sheet header: the max the
    *           percentages are built on. Last week that declares one wins.
-   *   e1rm  — Epley on the most recently logged sets, plus the block's best.
+   *   e1rm  — Epley on the most recently logged sets. e1rmBest is the best the
+   *           block has produced, which is what Progress headlines: one bad
+   *           session shouldn't look like your strength dropped.
    * ------------------------------------------------------------------ */
   const MAXES_KEY = 'patron_program_maxes_v1';
   function publishMaxes() {
     const lifts = {};
-    SERIES.forEach(s => { lifts[s.key] = { label: s.label, oneRm: null, oneRmWeek: null, e1rm: null, e1rmWhen: null, e1rmBest: null }; });
+    SERIES.forEach(s => { lifts[s.key] = { label: s.label, oneRm: null, oneRmWeek: null, e1rm: null, e1rmWhen: null, e1rmBest: null, e1rmBestWhen: null }; });
 
     state.sources.forEach(src => {
       const c = state.cache[src.id];
@@ -760,7 +710,7 @@ tbody tr.isToday td { background:rgba(var(--success-rgb),0.10); box-shadow:inset
         if (v == null) return;
         const L = lifts[s.key];
         L.e1rm = v; L.e1rmWhen = p.label;
-        if (L.e1rmBest == null || v > L.e1rmBest) L.e1rmBest = v;
+        if (L.e1rmBest == null || v > L.e1rmBest) { L.e1rmBest = v; L.e1rmBestWhen = p.label; }
       });
     });
 
@@ -1057,7 +1007,6 @@ tbody tr.isToday td { background:rgba(var(--success-rgb),0.10); box-shadow:inset
 })();
 </script>
 
-<script>(function(){function cur(){try{return localStorage.getItem("patron_theme")||"nocturne";}catch(e){return "nocturne";}}function paint(){var c=cur();document.querySelectorAll(".themeBtn").forEach(function(b){b.classList.toggle("themeBtnActive",b.dataset.theme===c);});}document.addEventListener("click",function(e){var b=e.target.closest(".themeBtn");if(!b)return;var n=b.dataset.theme;document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("patron_theme",n);}catch(e){}paint();});paint();})();</script>
 <script>(function(){try{var p=JSON.parse(localStorage.getItem('patron_profile_v1')||'null');var n=(p&&p.name)?String(p.name).trim():'';var el=document.getElementById('dashTitle');if(el&&n)el.textContent=n+'’s program';}catch(e){}})();</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="sync-merge.js?v=1"></script>

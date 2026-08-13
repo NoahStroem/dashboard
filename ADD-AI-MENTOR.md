@@ -84,7 +84,6 @@ Add a reader that gathers the whole synced dashboard:
       const out = {};
       for (let i = 0; i < localStorage.length; i++) {
         const k = localStorage.key(i);
-        if (k === 'patron_theme') continue;          // skip UI-only keys
         try { out[k] = JSON.parse(localStorage.getItem(k)); }
         catch { out[k] = localStorage.getItem(k); }
       }

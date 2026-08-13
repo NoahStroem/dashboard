@@ -65,7 +65,6 @@ window.PatronDB = (function () {
       || k.indexOf('po_supabase') === 0
       || k.indexOf('sync_') === 0                 // this engine's own bookkeeping
       || k === 'po_sync_map' || k === 'po_snapshot_ts' || k === 'po_snapshot_hash'
-      || k === 'patron_theme'                     // per-device preference
       || k === 'peak_schedule_v1'                 // regenerated from the file
       || k === 'po_sched_purged'
       || k.indexOf('patron_hydrated_') === 0

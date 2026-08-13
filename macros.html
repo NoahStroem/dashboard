@@ -18,7 +18,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-<script>try{document.documentElement.setAttribute("data-theme",localStorage.getItem("patron_theme")||"nocturne");}catch(e){document.documentElement.setAttribute("data-theme","nocturne");}</script>
 <link rel="stylesheet" href="theme.css" />
 
 <style>
@@ -67,7 +66,6 @@
   <div class="shell" id="app"></div>
 </main>
 
-<script src="theme.js"></script>
 <script>
 /* ============================================================
  * Macros — a simple daily food + macro tracker.
@@ -190,13 +188,12 @@ function logHtml(){
 
 function headerHtml(){
   return '<header class="header"><div><h1 class="title">Macros</h1><p class="subtitle">protein · carbs · fat</p></div>'
-    + '<div class="headerControls"><a class="backLink" href="index.html">← Dashboard</a><span id="themeSeg"></span></div></header>';
+    + '<div class="headerControls"><a class="backLink" href="index.html">← Dashboard</a></div></header>';
 }
 
 function render(){
   document.getElementById('app').innerHTML =
     headerHtml() + summaryHtml() + searchHtml() + logHtml();
-  document.getElementById('themeSeg').innerHTML = Patron.switcherHtml();
 }
 
 /* ---- events ---- */

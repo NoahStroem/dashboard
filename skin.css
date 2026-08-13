@@ -1,9 +1,9 @@
 /* Vitality skin — shared override that recolors any suite page to the
  * black-canvas / mint / Instrument-Serif look. Linked LAST in <head> so it
- * wins. html[data-theme] beats per-theme blocks on specificity. */
+ * wins. html:root matches theme.css's :root specificity, then wins on order. */
 @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap');
 
-html[data-theme]{
+html:root{
   --bg:#000; --bg-elevated:#0a0a0a;
   --surface:rgba(255,255,255,.02); --surface-2:rgba(255,255,255,.04);
   --fg:#fff; --muted:rgba(255,255,255,.5); --muted-strong:rgba(255,255,255,.7);

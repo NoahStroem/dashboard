@@ -2,7 +2,7 @@
  * Drop-in: link this LAST in <head> instead of skin.css. */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800&display=swap');
 
-html[data-theme]{
+html:root{
   --bg:#070707; --bg-elevated:#101010;
   --surface:rgba(255,255,255,.03); --surface-2:rgba(255,255,255,.06);
   --fg:#E2E2E2; --muted:rgba(255,255,255,.5); --muted-strong:rgba(255,255,255,.78);
