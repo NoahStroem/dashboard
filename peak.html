@@ -642,7 +642,9 @@ function caffeineNowMg(){ return bodyAt(Date.now()); }
 
 /* ---- hydration (optional input) ---- */
 function dKey(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
-function drinksToday(){ const s=readLS('water_standalone_v1'); if(!s||!s.logs)return 0; return s.logs[dKey()]||0; }
+// water_standalone_v1 stores MILLILITRES (v3); this card counts 250ml glasses.
+const GLASS_ML=250;
+function drinksToday(){ const s=readLS('water_standalone_v1'); if(!s||!s.logs)return 0; return Math.round((s.logs[dKey()]||0)/GLASS_ML); }
 function waterTarget(){ const p=profile(); if(p&&typeof p.weightKg==='number'&&p.weightKg>0){ const litres=p.weightKg*0.033; return Math.max(6,Math.round(litres/0.25)); } return 8; }
 function waterLoggedToday(){ return drinksToday()>0; }
 
@@ -740,7 +742,7 @@ function medCardHtml(){
 function medLogsHtml(){ const logs=medTodayLogs(); if(!logs.length)return ''; return '<div class="cafLogsHead"><span class="cafLogsLab">Today’s doses</span><button class="cafClear" data-clearmed="1">clear all</button></div><div class="cafLogs">'+logs.map(l=>'<span class="cafLog"><b>'+esc(l.name)+'</b> '+Math.round(l.mg)+'mg · '+fmtClockMs(l.t)+'<span class="cafLogX" data-rmmed="'+esc(l.id||'')+'" title="Remove">×</span></span>').join('')+'</div>'; }
 
 /* ---- compact Water card (syncs water_standalone_v1) ---- */
-function logWater(n){ const s=readLS('water_standalone_v1')||{logs:{}}; if(!s.logs)s.logs={}; const k=dKey(); s.logs[k]=Math.max(0,(s.logs[k]||0)+n); try{ localStorage.setItem('water_standalone_v1',JSON.stringify(s)); }catch(e){} render(); }
+function logWater(n){ const s=readLS('water_standalone_v1')||{logs:{}}; if(!s.logs)s.logs={}; const k=dKey(); s.logs[k]=Math.max(0,(s.logs[k]||0)+n*GLASS_ML); try{ localStorage.setItem('water_standalone_v1',JSON.stringify(s)); }catch(e){} render(); }
 function waterCardHtml(){
   const c=drinksToday(), t=waterTarget(); const pct=Math.min(100,Math.round(c/t*100)); const done=c>=t;
   return '<div class="card cafCard">'

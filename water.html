@@ -95,13 +95,22 @@ body{background:var(--bg);color:var(--fg);font-family:var(--font-inter),-apple-s
 .heroRingArc{transition:stroke-dashoffset .8s var(--ease-premium)}
 .heroNumWrap{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:2px;transition:transform .36s var(--ease-premium)}
 .heroNumPunch{transform:scale(1.12)}
-.heroNum{font-family:var(--font-serif);font-weight:600;font-size:88px;line-height:1;letter-spacing:-0.04em;font-variant-numeric:tabular-nums}
+/* The value carries a unit now ("750 ml"), not a bare count, so it has to
+ * scale down to stay inside the ring on a narrow screen. */
+.heroNum{font-family:var(--font-serif);font-weight:600;font-size:clamp(34px,12vw,60px);line-height:1;letter-spacing:-0.03em;font-variant-numeric:tabular-nums;white-space:nowrap}
 .heroTarget{font-family:var(--font-mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .zonePill{display:inline-flex;align-items:center;gap:6px;align-self:center;padding:5px 12px;background:var(--pos-soft);border:1px solid var(--pos-line);border-radius:var(--radius-pill);color:var(--pos);font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;margin:0 auto var(--space-3)}
 .zonePillCheck{font-size:12px}
 .helper{text-align:center;font-family:var(--font-inter);font-size:14px;color:var(--muted-strong);margin:0 0 var(--space-4)}
 .helperGood{color:var(--pos)}
-.actions{display:grid;grid-template-columns:auto 1fr;gap:var(--space-3)}
+/* Quick-add row: your usual pour sizes, one tap each. */
+.quickRow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-2);margin-bottom:var(--space-3)}
+.quickBtn{appearance:none;padding:12px 6px;border-radius:var(--radius-md);background:var(--card-elevated);border:1px solid var(--border);color:var(--fg);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:border-color var(--duration) var(--ease-premium),background var(--duration) var(--ease-premium)}
+.quickBtn:hover{border-color:var(--brand-line);background:var(--brand-soft)}
+.quickBtn:active{transform:translateY(1px)}
+.customIn{min-width:0;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);padding:0 14px;color:var(--fg);font-family:inherit;font-size:15px;outline:none;transition:border-color var(--duration) var(--ease-premium)}
+.customIn:focus{border-color:var(--brand-line);box-shadow:0 0 0 3px var(--brand-soft)}
+.actions{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:var(--space-3)}
 .undoBtn{appearance:none;width:56px;border-radius:var(--radius-md);background:var(--card-elevated);border:1px solid var(--border-strong);color:var(--fg);font-size:22px;line-height:1;cursor:pointer;transition:background var(--duration) var(--ease-premium)}
 .undoBtn:hover:not(:disabled){background:var(--surface-2,rgba(255,255,255,.08))}
 .undoBtn:disabled{opacity:.3;cursor:not-allowed}
@@ -184,7 +193,6 @@ body{background:var(--bg);color:var(--fg);font-family:var(--font-inter),-apple-s
 /* ===================== Helpers ===================== */
 function getLocalDateKey(d){d=d||new Date();const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return y+'-'+m+'-'+day;}
 function unitVolMl(s){if(s.unit==='bottle')return s.bottleMl||500;if(s.unit==='glass')return s.glassMl||250;if(s.unit==='oz')return 30;return 1;}
-function unitLabel(s,plural){if(s.unit==='bottle')return plural?'bottles':'bottle';if(s.unit==='glass')return plural?'glasses':'glass';return s.unit;}
 function fmtMl(ml){if(ml>=1000)return (ml/1000).toFixed(1)+' L';return Math.round(ml)+' ml';}
 // Typical adult MAX therapeutic dose (mg) per drug — the anchor we scale dry-mouth/thirst-blunting risk against.
 // Sources: FDA labeling / GoodRx dosing. Used only to turn an mg into a 0-1 "fraction of a full dose".
@@ -224,10 +232,11 @@ const LS='water_standalone_v1';
 // Common ADHD / wakefulness stimulants for the search box. Free text is allowed too — type anything.
 const STIM_OPTIONS=['Concerta','Ritalin','Methylphenidate','Vyvanse','Elvanse','Adderall','Adderall XR','Dexedrine','Dexamfetamine','Focalin','Mydayis','Modafinil','Armodafinil'];
 function seed(){
+  // logs[dateKey] is MILLILITRES drunk that day (see the v3 note in load()).
   const logs={};const samples=[6,5,6,4,6,7,3,6,5,6,2,6,4]; // last 13 days (oldest→newest), today stays 0
-  for(let i=0;i<samples.length;i++){const d=new Date();d.setDate(d.getDate()-(samples.length-i));logs[getLocalDateKey(d)]=samples[i];}
+  for(let i=0;i<samples.length;i++){const d=new Date();d.setDate(d.getDate()-(samples.length-i));logs[getLocalDateKey(d)]=samples[i]*500;}
   var _p=null;try{_p=JSON.parse(localStorage.getItem('patron_profile_v1')||'null');}catch(e){}
-  return {version:2,unit:'bottle',bottleMl:500,glassMl:250,
+  return {version:3,unit:'ml',bottleMl:500,glassMl:250,adds:{},
     weightKg:(_p&&_p.weightKg)?_p.weightKg:70,
     age:(_p&&(_p.age||_p.age===0))?(Number(_p.age)||25):25,
     sex:(_p&&_p.sex)?String(_p.sex).toLowerCase():'m',
@@ -235,22 +244,73 @@ function seed(){
     activityHrsPerWeek:0,activityHrsPerDay:0,stims:[],
     caffeineMgPerDay:(_p&&_p.caffeineMgPerDay)?(Number(_p.caffeineMgPerDay)||200):200,logs};
 }
+/* v2 → v3: logs[dateKey] used to be a COUNT of taps, where a tap meant one
+ * bottle/glass/oz. That made the ml and oz options unusable — "ml" counted a
+ * tap as 1 ml, so hitting a 2.5 L target took 2500 taps. It now holds
+ * MILLILITRES, so any amount can be logged and the display unit is purely a
+ * formatting choice. Same JSON type (a number), which matters: index.html,
+ * food.html and the peak pages all read this key.
+ * The version guard makes this run once; a device that pulls already-migrated
+ * data down sees version 3 and leaves it alone. */
+function migrate(s){
+  if((s.version||0)>=3) return s;
+  const per=unitVolMl(s)||1;
+  const logs={},adds={};
+  for(const k in (s.logs||{})){
+    const n=Number(s.logs[k])||0; if(n<=0) continue;
+    logs[k]=Math.round(n*per);
+    adds[k]=Array.from({length:Math.min(n,50)},()=>per); // cap: undo history only
+  }
+  s.logs=logs; s.adds=adds; s.version=3;
+  if(s.unit==='bottle'||s.unit==='glass') s.unit='ml'; // now a display unit
+  return s;
+}
 function load(){try{const r=localStorage.getItem(LS);if(!r)return seed();const s=Object.assign(seed(),JSON.parse(r));
   if(!Array.isArray(s.stims))s.stims=[];
   if(s.activityHrsPerDay==null)s.activityHrsPerDay=s.activityHrsPerWeek?Math.round((s.activityHrsPerWeek/7)*100)/100:0; // migrate old weekly value
-  return s;}catch{return seed();}}
+  if(!s.adds||typeof s.adds!=='object')s.adds={};
+  return migrate(s);}catch{return seed();}}
 function save(){try{localStorage.setItem(LS,JSON.stringify(state));}catch{}}
 let state=load();
+// The migration is the page tidying up after itself, not an edit you made —
+// derive() keeps it from ever overwriting a newer value from another device.
+if(state.version===3&&window.PatronDB&&PatronDB.derive){try{PatronDB.derive(LS,JSON.stringify(state));}catch(e){}}
 const ui={whyOpen:false,settingsOpen:false,punch:false};
 
-/* Derived */
-function todayCount(){return state.logs[getLocalDateKey()]||0;}
-function targetUnits(){const t=computeTarget(state);return Math.max(1,Math.ceil(t.total/unitVolMl(state)));}
+/* Derived — everything is millilitres internally; `unit` only affects display. */
+function todayMl(){return state.logs[getLocalDateKey()]||0;}
+function targetMl(){return Math.max(1,Math.round(computeTarget(state).total));}
+/* Quick-add sizes offered under the ring, in ml. */
+function quickAdds(){
+  const g=state.glassMl||250,b=state.bottleMl||500;
+  return [{ml:g,label:'Glass'},{ml:b,label:'Bottle'},{ml:b*2,label:'Big'}];
+}
+/* Format a volume in the chosen display unit. */
+function fmtVol(ml){
+  const n=Math.round(ml);
+  if(state.unit==='oz')return (n/29.5735).toFixed(n/29.5735>=10?0:1)+' oz';
+  if(state.unit==='L')return (n/1000).toFixed(2).replace(/\.?0+$/,'')+' L';
+  if(n>=1000)return (n/1000).toFixed(n%1000===0?0:1)+' L';
+  return n+' ml';
+}
 
 /* Actions */
 const A={
-  drank(){const k=getLocalDateKey();state.logs[k]=(state.logs[k]||0)+1;save();ripple();render();},
-  undo(){const k=getLocalDateKey();const c=state.logs[k]||0;if(c<=1)delete state.logs[k];else state.logs[k]=c-1;save();render();},
+  drank(ml){const k=getLocalDateKey();const amt=Math.max(1,Math.round(Number(ml)||state.glassMl||250));
+    state.logs[k]=(state.logs[k]||0)+amt;
+    if(!state.adds[k])state.adds[k]=[];state.adds[k].push(amt);
+    save();ripple();render();},
+  drankCustom(){const el=document.getElementById('wCustom');if(!el)return;
+    const v=Number(el.value);if(!isFinite(v)||v<=0){el.focus();return;}
+    // Typed amounts are in whatever unit is on display.
+    const ml=state.unit==='oz'?v*29.5735:state.unit==='L'?v*1000:v;
+    el.value='';A.drank(ml);},
+  undo(){const k=getLocalDateKey();const list=state.adds[k]||[];
+    const amt=list.length?list.pop():(state.glassMl||250);
+    const left=(state.logs[k]||0)-amt;
+    if(left<=0){delete state.logs[k];delete state.adds[k];}
+    else{state.logs[k]=left;if(!list.length)delete state.adds[k];}
+    save();render();},
   set(patch){Object.assign(state,patch);save();render();},
   addStim(){
     const nameEl=document.getElementById('stimNameInput'),mgEl=document.getElementById('stimMgInput');
@@ -278,28 +338,29 @@ function headerHtml(){
 }
 
 function whyHtml(){
-  const t=computeTarget(state),tu=targetUnits();
+  const t=computeTarget(state);
   const wDisp=state.weightUnit==='lb'?Math.round(state.weightKg*2.20462):Math.round(state.weightKg);
   let rows='<div class="whyRow"><span class="whyLabel">Base ('+wDisp+' '+state.weightUnit+' × 35 ml)</span><span class="whyVal">'+fmtMl(t.base)+'</span></div>';
   if(t.exercise>0)rows+='<div class="whyRow"><span class="whyLabel">+ Exercise ('+state.activityHrsPerDay+' h/day × 500 ml)</span><span class="whyVal">+ '+fmtMl(t.exercise)+'</span></div>';
   if(t.caffeine>0)rows+='<div class="whyRow"><span class="whyLabel">+ Caffeine ('+state.caffeineMgPerDay+' mg/day, over 300)</span><span class="whyVal">+ '+fmtMl(t.caffeine)+'</span></div>';
   if(t.stims>0)rows+='<div class="whyRow"><span class="whyLabel">+ Stimulants ('+state.stims.length+', by dose)</span><span class="whyVal">+ '+fmtMl(t.stims)+'</span></div>';
   if(t.adjust>0)rows+='<div class="whyRow"><span class="whyLabel">+ Sex / age adjustment</span><span class="whyVal">+ '+fmtMl(t.adjust)+'</span></div>';
-  rows+='<div class="whyRow whyRowTotal"><span class="whyLabel">Daily target</span><span class="whyVal">'+fmtMl(t.total)+' ≈ '+tu+' '+unitLabel(state,true)+'</span></div>';
+  rows+='<div class="whyRow whyRowTotal"><span class="whyLabel">Daily target</span><span class="whyVal">'+fmtMl(t.total)+'</span></div>';
   return '<div class="whyWrap"><button class="whyToggle" data-act="why"><span>Why this target?</span><span class="whyArrow '+(ui.whyOpen?'whyArrowOpen':'')+'">▾</span></button>'+(ui.whyOpen?'<div class="whyBody">'+rows+'</div>':'')+'</div>';
 }
 
 function heroHtml(){
-  const tc=todayCount(),tu=targetUnits();
+  const tc=todayMl(),tu=targetMl();
   const pctRaw=tu>0?(tc/tu)*100:0,ringPct=Math.min(100,pctRaw),isOver=pctRaw>100,hit=pctRaw>=100;
   const R=112,CIRC=2*Math.PI*R,offset=CIRC-(ringPct/100)*CIRC;
-  const lp=unitLabel(state,true),ls=unitLabel(state,false);
   let helper,good=false;
   if(tc===0)helper='Start the day. First one in.';
-  else if(pctRaw<50)helper='Behind pace. Drink one in the next hour.';
-  else if(pctRaw<100){helper=(tu-tc)+' to go. Pacing well.';}
+  else if(pctRaw<50)helper='Behind pace. Drink some in the next hour.';
+  else if(pctRaw<100){helper=fmtVol(tu-tc)+' to go. Pacing well.';}
   else if(pctRaw<130){helper='Target hit. Top up if you train this evening.';good=true;}
   else{helper='Strong. Way past target.';good=true;}
+  const quick=quickAdds().map(q=>'<button class="quickBtn" data-act="drink" data-ml="'+q.ml+'">+ '+fmtVol(q.ml)+'</button>').join('');
+  const unitHint=state.unit==='oz'?'oz':state.unit==='L'?'L':'ml';
   let particles='';for(let i=0;i<8;i++)particles+='<span class="heroParticle" style="left:'+(8+i*11)+'%;animation-delay:'+(i*.9)+'s;animation-duration:'+(5.5+(i%3)*1.2)+'s"></span>';
   return '<section class="heroCard"><span class="heroEyebrow"><span class="heroEyebrowMark">·02</span><span class="heroEyebrowRule"></span>Hydration</span>'
     +'<div class="heroVisual"><div class="heroAurora"></div><div class="heroParticles">'+particles+'</div>'+(ui._ripple?'<span class="heroRipple"></span>':'')
@@ -307,16 +368,18 @@ function heroHtml(){
     +'<circle cx="0" cy="0" r="'+R+'" stroke="var(--ring-track)" stroke-width="3" fill="none"/>'
     +'<circle cx="0" cy="0" r="'+R+'" stroke="'+(isOver?'var(--brand-2)':'url(#wg)')+'" stroke-width="3" fill="none" stroke-linecap="round" stroke-dasharray="'+CIRC+'" stroke-dashoffset="'+offset+'" transform="rotate(-90)" filter="url(#rg)" class="heroRingArc"/>'
     +(ringPct>0?'<circle cx="0" cy="'+(-R)+'" r="4" fill="var(--mint)" transform="rotate('+(ringPct/100*360)+')"/>':'')+'</svg>'
-    +'<div class="heroNumWrap '+(ui.punch?'heroNumPunch':'')+'"><span class="heroNum">'+tc+'</span><span class="heroTarget">of '+tu+' '+lp+'</span></div></div>'
+    +'<div class="heroNumWrap '+(ui.punch?'heroNumPunch':'')+'"><span class="heroNum">'+fmtVol(tc)+'</span><span class="heroTarget">of '+fmtVol(tu)+'</span></div></div>'
     +(hit?'<div class="zonePill"><span class="zonePillCheck">✓</span> healthy zone</div>':'')
     +'<p class="helper '+(good?'helperGood':'')+'">'+esc(helper)+'</p>'
-    +'<div class="actions"><button class="undoBtn" data-act="undo"'+(tc<=0?' disabled':'')+' aria-label="Undo">−</button>'
-    +'<button class="drinkBtn" data-act="drink"><span>Drank a '+ls+'</span><span class="drinkArrow">↑</span></button></div>'
+    +'<div class="quickRow">'+quick+'</div>'
+    +'<div class="actions"><button class="undoBtn" data-act="undo"'+(tc<=0?' disabled':'')+' aria-label="Undo last">−</button>'
+    +'<input id="wCustom" class="customIn" type="number" inputmode="decimal" min="0" step="any" placeholder="Amount in '+unitHint+'" data-enter="drinkCustom" />'
+    +'<button class="drinkBtn" data-act="drinkCustom"><span>Add</span><span class="drinkArrow">↑</span></button></div>'
     +whyHtml()+'</section>';
 }
 
 function historyHtml(){
-  const tu=targetUnits();
+  const tu=targetMl();
   const days=[];for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push({date:d,key:getLocalDateKey(d)});}
   const counts=days.map(d=>state.logs[d.key]||0);
   const hasData=counts.some(c=>c>0);
@@ -325,7 +388,7 @@ function historyHtml(){
   const targetY=H-pad-(tu/maxVal)*(H-pad*2);
   let bars='';counts.forEach((v,i)=>{const x=pad+i*colW+(colW-barW)/2,h=(v/maxVal)*(H-pad*2),y=H-pad-h,hit=v>=tu&&v>0;bars+='<rect class="sparkBar '+(hit?'sparkBarHit':'sparkBarMiss')+'" x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+barW.toFixed(1)+'" height="'+Math.max(0,h).toFixed(1)+'" rx="2"/>';});
   const todayKey=getLocalDateKey();
-  const list=days.filter(d=>d.key!==todayKey).slice(-7).map(d=>{const c=state.logs[d.key]||0,pct=Math.min(100,(c/tu)*100),hit=c>=tu&&c>0;return '<div class="histRow"><span class="histDate">'+DOW_S[d.date.getDay()]+' '+(d.date.getMonth()+1)+'/'+d.date.getDate()+'</span><div class="histBarWrap"><div class="histBarFill '+(hit?'':'histBarMiss')+'" style="width:'+pct+'%"></div></div><span class="histCount">'+c+'/'+tu+'</span></div>';}).join('');
+  const list=days.filter(d=>d.key!==todayKey).slice(-7).map(d=>{const c=state.logs[d.key]||0,pct=Math.min(100,(c/tu)*100),hit=c>=tu&&c>0;return '<div class="histRow"><span class="histDate">'+DOW_S[d.date.getDay()]+' '+(d.date.getMonth()+1)+'/'+d.date.getDate()+'</span><div class="histBarWrap"><div class="histBarFill '+(hit?'':'histBarMiss')+'" style="width:'+pct+'%"></div></div><span class="histCount">'+fmtVol(c)+'</span></div>';}).join('');
   return '<section class="histCard"><span class="heroEyebrow">Last 14 days</span>'
     +'<div class="sparkWrap"><svg class="sparkSvg" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" aria-hidden><line class="sparkTarget" x1="0" x2="'+W+'" y1="'+targetY.toFixed(1)+'" y2="'+targetY.toFixed(1)+'"/>'+bars+'</svg></div>'
     +'<div class="histList">'+list+'</div></section>';
@@ -338,10 +401,10 @@ function stimListHtml(){
 }
 function settingsHtml(){
   if(!ui.settingsOpen)return '';
-  const units=[['bottle','Bottle'],['glass','Glass'],['oz','oz'],['ml','ml']];
+  const units=[['ml','ml'],['L','L'],['oz','oz']];
   return '<div class="overlay" data-act="closeSettings"><div class="modal" data-stop="1">'
     +'<div class="modalHead"><h2 class="modalTitle">Settings</h2><button class="modalClose" data-act="closeSettings">×</button></div>'
-    +'<div class="setGroup"><span class="setLabel">Count drinks in</span><div class="seg">'+units.map(u=>'<button class="segBtn '+(state.unit===u[0]?'on':'')+'" data-act="setUnit" data-v="'+u[0]+'">'+u[1]+'</button>').join('')+'</div></div>'
+    +'<div class="setGroup"><span class="setLabel">Show amounts in</span><div class="seg">'+units.map(u=>'<button class="segBtn '+(state.unit===u[0]?'on':'')+'" data-act="setUnit" data-v="'+u[0]+'">'+u[1]+'</button>').join('')+'</div></div>'
     +(state.unit==='bottle'?'<div class="setGroup"><span class="setLabel">Bottle size (ml)</span><input class="input" type="number" data-set="bottleMl" value="'+state.bottleMl+'"></div>':'')
     +(state.unit==='glass'?'<div class="setGroup"><span class="setLabel">Glass size (ml)</span><input class="input" type="number" data-set="glassMl" value="'+state.glassMl+'"></div>':'')
     +'<div class="setGroup"><span class="setLabel">Your body</span><div class="row2">'
@@ -381,7 +444,8 @@ document.addEventListener('click',e=>{
   const stop=e.target.closest('[data-stop]'),b=e.target.closest('[data-act]');if(!b)return;
   const act=b.dataset.act,v=b.dataset.v;
   if(act==='back'){e.preventDefault();return;}
-  else if(act==='drink')A.drank();
+  else if(act==='drink')A.drank(b.dataset.ml);
+  else if(act==='drinkCustom')A.drankCustom();
   else if(act==='undo')A.undo();
   else if(act==='why'){ui.whyOpen=!ui.whyOpen;render();}
   else if(act==='settings'){ui.settingsOpen=true;render();}
@@ -396,6 +460,7 @@ document.addEventListener('click',e=>{
 document.addEventListener('keydown',e=>{
   if(e.key!=='Enter')return;const id=e.target&&e.target.id;
   if(id==='stimNameInput'||id==='stimMgInput'){e.preventDefault();A.addStim();}
+  else if(id==='wCustom'){e.preventDefault();A.drankCustom();}
 });
 document.addEventListener('change',e=>{
   const t=e.target;if(!t.dataset.set)return;
