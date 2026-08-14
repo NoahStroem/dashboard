@@ -120,6 +120,15 @@ body {
 .header { display:flex; align-items:flex-end; justify-content:space-between; gap: var(--space-4); margin-bottom: var(--space-8); flex-wrap: wrap; }
 .headerLeft { display:flex; flex-direction:column; gap: var(--space-3); }
 .headerRight { display:flex; flex-direction:column; align-items:flex-end; gap: var(--space-2); }
+/* Narrow: the header wraps, and .headerRight is only as wide as its widest
+ * child — so its right-aligned gear used to land mid-screen rather than at the
+ * edge. Give it the full width and lay it out as one row: currency left,
+ * settings right (row-reverse puts the gear, the first child, at the end). */
+@media (max-width: 620px) {
+  .header { flex-direction: column; align-items: stretch; gap: var(--space-5); }
+  .headerRight { width: 100%; flex-direction: row-reverse; justify-content: space-between; align-items: center; }
+  .currencySeg { flex: 0 1 auto; min-width: 0; }
+}
 .back {
   display:inline-flex; align-items:center; gap: var(--space-2); align-self:flex-start;
   padding: 6px 13px 6px 9px; background: var(--brand-soft); border: 1px solid var(--brand-line);
@@ -214,7 +223,10 @@ body {
 .chartGrid { stroke: var(--border); stroke-width: 0.5; }
 .chartLineStroke { filter: drop-shadow(0 0 7px currentColor); }
 .chartEmpty { text-align:center; color: var(--muted); font-size: var(--text-sm); padding: var(--space-6) 0; }
-.chartStatsRow { display:grid; grid-template-columns: repeat(4,1fr); gap: var(--space-3); margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--border); }
+.chartStatsRow { display:grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: var(--space-3); margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--border); }
+/* Four columns leaves ~68px each on a phone, which wraps every label onto two
+ * lines. Two-by-two reads far better at that width. */
+@media (max-width: 620px) { .chartStatsRow { grid-template-columns: repeat(2,minmax(0,1fr)); gap: var(--space-4) var(--space-3); } }
 .chartStat { display:flex; flex-direction:column; gap: 3px; }
 .chartStatLabel { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
 .chartStatVal { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--fg); }
@@ -390,7 +402,15 @@ body {
 /* sync-ui.js pins its status pill bottom-right at z-index 99998. This is the
  * only page with a bottom tab bar, so on a narrow screen the pill lands on top
  * of the last tab — lift it clear rather than change the shared component. */
-@media (max-width: 620px) { #syBtn { bottom: calc(69px + max(14px, env(safe-area-inset-bottom))) !important; } }
+/* sync-ui.js pins its status pill bottom-right at z-index 99998. This is the
+ * only page with a bottom tab bar, so on a narrow screen the pill lands on top
+ * of the last tab. Lift it clear, and drop to the status dot alone so the
+ * shortened pill covers as little of the page as possible — the dot still
+ * carries the state colour, and tapping it opens the full panel. */
+@media (max-width: 620px) {
+  #syBtn { bottom: calc(69px + max(14px, env(safe-area-inset-bottom))) !important; padding: 0 !important; min-width: 40px; min-height: 40px; justify-content: center; }
+  #syLabel { display: none; }
+}
 
 /* Aurora flourish: gradient hero number */
 

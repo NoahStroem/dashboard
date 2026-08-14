@@ -8,14 +8,13 @@
 <style>
 /* ============================================================
  * NOVA — AI MENTOR
- * A real, working mentor page that puts the three lab pieces to
- * work together: the 3D Nova avatar (companion), a live chat box,
- * and the cozy "pop" loader as the thinking state.
- *   - Avatar engine + face API ........ ported from ai-avatar-2.html
- *   - Chat bubbles / reveal / thinking . ported from the Chat Lab
- *   - Cozy loader ...................... ported from the Cozy Loader Lab
- * The avatar lab (ai-avatar-2.html) stays the playground; this is
- * the assembled, usable product.
+ * The one mentor page: the 3D Nova avatar (companion), a live chat
+ * box talking to Claude via /api/mentor, and the cozy "pop" loader
+ * as the thinking state.
+ *
+ * The avatar engine, chat bubbles and loader were originally ported
+ * in from three separate lab pages. Those labs have since been
+ * deleted — everything they provided is self-contained here.
  * ============================================================ */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { background: #05060c; }
@@ -391,7 +390,7 @@ body {
   })();
   </script>
 
-  <!-- ===== Nova 3D avatar engine (ported from ai-avatar-2.html) ===== -->
+  <!-- ===== Nova 3D avatar engine ===== -->
   <script type="module">
   import * as THREE from 'three'
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
