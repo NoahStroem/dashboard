@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <script src="sync-boot.js?v=1"></script>
+<script src="combo-log.js?v=1"></script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <link rel="manifest" href="manifest.webmanifest" />
@@ -75,6 +76,22 @@ body{ background:var(--vk-bg); color:var(--vk-fg); font-family:'Inter',-apple-sy
 .w-zone{ display:inline-flex; align-items:center; gap:6px; padding:5px 12px; background:rgba(110,231,183,.1); border:1px solid var(--vk-border-strong); border-radius:var(--vk-radius-pill); color:var(--vk-mint); font-family:var(--en-mono); font-size:10px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; margin:0 auto 12px; }
 .w-helper{ text-align:center; font-size:14px; color:var(--vk-muted-strong); margin:0 0 16px; }
 .w-helper.good{ color:var(--vk-mint); }
+/* One box for everything — parses what you type and sends it to the right tab. */
+.qb{ display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; margin:0 0 10px; }
+.qbInput{ min-width:0; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.10); border-radius:12px; padding:14px 16px; color:#fff; font-family:inherit; font-size:15px; outline:none; transition:border-color .18s, box-shadow .18s; }
+.qbInput::placeholder{ color:rgba(255,255,255,.38); }
+.qbInput:focus{ border-color:rgba(110,231,183,.45); box-shadow:0 0 0 3px rgba(110,231,183,.10); }
+.qbBtn{ appearance:none; border:0; border-radius:12px; padding:0 22px; background:#6EE7B7; color:#04130c; font-family:inherit; font-size:15px; font-weight:700; cursor:pointer; transition:filter .18s; }
+.qbBtn:hover{ filter:brightness(1.08); }
+.qbSugs{ display:flex; flex-direction:column; gap:2px; margin:0 0 10px; padding:6px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.09); border-radius:12px; }
+.qbSug{ appearance:none; display:flex; align-items:baseline; justify-content:space-between; gap:12px; width:100%; text-align:left; background:transparent; border:0; border-radius:9px; padding:10px 12px; color:#fff; font-family:inherit; font-size:14px; cursor:pointer; transition:background .14s; }
+.qbSug:hover,.qbSug:focus-visible{ background:rgba(110,231,183,.12); outline:none; }
+.qbSugName{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.qbSugMeta{ flex:none; font-family:var(--en-mono),ui-monospace,monospace; font-size:11px; color:rgba(255,255,255,.5); }
+.qbFeedback{ min-height:0; margin:0 0 14px; font-size:13px; line-height:1.5; }
+.qbFeedback:empty{ margin:0; }
+.qbOk{ color:#6EE7B7; } .qbMiss{ color:rgba(255,255,255,.55); }
+.qbWhere{ font-family:var(--en-mono),ui-monospace,monospace; font-size:10px; letter-spacing:.12em; text-transform:uppercase; opacity:.75; margin-right:8px; }
 .w-quickRow{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-bottom:10px; }
 .w-quick{ appearance:none; padding:12px 6px; border-radius:11px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.10); color:#fff; font-family:inherit; font-size:14px; font-weight:600; cursor:pointer; transition:border-color .18s, background .18s; }
 .w-quick:hover{ border-color:rgba(110,231,183,.4); background:rgba(110,231,183,.10); }
@@ -181,6 +198,13 @@ body{ background:var(--vk-bg); color:var(--vk-fg); font-family:'Inter',-apple-sy
       </div>
       <a class="en-back" href="index.html">← Liam</a>
     </header>
+
+    <form class="qb" id="quickBox" autocomplete="off">
+      <input class="qbInput" id="qbInput" type="text" placeholder="Log anything — 500ml · chicken 200g · creatine" aria-label="Log anything" />
+      <button class="qbBtn" type="submit">Log</button>
+    </form>
+    <div class="qbSuggest" id="qbSuggest"></div>
+    <div class="qbFeedback" id="qbFeedback" role="status"></div>
 
     <nav class="en-tabs" id="fwTabs" role="tablist">
       <button class="en-tab" data-tab="water" role="tab">Water</button>
@@ -355,7 +379,8 @@ const WATER=(function(){
   document.addEventListener('change',e=>{ if(activeTab!=='water')return; const t=e.target; if(!t.dataset.wset)return; const f=t.dataset.wset; let val=parseFloat(t.value); if(isNaN(val))val=0; if(f==='weightKg'||f==='age')val=Math.max(0,val); A.set({[f]:val}); });
 
   function hydrate(){ if(!window.PatronDB||!PatronDB.isCloud())return; PatronDB.get('water').then(cs=>{ if(cs&&cs.logs){ state=Object.assign(seed(),cs); if(!Array.isArray(state.stims))state.stims=[]; try{localStorage.setItem(LS,JSON.stringify(state));}catch(e){} if(activeTab==='water')renderPanel(); } else { PatronDB.set('water',state); } }).catch(()=>{}); }
-  return { html, after, hydrate };
+  // Exposed for the quick box at the top of the page.
+  return { html, after, hydrate, logMl:function(ml){ A.drank(ml); }, fmt:fmtVol };
 })();
 
 /* =====================================================================
@@ -413,9 +438,43 @@ const FOOD=(function(){
     else if(e.target.id==='foodGoal'){ const n=Number(e.target.value); setGoalCal(isFinite(n)&&n>=0?n:0); renderPanel(); } });
   document.addEventListener('click',e=>{ if(activeTab!=='food')return;
     const add=e.target.closest('[data-add]'); if(add){ const f=matches[Number(add.getAttribute('data-add'))]; const gramsEl=document.querySelector('[data-grams="'+add.getAttribute('data-add')+'"]'); const grams=Number(gramsEl&&gramsEl.value); if(!f||!isFinite(grams)||grams<=0){ alert('Enter how many grams.'); return; } const k=grams/100; const log=todaysLog(); log.push({name:f.name,grams,cal:f.cal*k,p:f.p*k,c:f.c*k,f:f.f*k}); setTodaysLog(log); query=''; renderPanel(); return; }
-    const del=e.target.closest('[data-del]'); if(del){ const log=todaysLog(); log.splice(Number(del.getAttribute('data-del')),1); setTodaysLog(log); renderPanel(); } });
+    const del=e.target.closest('[data-del]'); if(del){ const log=todaysLog(); const gone=log[Number(del.getAttribute('data-del'))];
+      // Part of a logged drink? Take the water and caffeine with it.
+      if(gone&&gone.grp&&window.ComboLog){ ComboLog.remove(gone.grp); store=loadAll(); renderPanel(); return; }
+      log.splice(Number(del.getAttribute('data-del')),1); setTodaysLog(log); renderPanel(); } });
   window.addEventListener('storage',e=>{ if(e.key===STORE_KEY){ store=loadAll(); if(activeTab==='food')renderPanel(); } });
-  return { html, after };
+
+  /* ---- for the quick box ---- */
+  /* Word-level match: "chicken 200g" has to find "Chicken breast", and
+   * "rice" has to find "White rice" — neither is a substring of the other.
+   * Score by how many of the food's own words appear, so "sweet potato"
+   * (2 words matched) beats plain "Potato" (1). */
+  function findFood(text){
+    let best=null;
+    FOODS.forEach(f=>{
+      const words=f.name.toLowerCase().replace(/[()]/g,' ').split(/\s+/).filter(w=>w.length>=3);
+      if(!words.length) return;
+      let hits=0, chars=0;
+      words.forEach(w=>{ if(new RegExp('\\b'+w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).test(text)){ hits++; chars+=w.length; } });
+      if(!hits) return;
+      if(!best || hits>best.hits || (hits===best.hits && chars>best.chars)) best={f:f,hits:hits,chars:chars};
+    });
+    return best?best.f:null;
+  }
+  function logFood(f,grams){
+    store=loadAll();
+    const k=grams/100;
+    const entry={name:f.name,grams,cal:f.cal*k,p:f.p*k,c:f.c*k,f:f.f*k};
+    const log=todaysLog(); log.push(entry); setTodaysLog(log);
+    return entry;
+  }
+  // A ready-made entry (a drink from the catalogue), already totalled.
+  function logEntry(e){
+    store=loadAll();
+    const log=todaysLog(); log.push(e); setTodaysLog(log);
+    return e;
+  }
+  return { html, after, findFood, logFood, logEntry, foods:FOODS };
 })();
 
 /* =====================================================================
@@ -424,6 +483,203 @@ const FOOD=(function(){
 const MODULES={ water:WATER, food:FOOD };
 function setTab(tab){ if(!MODULES[tab])return; activeTab=tab; document.querySelectorAll('.en-tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab)); renderPanel(); }
 document.getElementById('fwTabs').addEventListener('click',e=>{ const b=e.target.closest('[data-tab]'); if(b)setTab(b.dataset.tab); });
+
+/* =====================================================================
+ * QUICK BOX — type one line, it works out where it belongs.
+ *
+ * Order matters: a named food wins over a volume, so "200ml milk" is food
+ * rather than water. Only then does a bare volume mean water. Anything else
+ * is treated as a supplement, which is the open-ended case.
+ *
+ * Supplements live in supplements_standalone_v1, owned by another page, so
+ * this writes that key directly and marks the item taken for today —
+ * matching the shape that page and the dashboard tile both already read.
+ * ===================================================================== */
+const QUICK=(function(){
+  const VOL={ ml:1, cl:10, dl:100, l:1000, oz:29.5735 };
+  const SUP_KEY='supplements_standalone_v1';
+  const STIM_KEY='stimulant_standalone_v1';
+
+  /* Drinks are the case a plain food table handles badly: one can is fluid,
+   * calories AND caffeine at once. Pick one and all three get logged.
+   * The catalogue lives in combo-log.js because the Enhancers page needs it
+   * too, to undo a drink it did not log itself. */
+  const DRINKS=(window.ComboLog&&ComboLog.drinks)?ComboLog.drinks:[];
+
+  function parse(raw){
+    const s=String(raw||'').trim(); if(!s) return null;
+    const low=s.toLowerCase();
+
+    // 1. a food we know, with optional grams (defaults to 100g, the table's basis)
+    const food=FOOD.findFood(low);
+    if(food){
+      const g=low.match(/(\d+(?:[.,]\d+)?)\s*g\b/) || low.match(/(\d+(?:[.,]\d+)?)/);
+      const grams=g?Math.max(1,parseFloat(g[1].replace(',','.'))):100;
+      return { kind:'food', food, grams };
+    }
+
+    // 2. a volume → water
+    const vol=low.match(/(\d+(?:[.,]\d+)?)\s*(ml|cl|dl|l|oz)\b/);
+    if(vol){
+      const ml=parseFloat(vol[1].replace(',','.'))*VOL[vol[2]];
+      if(ml>0) return { kind:'water', ml:Math.round(ml) };
+    }
+
+    // 3. otherwise a supplement, with an optional dose we keep as a note
+    const dose=low.match(/(\d+(?:[.,]\d+)?)\s*(mg|mcg|µg|g|iu)\b/);
+    const name=s.replace(/(\d+(?:[.,]\d+)?)\s*(mg|mcg|µg|g|iu)\b/ig,'').replace(/\s+/g,' ').trim();
+    if(!name) return null;
+    return { kind:'supp', name, dose: dose?(dose[1].replace(',','.')+' '+dose[2]):null };
+  }
+
+  function logSupplement(name, dose){
+    let st={};
+    try{ st=JSON.parse(localStorage.getItem(SUP_KEY)||'{}')||{}; }catch(e){ st={}; }
+    if(!Array.isArray(st.items)) st.items=[];
+    if(!st.taken||typeof st.taken!=='object') st.taken={};
+    const low=name.toLowerCase();
+    let item=st.items.find(i=>i&&String(i.name||'').toLowerCase()===low);
+    let added=false;
+    if(!item){
+      // Random suffix, not just the clock: two items added in the same
+      // millisecond would otherwise share an id and clobber each other.
+      item={ id:'q'+Date.now().toString(36)+Math.random().toString(36).slice(2,7), name, dose:dose||'', qty:'' };
+      st.items.push(item); added=true;
+    }
+    const k=getLocalDateKey();
+    if(!st.taken[k]) st.taken[k]={};
+    st.taken[k][item.id]=true;
+    try{
+      if(window.PatronDB&&PatronDB.write) PatronDB.write(SUP_KEY, JSON.stringify(st));
+      else localStorage.setItem(SUP_KEY, JSON.stringify(st));
+    }catch(e){}
+    return { added };
+  }
+
+  function logCaffeine(name,mg,grp){
+    if(!(mg>0)) return;
+    let st={};
+    try{ st=JSON.parse(localStorage.getItem(STIM_KEY)||'{}')||{}; }catch(e){ st={}; }
+    if(!Array.isArray(st.logs)) st.logs=[];
+    if(!Array.isArray(st.custom)) st.custom=[];
+    st.logs.push({ id:'c_'+Date.now().toString(36)+Math.random().toString(36).slice(2,5), name:String(name), mg:Math.round(mg), t:Date.now(), grp:grp||null });
+    try{
+      if(window.PatronDB&&PatronDB.write) PatronDB.write(STIM_KEY, JSON.stringify(st));
+      else localStorage.setItem(STIM_KEY, JSON.stringify(st));
+    }catch(e){}
+  }
+
+  /* One pick, every store it touches — tied together by a group id so that
+   * deleting it from any one of those places removes the rest too. */
+  function logDrink(d){
+    const parts=[];
+    const grp=(window.ComboLog?ComboLog.newId():null);
+    if(d.ml>0){ WATER.logMl(d.ml); parts.push(WATER.fmt(d.ml)); }
+    if(d.cal>0||d.c>0||d.p>0||d.f>0){
+      FOOD.logEntry({ name:d.name, grams:d.ml, cal:d.cal, p:d.p||0, c:d.c||0, f:d.f||0, grp:grp });
+      parts.push(round(d.cal)+' kcal');
+    }
+    if(d.mg>0){ logCaffeine(d.name, d.mg, grp); parts.push(d.mg+' mg caffeine'); }
+    if(grp&&window.ComboLog) ComboLog.register(grp,{ name:d.name, dateKey:getLocalDateKey(), ml:d.ml||0, cal:d.cal||0, mg:d.mg||0 });
+    renderPanel();
+    return parts;
+  }
+
+  function say(cls,where,msg){
+    const fb=document.getElementById('qbFeedback');
+    if(fb) fb.innerHTML='<span class="'+cls+'"><span class="qbWhere">'+where+'</span>'+esc(msg)+'</span>';
+  }
+
+  /* ---- live suggestions ---- */
+  let sugg=[];
+  // Match on the name only — "chicken 250g" has to still find Chicken breast,
+  // so the quantity and its unit come out of the query first.
+  function nameOf(raw){
+    return String(raw||'').toLowerCase()
+      .replace(/\d+(?:[.,]\d+)?\s*(ml|cl|dl|l|oz|kg|g|mg|mcg|µg|iu)?\b/g,' ')
+      .replace(/\s+/g,' ').trim();
+  }
+  function buildSuggestions(raw){
+    const q=nameOf(raw);
+    if(q.length<2) return [];
+    const out=[];
+    DRINKS.forEach(d=>{ if(d.name.toLowerCase().includes(q)) out.push({type:'drink',d:d}); });
+    FOOD.foods.forEach(f=>{ const n=f.name.toLowerCase();
+      if(n.includes(q) || q.split(' ').some(w=>w.length>=3&&n.includes(w))) out.push({type:'food',f:f}); });
+    return out.slice(0,7);
+  }
+  function suggestionsHtml(list,raw){
+    if(!list.length) return '';
+    const rows=list.map((s,i)=>{
+      if(s.type==='drink'){
+        const d=s.d;
+        const bits=[]; if(d.ml)bits.push(WATER.fmt(d.ml)); if(d.cal)bits.push(round(d.cal)+' kcal'); if(d.mg)bits.push(d.mg+' mg');
+        return '<button type="button" class="qbSug" data-sug="'+i+'"><span class="qbSugName">'+esc(d.name)+'</span>'
+          +'<span class="qbSugMeta">'+esc(bits.join(' · '))+'</span></button>';
+      }
+      const f=s.f;
+      return '<button type="button" class="qbSug" data-sug="'+i+'"><span class="qbSugName">'+esc(f.name)+'</span>'
+        +'<span class="qbSugMeta">'+f.cal+' kcal / 100g</span></button>';
+    }).join('');
+    return '<div class="qbSugs">'+rows+'</div>';
+  }
+  function renderSuggestions(raw){
+    sugg=buildSuggestions(raw);
+    const box=document.getElementById('qbSuggest');
+    if(box) box.innerHTML=suggestionsHtml(sugg,raw);
+  }
+  function clearSuggestions(){ sugg=[]; const box=document.getElementById('qbSuggest'); if(box) box.innerHTML=''; }
+
+  function pick(i){
+    const s=sugg[i]; if(!s) return;
+    const el=document.getElementById('qbInput');
+    if(s.type==='drink'){
+      const parts=logDrink(s.d);
+      say('qbOk','logged', s.d.name+' → '+parts.join(' · '));
+    } else {
+      // A food from the table still needs a portion; 100g is the table's basis.
+      const typed=String(el.value||'').toLowerCase().match(/(\d+(?:[.,]\d+)?)\s*g\b/);
+      const grams=typed?Math.max(1,parseFloat(typed[1].replace(',','.'))):100;
+      const e=FOOD.logFood(s.f,grams);
+      say('qbOk','food', e.name+' '+grams+'g · '+round(e.cal)+' kcal');
+      renderPanel();
+    }
+    el.value=''; clearSuggestions(); el.focus();
+  }
+
+  function submit(raw){
+    // An exact catalogue name typed in full logs the whole drink.
+    const exact=DRINKS.find(d=>d.name.toLowerCase()===String(raw||'').trim().toLowerCase());
+    if(exact){ const parts=logDrink(exact); say('qbOk','logged', exact.name+' → '+parts.join(' · ')); return true; }
+
+    const p=parse(raw);
+    if(!p){ say('qbMiss','?','Didn’t catch that. Try “monster”, “500ml”, “chicken 200g” or “creatine 5g”.'); return false; }
+
+    if(p.kind==='water'){ WATER.logMl(p.ml); say('qbOk','water','+ '+WATER.fmt(p.ml)); renderPanel(); return true; }
+    if(p.kind==='food'){ const e=FOOD.logFood(p.food,p.grams); say('qbOk','food','+ '+e.name+' '+p.grams+'g · '+round(e.cal)+' kcal'); renderPanel(); return true; }
+    const r=logSupplement(p.name,p.dose);
+    say('qbOk','supplement','✓ '+p.name+(p.dose?(' '+p.dose):'')+(r.added?' — added to your stack':' — marked taken'));
+    return true;
+  }
+
+  const form=document.getElementById('quickBox');
+  if(form) form.addEventListener('submit',e=>{
+    e.preventDefault();
+    const el=document.getElementById('qbInput');
+    // Enter takes the top suggestion when there is one — that is what the list is for.
+    if(sugg.length){ pick(0); return; }
+    if(submit(el.value)){ el.value=''; clearSuggestions(); }
+    el.focus();
+  });
+  const input=document.getElementById('qbInput');
+  if(input) input.addEventListener('input',()=>renderSuggestions(input.value));
+  document.addEventListener('click',e=>{
+    const b=e.target.closest('[data-sug]');
+    if(b){ e.preventDefault(); pick(Number(b.getAttribute('data-sug'))); return; }
+    if(!e.target.closest('#quickBox')&&!e.target.closest('#qbSuggest')) clearSuggestions();
+  });
+  return { parse, submit, drinks:DRINKS };
+})();
 
 /* drifting mint particles (Rowan4 backdrop) */
 (function(){ const root=document.getElementById('fwParticles'); if(!root)return; const N=window.innerWidth<640?14:24; for(let i=0;i<N;i++){ const s=document.createElement('span'); s.style.left=Math.random()*100+'%'; s.style.top=(60+Math.random()*40)+'%'; const size=1.2+Math.random()*1.2; s.style.width=s.style.height=size+'px'; const dur=22+Math.random()*28; s.style.animationDuration=dur+'s'; s.style.animationDelay=(-Math.random()*dur)+'s'; s.style.setProperty('--dx',(Math.random()*30-15)+'px'); s.style.setProperty('--dy',-(60+Math.random()*50)+'vh'); root.appendChild(s); } })();

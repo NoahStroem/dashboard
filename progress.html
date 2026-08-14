@@ -86,14 +86,19 @@ body{background:var(--bg);color:var(--fg);font-family:var(--font-inter),-apple-s
 
 /* Chart */
 .chartWrap{position:relative;margin:var(--space-5) 0 var(--space-4);padding-left:34px}
-.chartYAxis{position:absolute;left:0;top:14px;bottom:38px;display:flex;flex-direction:column;justify-content:space-between;font-family:var(--font-mono),ui-monospace,monospace;font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums}
-.chart{display:block;width:100%;height:150px}
-.chartGrid{stroke:rgba(255,255,255,.04);stroke-width:.5}
+/* The svg stretches to the container (preserveAspectRatio=none), which is fine
+ * for the line but turns <circle> into an oval and skews stroke widths. So the
+ * paths use non-scaling-stroke and the dots are HTML, positioned by percentage
+ * — the same approach program.html uses for its e1RM chart. */
+.chartCanvas{position:relative;height:150px}
+.chartYAxis{position:absolute;left:-34px;top:15.4%;bottom:15.4%;display:flex;flex-direction:column;justify-content:space-between;font-family:var(--font-mono),ui-monospace,monospace;font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums}
+.chart{display:block;width:100%;height:100%}
+.chartGrid{stroke:rgba(255,255,255,.05);stroke-width:1;vector-effect:non-scaling-stroke}
 .chartArea{stroke:none}
-.chartLine{fill:none;stroke:var(--mint);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 5px var(--mint-glow))}
-.chartAvg{fill:none;stroke:rgba(255,255,255,.4);stroke-width:1.2;stroke-dasharray:4 4;stroke-linecap:round}
-.dot{fill:var(--mint);opacity:.45}
-.dotToday{fill:var(--mint);filter:drop-shadow(0 0 6px var(--mint))}
+.chartLine{fill:none;stroke:var(--mint);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;filter:drop-shadow(0 0 5px var(--mint-glow))}
+.chartAvg{fill:none;stroke:rgba(255,255,255,.4);stroke-width:1.2;stroke-dasharray:4 4;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.pDot{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--mint);opacity:.45;transform:translate(-50%,-50%);pointer-events:none}
+.pDotToday{width:10px;height:10px;opacity:1;box-shadow:0 0 8px var(--mint)}
 .chartMeta{text-align:center;font-size:11px;color:var(--muted);margin-top:6px}
 .chartLegend{display:flex;justify-content:center;gap:var(--space-4);margin-top:8px}
 .legendItem{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono),ui-monospace,monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
@@ -352,11 +357,14 @@ function heroHtml(){
   if(st>=2)chips+='<span class="streakChip"><span class="streakDot"></span>'+st+' day streak</span>';
   let chart='';
   if(cd){
-    let dots='';cd.points.forEach((p,i)=>{const last=i===cd.points.length-1;dots+='<circle class="'+(last?'dotToday':'dot')+'" cx="'+p.x+'" cy="'+p.y+'" r="'+(last?5:3)+'"/>';});
-    chart='<div class="chartWrap"><div class="chartYAxis"><span>'+cd.yMax.toFixed(1)+'</span><span>'+cd.yMin.toFixed(1)+'</span></div>'
+    // Percentage-positioned so they stay circular however wide the card gets.
+    let dots='';cd.points.forEach((p,i)=>{const last=i===cd.points.length-1;
+      dots+='<span class="pDot'+(last?' pDotToday':'')+'" style="left:'+((p.x/cd.W)*100).toFixed(3)+'%;top:'+((p.y/cd.H)*100).toFixed(3)+'%"></span>';});
+    chart='<div class="chartWrap"><div class="chartCanvas"><div class="chartYAxis"><span>'+cd.yMax.toFixed(1)+'</span><span>'+cd.yMin.toFixed(1)+'</span></div>'
       +'<svg class="chart" viewBox="0 0 '+cd.W+' '+cd.H+'" preserveAspectRatio="none" aria-hidden><defs><linearGradient id="pcf" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--mint)" stop-opacity=".28"/><stop offset="100%" stop-color="var(--mint)" stop-opacity="0"/></linearGradient></defs>'
       +'<line class="chartGrid" x1="0" y1="20" x2="'+cd.W+'" y2="20"/><line class="chartGrid" x1="0" y1="'+(cd.H/2)+'" x2="'+cd.W+'" y2="'+(cd.H/2)+'"/><line class="chartGrid" x1="0" y1="'+(cd.H-20)+'" x2="'+cd.W+'" y2="'+(cd.H-20)+'"/>'
-      +'<path class="chartAvg" d="'+cd.avgPath+'"/><path class="chartArea" d="'+cd.areaPath+'" fill="url(#pcf)"/><path class="chartLine" d="'+cd.linePath+'"/>'+dots+'</svg>'
+      +'<path class="chartAvg" d="'+cd.avgPath+'"/><path class="chartArea" d="'+cd.areaPath+'" fill="url(#pcf)"/><path class="chartLine" d="'+cd.linePath+'"/></svg>'
+      +dots+'</div>'
       +'<div class="chartMeta">'+cd.totalCount+' '+(cd.totalCount===1?'entry':'entries')+' · last '+cd.recentCount+' days</div>'
       +'<div class="chartLegend"><span class="legendItem"><span class="legendDot legendDotLine"></span>Daily</span><span class="legendItem"><span class="legendDot legendDotAvg"></span>7-day avg</span></div></div>';
   }

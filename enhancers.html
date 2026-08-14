@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <script src="sync-boot.js?v=1"></script>
+<script src="combo-log.js?v=1"></script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <link rel="manifest" href="manifest.webmanifest" />
@@ -324,7 +325,20 @@ const STIM = (function(){
   function status(){ const now=NOW(),cur=bodyAt(now); const lim=dailyLimit(),today=mgToday(); if(today>lim)return{word:'Over limit',tone:'danger'}; if(cur<10)return{word:'Clear',tone:'muted'}; const soon=bodyAt(now+10*60000); if(soon>cur+1){ const t=timing(); if(t&&now<t.peakMs-3*60000)return{word:'Kicking in',tone:''}; return{word:'Peaking',tone:''}; } if(cur>180)return{word:'Wired',tone:'warn'}; if(cur>60)return{word:'Dialed in',tone:''}; return{word:'Comedown',tone:'warn'}; }
 
   function logDrink(name,mg){ mg=Math.round(Number(mg)); if(!isFinite(mg)||mg<0)return; state.logs.push({id:'c_'+NOW().toString(36)+Math.random().toString(36).slice(2,5),name:String(name),mg,t:NOW()}); save(); renderPanel(); const t=timing(); if(t){ let msg='Logged · peak '+fmtClock(t.peakMs); if(t.comedown)msg+=' · dip '+fmtClock(t.comedown); toast(msg); } }
-  function removeLog(id){ state.logs=state.logs.filter(l=>l.id!==id); save(); renderPanel(); }
+  /* A drink logged from the Food & Water quick box also wrote water and
+   * calories under a shared group id. Removing it here removes those too —
+   * otherwise deleting the Monster left its 500 ml behind for good. */
+  function removeLog(id){
+    const gone=state.logs.find(l=>l.id===id);
+    // Drop the caffeine entry first, then let ComboLog take the water and
+    // calories with it — by group id, or by name for anything logged before
+    // group ids existed.
+    state.logs=state.logs.filter(l=>l.id!==id); save();
+    if(gone&&window.ComboLog){
+      ComboLog.removeFor(gone.grp, gone.name, localDateKey(new Date(gone.t)));
+    }
+    renderPanel();
+  }
   function addCustom(name,mg){ name=(name||'').trim(); mg=Math.round(Number(mg)); if(!name){toast('Name your drink first');return;} if(!isFinite(mg)||mg<0){toast('Enter the caffeine in mg');return;} if(!state.custom.some(c=>c.name.toLowerCase()===name.toLowerCase()))state.custom.unshift({name,mg}); save(); logDrink(name,mg); }
 
   function curveSvg(){
