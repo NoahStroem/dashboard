@@ -394,6 +394,52 @@ body {
 .emptyBody { font-size: 12px; color: var(--muted); max-width: 38ch; margin: 0 auto; line-height: 1.55; }
 
 /* Tab bar */
+/* Cashflow tab */
+.cfCard { padding: var(--space-5); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: var(--space-4); box-shadow: var(--card-shadow); }
+.cfCardHead { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-bottom: var(--space-4); }
+.cfHero { display:grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: var(--space-4); }
+.cfStat { display:flex; flex-direction:column; gap: 5px; min-width: 0; }
+.cfStatLabel { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.cfStatVal { font-family: var(--font-display); font-size: clamp(17px,4.4vw,25px); font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cfStatVal.pos { color: var(--pos); } .cfStatVal.neg { color: var(--neg); }
+.cfNote { margin: var(--space-4) 0 0; font-size: 12px; line-height: 1.5; color: var(--muted); font-style: italic; }
+.cfBars { display:grid; grid-template-columns: repeat(6,minmax(0,1fr)); gap: var(--space-2); align-items:end; height: 116px; }
+.cfBarCol { display:flex; flex-direction:column; align-items:center; gap: 7px; height: 100%; min-width: 0; }
+.cfBarTrack { flex:1; width: 100%; display:flex; align-items:flex-end; }
+.cfBar { width: 100%; border-radius: 5px 5px 2px 2px; background: var(--brand-line); transition: height var(--duration) var(--ease-premium); }
+.cfBarNow { background: var(--brand); }
+.cfBarLabel { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+.cfLegend { margin-top: var(--space-4); padding-top: var(--space-3); border-top: 1px solid var(--border); font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+.cfRow { display:grid; grid-template-columns: minmax(0,1fr) auto auto; gap: var(--space-3); align-items:center; padding: 9px 0; border-bottom: 1px solid var(--border); }
+.cfRow:last-child { border-bottom: 0; }
+.cfRowName { font-size: 13px; color: var(--fg); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.cfRowMeta { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.cfRowAmt { font-family: var(--font-mono); font-size: 13px; font-weight: 500; font-variant-numeric: tabular-nums; color: var(--fg); }
+.cfRowAmtIn { color: var(--pos); }
+/* Income rows carry a delete button, so they need a fourth column. */
+.cfCard .cfRow:has(.iconBtn) { grid-template-columns: minmax(0,1fr) auto auto auto; }
+.cfBarPair { display:flex; align-items:flex-end; justify-content:center; gap: 3px; width: 100%; height: 100%; }
+/* Green in, red out — matching the hero figures above the chart. Earlier
+ * months use the muted -line tokens so the current month reads as current. */
+.cfBarIn { background: var(--pos-line); }
+.cfBarOut { background: var(--neg-line); }
+.cfBarNow.cfBarIn { background: var(--pos); }
+.cfBarNow.cfBarOut { background: var(--neg); }
+.cfKey { display:inline-block; width: 9px; height: 9px; border-radius: 2px; vertical-align: baseline; }
+.cfKeyIn { background: var(--pos); } .cfKeyOut { background: var(--neg); }
+.cfHeadNote { text-transform: none; letter-spacing: 0.02em; color: var(--muted); opacity: 0.75; }
+/* A predicted bar is hatched so a forecast never reads as a recorded figure. */
+.cfBarPredicted { background-image: repeating-linear-gradient(45deg, rgba(0,0,0,0.28) 0 3px, transparent 3px 7px); }
+.addGridIncome { grid-template-columns: 2fr 1fr 1fr auto; }
+/* Four columns is unreadable on a phone — source on its own line, then the
+ * amount, period and button share the next. */
+@media (max-width: 620px) {
+  .addGridIncome { grid-template-columns: 1fr 1fr auto; }
+  .addGridIncome > :first-child { grid-column: 1 / -1; }
+}
+.cfEmptyLine { font-size: 13px; color: var(--muted); font-style: italic; }
+@media (max-width: 620px) { .cfHero { grid-template-columns: 1fr; gap: var(--space-3); } }
+
 .tabBar { position: fixed; bottom:0; left:0; right:0; z-index: 30; display:flex; justify-content:center; padding: var(--space-3) var(--space-4) calc(var(--space-3) + env(safe-area-inset-bottom)); background: var(--tabbar-grad); pointer-events:none; }
 .tabBarInner { display:flex; gap: 4px; padding: 5px; background: var(--tabbar-pill); border: 1px solid var(--border); border-radius: var(--radius-pill); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: 0 14px 44px rgba(0,0,0,0.45); pointer-events:auto; }
 .tab { appearance:none; background: transparent; border:0; color: var(--muted); font-family: var(--font-ui); font-size: 12px; font-weight: 600; letter-spacing: 0.02em; padding: 9px 18px; border-radius: var(--radius-pill); cursor: pointer; transition: background var(--duration) var(--ease-premium), color var(--duration) var(--ease-premium); }
@@ -461,8 +507,8 @@ const NW_HISTORY_MAX = 500;
 // started life as a Swiss fork and renaming them would orphan saved data) — read
 // every `amountCHF` as "amount in base units", i.e. kroner.
 const CURRENCIES = ['DKK', 'USD', 'EUR', 'GBP'];
-const TAB_KEYS = ['net', 'subs', 'orders'];
-const TAB_LABELS = { net: 'net worth', subs: 'subs', orders: 'orders' };
+const TAB_KEYS = ['net', 'cash', 'subs', 'orders'];
+const TAB_LABELS = { net: 'net worth', cash: 'cashflow', subs: 'subs', orders: 'orders' };
 const DEFAULT_RATES = { DKK: 1, USD: 1, EUR: 1, GBP: 1 };
 
 function genId(prefix) { return (prefix || 'id') + '_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8); }
@@ -530,7 +576,10 @@ function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replac
 /* ============================================================
  * State + persistence
  * ============================================================ */
-const DEFAULT_STATE = { version: 1, currency: 'DKK', activeTab: 'net', accounts: [], subscriptions: [], orders: [], activity: [], netWorthHistory: [] };
+/* income     — what you EXPECT to come in (recurring, or a one-off you know about)
+ * incomeReal — what actually landed, dated. A month with anything in incomeReal
+ *              uses that instead of the prediction. */
+const DEFAULT_STATE = { version: 1, currency: 'DKK', activeTab: 'net', accounts: [], subscriptions: [], orders: [], income: [], incomeReal: [], activity: [], netWorthHistory: [] };
 
 function load() {
   try {
@@ -544,6 +593,8 @@ function load() {
     // The wishlist tab is gone; anyone still parked on it lands on net worth.
     // Any stored `wishlist` array is left alone rather than deleted.
     if (!TAB_KEYS.includes(s.activeTab)) s.activeTab = 'net';
+    if (!Array.isArray(s.income)) s.income = []; // added with the cashflow tab
+    if (!Array.isArray(s.incomeReal)) s.incomeReal = [];
     return s;
   }
   catch { return Object.assign({}, DEFAULT_STATE); }
@@ -579,6 +630,8 @@ const ui = {
     subAdd: { name: '', amount: '', period: 'monthly', renewal: '', from: '', auto: false },
     subEdit: null,
     order: { mode: 'incoming', name: '', cost: '', from: '', arrival: '' },
+    income: { name: '', amount: '', period: 'monthly' },
+    incomeReal: { name: '', amount: '', date: '' },
   },
 };
 
@@ -634,6 +687,32 @@ const actions = {
     save(); render();
   },
   setHoldingShares(id, shares) { const a = state.accounts.find(x => x.id === id); if (a && a.type === 'stocks' && a.ticker && isFinite(shares) && shares >= 0) a.shares = shares; save(); render(); },
+
+  /* Income you type in yourself. 'once' entries land in the month they were
+   * added; everything else is recurring and carries across months. */
+  addIncome(input) {
+    const name = input.name.trim(); if (!name || !isFinite(input.displayAmount)) return;
+    state.income.push({
+      id: genId('inc'), name, amountCHF: displayToChf(input.displayAmount, state.currency, rates),
+      period: input.period || 'monthly', enteredAmount: input.displayAmount, enteredCurrency: state.currency,
+      ts: Date.now(),
+    });
+    save(); render();
+  },
+  deleteIncome(id) { state.income = state.income.filter(x => x.id !== id); save(); render(); },
+
+  /* Income that actually arrived, on a date. */
+  addRealIncome(input) {
+    const name = input.name.trim(); if (!name || !isFinite(input.displayAmount)) return;
+    const when = input.date ? new Date(input.date + 'T12:00:00') : new Date();
+    const ts = isFinite(when.getTime()) ? when.getTime() : Date.now();
+    state.incomeReal.push({
+      id: genId('rinc'), name, amountCHF: displayToChf(input.displayAmount, state.currency, rates),
+      enteredAmount: input.displayAmount, enteredCurrency: state.currency, ts,
+    });
+    save(); render();
+  },
+  deleteRealIncome(id) { state.incomeReal = state.incomeReal.filter(x => x.id !== id); save(); render(); },
 
   addSubscription(input) {
     const name = input.name.trim(); if (!name || !isFinite(input.displayAmount)) return;
@@ -717,7 +796,7 @@ function headerHtml() {
   const segs = CURRENCIES.map(c => '<button type="button" class="currencyBtn ' + (c === state.currency ? 'currencyBtnActive' : '') + '" data-act="currency" data-c="' + c + '">' + c + '</button>').join('');
   return '<header class="header"><div class="headerLeft">'
     + '<a class="back" href="index.html"><span class="backArrow">←</span> Liam</a>'
-    + '<h1 class="title">Finance</h1><p class="subtitle">Net worth · subs · orders</p>'
+    + '<h1 class="title">Finance</h1><p class="subtitle">Net worth · cashflow · subs · orders</p>'
     + '</div>'
     + '<div class="headerRight">'
     + '<div class="headerControls">'
@@ -991,6 +1070,9 @@ function netWorthViewHtml() {
 const PERIODS = [ { value:'monthly',label:'Monthly' }, { value:'yearly',label:'Yearly' }, { value:'weekly',label:'Weekly' } ];
 function accountOptions(selected) { return '<option value="">From account…</option>' + state.accounts.map(a => '<option value="' + a.id + '"' + (a.id === selected ? ' selected' : '') + '>' + esc(a.name) + '</option>').join(''); }
 function periodOptions(selected) { return PERIODS.map(p => '<option value="' + p.value + '"' + (p.value === selected ? ' selected' : '') + '>' + p.label + '</option>').join(''); }
+// Income can also be a one-off (a bonus, a sale) that shouldn't repeat monthly.
+const INCOME_PERIODS = PERIODS.concat([{ value:'once', label:'One-off' }]);
+function incomePeriodOptions(selected) { return INCOME_PERIODS.map(p => '<option value="' + p.value + '"' + (p.value === selected ? ' selected' : '') + '>' + p.label + '</option>').join(''); }
 function daysToNext(s) { if (!s.renewal) return null; const next = nextRenewalDate(s.renewal, s.period); if (!next) return null; const now = new Date(); const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime(); return Math.round((next.getTime() - today) / 86400000); }
 
 function subsViewHtml() {
@@ -1073,6 +1155,191 @@ function orderPreviewText(netWorth) {
   }
   return { text: fmt(amountCHF) + ' from ' + fromName + ' · add net worth first to see %', cls: '' };
 }
+/* ============================================================
+ * CASHFLOW view — what leaves each month, and what must have come in.
+ *
+ * There is no income field anywhere in this app, so income is never
+ * asserted: it is derived. Over any window, money in minus money out
+ * equals the change in net worth, so
+ *     implied in = net-worth change + money out
+ * and it is labelled as an estimate because it is only as good as how
+ * regularly you snapshot balances.
+ *
+ * Money out is what we can actually see: subscriptions at their monthly
+ * equivalent, plus orders that were really deducted (an order sitting
+ * "incoming" hasn't been paid yet, so it is not counted).
+ * ============================================================ */
+function monthKey(ts) { const d = new Date(ts); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
+function monthLabel(key) {
+  const [y, m] = key.split('-').map(Number);
+  return new Date(y, m - 1, 1).toLocaleDateString('en-GB', { month: 'short' }) + (m === 1 ? " '" + String(y).slice(2) : '');
+}
+/* Net worth at the last snapshot on or before the end of a month, so a month
+ * with no snapshot inherits the previous known value rather than reading zero. */
+function nwAtMonthEnd(key) {
+  const [y, m] = key.split('-').map(Number);
+  const cutoff = new Date(y, m, 1).getTime();
+  let val = null;
+  // Snapshots are { t: ms, v: total } — see maybeSnapshotNw().
+  (state.netWorthHistory || []).forEach(p => { if (p && p.t != null && p.t < cutoff) val = Number(p.v); });
+  return val;
+}
+/* Predicted income for a month: recurring entries always count, a 'once' entry
+ * only in the month it was added. */
+function incomeForMonth(key) {
+  return (state.income || []).reduce((sum, inc) => {
+    if (inc.period === 'once') return sum + (monthKey(inc.ts) === key ? (Number(inc.amountCHF) || 0) : 0);
+    return sum + monthlyEquivalent(inc);
+  }, 0);
+}
+/* What actually landed in a month. */
+function realIncomeForMonth(key) {
+  return (state.incomeReal || []).reduce((sum, inc) => sum + (monthKey(inc.ts) === key ? (Number(inc.amountCHF) || 0) : 0), 0);
+}
+/* The figure to use for a month. Real income replaces the prediction as soon as
+ * anything is logged for that month — a partial month would otherwise read as a
+ * collapse in income just because payday hasn't happened yet. */
+function effectiveIncome(key) {
+  const real = realIncomeForMonth(key);
+  const entries = (state.incomeReal || []).some(i => monthKey(i.ts) === key);
+  if (entries) return { value: real, source: 'real' };
+  return { value: incomeForMonth(key), source: 'predicted' };
+}
+function cashflowViewHtml() {
+  const monthlySubs = state.subscriptions.reduce((s, sub) => s + monthlyEquivalent(sub), 0);
+  const paidOrders = (state.orders || []).filter(o => o && o.deductedAt);
+
+  // Last 6 months, oldest → newest.
+  const months = [];
+  { const d = new Date(); d.setDate(1);
+    for (let i = 5; i >= 0; i--) { const x = new Date(d); x.setMonth(x.getMonth() - i); months.push(monthKey(x.getTime())); } }
+
+  const ordersByMonth = {};
+  paidOrders.forEach(o => { const k = monthKey(o.deductedAt); ordersByMonth[k] = (ordersByMonth[k] || 0) + (Number(o.amountCHF) || 0); });
+
+  const rows = months.map(k => {
+    const oneOff = ordersByMonth[k] || 0;
+    const eff = effectiveIncome(k);
+    return { key: k, subs: monthlySubs, oneOff, out: monthlySubs + oneOff, in: eff.value, inSource: eff.source };
+  });
+
+  const thisKey = months[months.length - 1];
+  const cur = rows[rows.length - 1];
+  const prevKey = months[months.length - 2];
+  const nwNow = netWorthChf(state.accounts);
+  // Baseline is where you ended LAST month, so the delta covers this month.
+  const nwPrev = nwAtMonthEnd(prevKey);
+  const nwDelta = nwPrev == null ? null : nwNow - nwPrev;
+  const impliedIn = nwDelta == null ? null : nwDelta + cur.out;
+
+  // Bars are scaled against whichever side is bigger, so in and out stay comparable.
+  const maxBar = Math.max(1, ...rows.map(r => Math.max(r.out, r.in)));
+  const bars = rows.map(r => {
+    const isNow = r.key === thisKey;
+    const hIn = Math.round((r.in / maxBar) * 100), hOut = Math.round((r.out / maxBar) * 100);
+    return '<div class="cfBarCol" title="' + esc(monthLabel(r.key) + ' · in ' + fmt(r.in) + (r.inSource === 'predicted' ? ' (predicted)' : '') + ' · out ' + fmt(r.out)) + '">'
+      + '<div class="cfBarTrack">'
+      +   '<div class="cfBarPair">'
+      +     (r.in > 0 ? '<div class="cfBar cfBarIn ' + (isNow ? 'cfBarNow' : '') + (r.inSource === 'predicted' ? ' cfBarPredicted' : '') + '" style="height:' + Math.max(2, hIn) + '%"></div>' : '')
+      +     '<div class="cfBar cfBarOut ' + (isNow ? 'cfBarNow' : '') + '" style="height:' + Math.max(2, hOut) + '%"></div>'
+      +   '</div>'
+      + '</div>'
+      + '<span class="cfBarLabel">' + esc(monthLabel(r.key)) + '</span></div>';
+  }).join('');
+
+  const stat = (label, val, cls) => '<div class="cfStat"><span class="cfStatLabel">' + esc(label) + '</span>'
+    + '<span class="cfStatVal ' + (cls || '') + '">' + val + '</span></div>';
+
+  const inThis = cur.in;
+  const usingPredicted = cur.inSource === 'predicted';
+  const net = inThis - cur.out;
+  const hasAnyIncome = (state.income || []).length > 0 || (state.incomeReal || []).length > 0;
+  const predictedThis = incomeForMonth(thisKey);
+  // Recorded income vs what the balances imply — a cross-check, not a correction.
+  const gap = (impliedIn == null || !hasAnyIncome) ? null : impliedIn - inThis;
+
+  const hero = '<div class="cfHero">'
+    + stat('In this month' + (hasAnyIncome && usingPredicted ? ' (predicted)' : ''), hasAnyIncome ? fmt(inThis) : '–', hasAnyIncome ? 'pos' : '')
+    + stat('Out this month', fmt(cur.out), 'neg')
+    + stat('Net', hasAnyIncome ? ((net >= 0 ? '+' : '−') + fmt(Math.abs(net))) : '–', hasAnyIncome ? (net >= 0 ? 'pos' : 'neg') : '')
+    + '</div>'
+    + '<p class="cfNote">' + (
+        !hasAnyIncome
+          ? (impliedIn == null
+              ? 'Add what you expect to earn below. Once real income is logged for a month, that replaces the prediction.'
+              : 'No income entered yet — but your balances moved ' + (nwDelta >= 0 ? 'up ' : 'down ') + fmt(Math.abs(nwDelta)) + ' this month, which implies about ' + fmt(impliedIn) + ' came in.')
+          : usingPredicted
+            ? ('Using your prediction — nothing logged as received this month yet. ' + (gap == null
+                ? 'Add a net-worth snapshot to cross-check it.'
+                : 'Your balances imply about ' + fmt(impliedIn) + ' has actually come in so far.'))
+            : ('Using what you logged as received. ' + (predictedThis > 0
+                ? (Math.abs(inThis - predictedThis) < 1 ? 'Exactly as predicted.'
+                   : fmt(Math.abs(inThis - predictedThis)) + ' ' + (inThis > predictedThis ? 'above' : 'below') + ' the ' + fmt(predictedThis) + ' predicted.')
+                : '') + (gap != null && Math.abs(gap) >= 1
+                ? ' Your balances imply ' + fmt(impliedIn) : ''))
+      ) + '</p>';
+
+  const di = ui.drafts.income;
+  const incomeForm = '<div class="addCard"><div class="addEyebrow">+ expected income</div><div class="addGrid addGridIncome">'
+    + '<input class="quickAddInput" type="text" placeholder="Source (e.g. Outdoortid)" value="' + esc(di.name) + '" data-draft="income.name" data-enter="addIncome" />'
+    + '<input class="quickAddInput" type="number" step="0.01" placeholder="Amount (' + state.currency + ')" value="' + esc(di.amount) + '" data-draft="income.amount" data-enter="addIncome" />'
+    + '<select class="quickAddInput" data-draft="income.period">' + incomePeriodOptions(di.period) + '</select>'
+    + '<button type="button" class="quickAddBtn" data-act="addIncome">+ Add</button></div></div>';
+
+  const hasPredicted = (state.income || []).length > 0;
+  const incomeRows = hasPredicted
+    ? state.income.slice().sort((a, b) => (b.period === 'once' ? 0 : monthlyEquivalent(b)) - (a.period === 'once' ? 0 : monthlyEquivalent(a))).map(inc => {
+        const shown = inc.period === 'once' ? fmt(inc.amountCHF) : fmt(monthlyEquivalent(inc)) + ' / mo';
+        const meta = inc.period === 'once' ? ('one-off · ' + formatActivityDate(inc.ts)) : inc.period;
+        return '<div class="cfRow"><span class="cfRowName">' + esc(inc.name) + '</span>'
+          + '<span class="cfRowMeta">' + esc(meta) + '</span>'
+          + '<span class="cfRowAmt cfRowAmtIn">' + esc(shown) + '</span>'
+          + '<button type="button" class="iconBtn" data-act="delIncome" data-id="' + inc.id + '" title="Remove">×</button></div>';
+      }).join('')
+    : '<div class="cfEmptyLine">Nothing yet — add your salary and anything else you expect.</div>';
+
+  const dr = ui.drafts.incomeReal;
+  const realForm = '<div class="addCard"><div class="addEyebrow">+ received</div><div class="addGrid addGridIncome">'
+    + '<input class="quickAddInput" type="text" placeholder="What came in (e.g. August pay)" value="' + esc(dr.name) + '" data-draft="incomeReal.name" data-enter="addRealIncome" />'
+    + '<input class="quickAddInput" type="number" step="0.01" placeholder="Amount (' + state.currency + ')" value="' + esc(dr.amount) + '" data-draft="incomeReal.amount" data-enter="addRealIncome" />'
+    + '<input class="quickAddInput" type="date" title="When it landed" value="' + esc(dr.date) + '" data-draft="incomeReal.date" />'
+    + '<button type="button" class="quickAddBtn" data-act="addRealIncome">+ Add</button></div></div>';
+
+  const realThisMonth = (state.incomeReal || []).filter(i => monthKey(i.ts) === thisKey).sort((a, b) => b.ts - a.ts);
+  const realRows = realThisMonth.length
+    ? realThisMonth.map(inc =>
+        '<div class="cfRow"><span class="cfRowName">' + esc(inc.name) + '</span>'
+        + '<span class="cfRowMeta">' + esc(formatActivityDate(inc.ts)) + '</span>'
+        + '<span class="cfRowAmt cfRowAmtIn">' + esc(fmt(inc.amountCHF)) + '</span>'
+        + '<button type="button" class="iconBtn" data-act="delRealIncome" data-id="' + inc.id + '" title="Remove">×</button></div>').join('')
+    : '<div class="cfEmptyLine">Nothing logged this month — the prediction above is being used.</div>';
+
+  const subsRows = state.subscriptions.length
+    ? state.subscriptions.slice().sort((a, b) => monthlyEquivalent(b) - monthlyEquivalent(a)).map(sub =>
+        '<div class="cfRow"><span class="cfRowName">' + esc(sub.name) + '</span>'
+        + '<span class="cfRowMeta">' + esc(sub.period) + '</span>'
+        + '<span class="cfRowAmt">' + esc(fmt(monthlyEquivalent(sub))) + ' / mo</span></div>').join('')
+    : '<div class="emptyState"><div class="emptyTitle">No recurring costs.</div><div class="emptyBody">Anything you add under Subs shows up here as a monthly figure.</div></div>';
+
+  const oneOffList = paidOrders.filter(o => monthKey(o.deductedAt) === thisKey);
+  const oneOffRows = oneOffList.length
+    ? oneOffList.sort((a, b) => b.deductedAt - a.deductedAt).map(o =>
+        '<div class="cfRow"><span class="cfRowName">' + esc(o.name) + '</span>'
+        + '<span class="cfRowMeta">' + esc(formatActivityDate(o.deductedAt)) + '</span>'
+        + '<span class="cfRowAmt">' + esc(fmt(o.amountCHF)) + '</span></div>').join('')
+    : '<div class="cfEmptyLine">Nothing deducted this month.</div>';
+
+  return '<section class="section"><div class="sectionEyebrow"><span>Cashflow</span><span class="sectionCount">' + esc(monthLabel(thisKey)) + '</span></div>'
+    + '<div class="cfCard">' + hero + '</div>'
+    + '<div class="cfCard"><div class="cfCardHead">In vs out, last 6 months</div><div class="cfBars">' + bars + '</div>'
+    + '<div class="cfLegend"><span class="cfKey cfKeyIn"></span>in &nbsp; <span class="cfKey cfKeyOut"></span>out &nbsp;·&nbsp; subs ' + esc(fmt(monthlySubs)) + ' / mo · ' + esc(fmt(monthlySubs * 12)) + ' / yr</div></div>'
+    + '<div class="cfCard"><div class="cfCardHead">Real income · ' + esc(monthLabel(thisKey)) + (realThisMonth.length ? '' : ' <span class="cfHeadNote">(not logged yet)</span>') + '</div>' + realRows + realForm + '</div>'
+    + '<div class="cfCard"><div class="cfCardHead">Predicted income' + (usingPredicted && hasPredicted ? ' <span class="cfHeadNote">(in use)</span>' : '') + '</div>' + incomeRows + incomeForm + '</div>'
+    + '<div class="cfCard"><div class="cfCardHead">Recurring out</div>' + subsRows + '</div>'
+    + '<div class="cfCard"><div class="cfCardHead">One-off this month</div>' + oneOffRows + '</div>'
+    + '</section>';
+}
+
 function ordersViewHtml() {
   const netWorth = netWorthChf(state.accounts);
   const d = ui.drafts.order; const isBought = d.mode === 'bought'; const needsAccount = isBought && !d.from;
@@ -1432,6 +1699,7 @@ async function runImport(kind, file) {
  * Render
  * ============================================================ */
 function viewHtml() {
+  if (state.activeTab === 'cash') return cashflowViewHtml();
   if (state.activeTab === 'subs') return subsViewHtml();
   if (state.activeTab === 'orders') return ordersViewHtml();
   return netWorthViewHtml();
@@ -1567,6 +1835,21 @@ document.addEventListener('click', e => {
       if (!d.name.trim() || isNaN(a)) break;
       actions.addAccount('stocks', d.name, a); d.name = ''; d.amt = ''; ui.show.stocksManual = true; render(); break;
     }
+
+    case 'addIncome': {
+      const d = ui.drafts.income; const a = parseFloat(d.amount);
+      if (!d.name.trim() || isNaN(a)) break;
+      actions.addIncome({ name: d.name, displayAmount: a, period: d.period });
+      ui.drafts.income = { name: '', amount: '', period: 'monthly' }; render(); break;
+    }
+    case 'delIncome': actions.deleteIncome(id); break;
+    case 'addRealIncome': {
+      const d = ui.drafts.incomeReal; const a = parseFloat(d.amount);
+      if (!d.name.trim() || isNaN(a)) break;
+      actions.addRealIncome({ name: d.name, displayAmount: a, date: d.date || null });
+      ui.drafts.incomeReal = { name: '', amount: '', date: '' }; render(); break;
+    }
+    case 'delRealIncome': actions.deleteRealIncome(id); break;
 
     case 'addSub': {
       const d = ui.drafts.subAdd; const a = parseFloat(d.amount);

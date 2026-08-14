@@ -219,6 +219,25 @@ body { background: var(--bg); color: var(--fg); font-family: var(--font-ui), -ap
 .srcActions { display:flex; align-items:center; gap: var(--space-2); margin-top: var(--space-4); }
 .srcActions .spacer { margin-right:auto; }
 
+/* Day picker inside the vitals modal */
+.calWrap { margin: var(--space-4) 0 var(--space-5); padding: var(--space-4); border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); }
+.calHead { display:flex; align-items:center; justify-content:space-between; margin-bottom: var(--space-3); }
+.calTitle { font-family: var(--font-display); font-size: var(--text-sm); font-weight: 600; }
+.calNav { appearance:none; width: 30px; height: 30px; border-radius: var(--radius-sm); background: transparent; border: 1px solid var(--border); color: var(--muted-strong); font-size: 16px; line-height: 1; cursor: pointer; transition: color var(--duration) var(--ease), border-color var(--duration) var(--ease); }
+.calNav:hover { color: var(--fg); border-color: var(--border-strong); }
+.calGrid { display:grid; grid-template-columns: repeat(7,minmax(0,1fr)); gap: 3px; }
+.calDows { margin-bottom: 4px; }
+.calDow { text-align:center; font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.08em; color: var(--muted); }
+.calDay { appearance:none; aspect-ratio: 1; display:grid; place-items:center; position: relative; border: 1px solid transparent; border-radius: var(--radius-sm); background: transparent; color: var(--muted-strong); font-family: var(--font-mono); font-size: 12px; cursor: pointer; transition: background var(--duration) var(--ease), color var(--duration) var(--ease); }
+.calDay:hover:not(:disabled) { background: var(--surface-2); color: var(--fg); }
+.calDayBlank { cursor: default; }
+.calDayOff { opacity: 0.22; cursor: not-allowed; }
+/* A dot marks a day that already has numbers saved. */
+.calDayHas::after { content:''; position:absolute; bottom: 4px; width: 4px; height: 4px; border-radius: 50%; background: var(--pos); }
+.calDayToday { color: var(--fg); border-color: var(--border-strong); }
+.calDaySel, .calDaySel:hover { background: var(--brand); color: var(--brand-ink); border-color: var(--brand); }
+.calDaySel.calDayHas::after { background: var(--brand-ink); }
+
 /* How-to steps (Apple Watch manual-copy guide inside the vitals modal) */
 .howto { margin: var(--space-4) 0 var(--space-2); padding: var(--space-4); border: 1px solid var(--brand-line); background: var(--brand-soft); border-radius: var(--radius-md); }
 .howtoTitle { display:flex; align-items:center; gap: 8px; font-family: var(--font-display); font-weight: 600; font-size: var(--text-sm); margin-bottom: var(--space-3); }
@@ -285,7 +304,7 @@ body{ background:#000 !important; font-family:'Inter',-apple-system,sans-serif; 
  * Apps in the suite — one bento card each.
  * ============================================================ */
 const APPS = [
-  { file: 'finance.html',     name: 'Finance',     tag: 'Net worth · subs · orders', icon: '💰', wide: true },
+  { file: 'finance.html',     name: 'Finance',     tag: 'Net worth · cashflow · subs · orders', icon: '💰', wide: true },
   { file: 'program.html',     name: 'Program',     tag: 'Your Google Sheet, live',               icon: '📋', wide: true },
   { file: 'enhancers.html',   name: 'Enhancers',   tag: 'Supplements · stimulants · meds',       icon: '💊', wide: true },
   { file: 'food.html',        name: 'Food & Water', tag: 'Hydration target · daily macros',       icon: '🥤', wide: true },
@@ -373,6 +392,14 @@ function saveHealth(d){
   } catch(e){}
 }
 function clearHealth(){ try { localStorage.removeItem(HEALTH_KEY); } catch(e){} }
+/* Save a record for any day. Today's also becomes the live tile record; an
+ * earlier day only goes into the log, so backfilling last Tuesday never makes
+ * the dashboard think Tuesday's numbers are today's. */
+function saveHealthForDate(d, dateKey){
+  d.dateKey = dateKey;
+  if (dateKey === localDateKey()) { health = d; saveHealth(d); }
+  else logHealth(d, 'write');
+}
 let health = loadHealth();
 // Page left open overnight: roll the tile over as soon as the date flips.
 setInterval(function(){
@@ -700,16 +727,65 @@ function splitHM(v){
   const tm = Math.round(Number(v) * 60);
   return { h: Math.floor(tm / 60), m: tm % 60 };
 }
-function manualFormHtml(h){
+function manualFormHtml(h, isToday){
   const g = (k) => (h && h[k] != null ? h[k] : '');
   const s = splitHM(h && h.sleepHours);
+  const foot = isToday === false
+    ? 'Filling in a day you missed. It goes straight into your history — today’s tile is left alone.'
+    : 'Read them off your watch and type them in. The readiness ring is estimated from these three — HRV weighted heaviest, then resting HR, then sleep. The tile clears itself each morning, so these are always today’s numbers (every day you save is kept in your history).';
   return '<div class="fieldGrid">'
     + '<div class="field"><label class="fieldLabel" for="f-hrv">HRV (ms)</label><input id="f-hrv" class="fieldInput" type="number" min="0" max="300" inputmode="numeric" placeholder="42" value="' + esc(g('hrv')) + '" /></div>'
     + '<div class="field"><label class="fieldLabel" for="f-rhr">Resting HR (bpm)</label><input id="f-rhr" class="fieldInput" type="number" min="20" max="150" inputmode="numeric" placeholder="56" value="' + esc(g('rhr')) + '" /></div>'
     + '<div class="field"><label class="fieldLabel" for="f-sleep-h">Slept — hours</label><input id="f-sleep-h" class="fieldInput" type="number" min="0" max="24" step="1" inputmode="numeric" placeholder="7" value="' + esc(s.h) + '" /></div>'
     + '<div class="field"><label class="fieldLabel" for="f-sleep-m">Slept — minutes</label><input id="f-sleep-m" class="fieldInput" type="number" min="0" max="59" step="1" inputmode="numeric" placeholder="30" value="' + esc(s.m) + '" /></div>'
     + '</div>'
-    + '<p class="howtoFoot" style="margin-top:var(--space-3)">Read them off your watch and type them in. The readiness ring is estimated from these three — HRV weighted heaviest, then resting HR, then sleep. The tile clears itself each morning, so these are always today’s numbers (every day you save is kept in your history).</p>';
+    + '<p class="howtoFoot" style="margin-top:var(--space-3)">' + foot + '</p>';
+}
+
+/* ---- Day picker for the vitals modal ----------------------------------
+ * A month grid so a day you missed can be filled in later. Days already in
+ * the log are dotted; future days are disabled. Reads the log rather than
+ * keeping its own copy, so it always matches what sync last agreed on. */
+function vitalsMonthShift(delta){
+  const [y, m] = (ui.vitalsMonth || localDateKey().slice(0, 7)).split('-').map(Number);
+  const d = new Date(y, m - 1 + delta, 1);
+  ui.vitalsMonth = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+  renderModal();
+}
+/* The record being edited: today comes from the live tile, any other day from the log. */
+function vitalsRecordFor(key){
+  if (key === localDateKey()) return health;
+  return loadHealthLog()[key] || null;
+}
+function vitalsCalendarHtml(){
+  const todayKey = localDateKey();
+  const sel = ui.vitalsDate || todayKey;
+  const month = ui.vitalsMonth || sel.slice(0, 7);
+  const [y, m] = month.split('-').map(Number);
+  const first = new Date(y, m - 1, 1);
+  const daysInMonth = new Date(y, m, 0).getDate();
+  const lead = (first.getDay() + 6) % 7; // Monday-first
+  const log = loadHealthLog();
+  const label = first.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+
+  let cells = '';
+  for (let i = 0; i < lead; i++) cells += '<span class="calDay calDayBlank"></span>';
+  for (let day = 1; day <= daysInMonth; day++) {
+    const key = y + '-' + String(m).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+    const isFuture = key > todayKey;
+    const has = key === todayKey ? !!health : !!log[key];
+    const cls = 'calDay' + (key === sel ? ' calDaySel' : '') + (isFuture ? ' calDayOff' : '')
+      + (has ? ' calDayHas' : '') + (key === todayKey ? ' calDayToday' : '');
+    cells += '<button type="button" class="' + cls + '"' + (isFuture ? ' disabled' : '')
+      + ' data-action="vitals-day" data-day="' + key + '" data-stop="1">' + day + '</button>';
+  }
+  const dows = ['M','T','W','T','F','S','S'].map(d => '<span class="calDow">' + d + '</span>').join('');
+  return '<div class="calWrap" data-stop="1">'
+    + '<div class="calHead"><button type="button" class="calNav" data-action="vitals-month" data-delta="-1" data-stop="1">‹</button>'
+    + '<span class="calTitle">' + esc(label) + '</span>'
+    + '<button type="button" class="calNav" data-action="vitals-month" data-delta="1" data-stop="1">›</button></div>'
+    + '<div class="calGrid calDows">' + dows + '</div>'
+    + '<div class="calGrid">' + cells + '</div></div>';
 }
 
 /* ============================================================
@@ -720,7 +796,12 @@ function renderModal(){
   if (ui.profileOpen) { root.innerHTML = profileModalHtml(); return; }
   if (!ui.modalOpen) { root.innerHTML = ''; return; }
   const src = ui.draftSource;
-  const h = (health && health.source === src) ? health : (src !== 'whoop' && health && health.source !== 'whoop') ? health : null;
+  // Editing a past day reads that day out of the log instead of the live record.
+  const selKey = ui.vitalsDate || localDateKey();
+  const isToday = selKey === localDateKey();
+  const past = isToday ? null : vitalsRecordFor(selKey);
+  const h = !isToday ? past
+    : (health && health.source === src) ? health : (src !== 'whoop' && health && health.source !== 'whoop') ? health : null;
   const v = (k) => (h && h[k] != null ? h[k] : '');
   const pill = (key, emoji, label) => '<button type="button" class="srcPill ' + (src === key ? 'srcPillActive' : '') + '" data-action="src" data-src="' + key + '"><span class="srcEmoji">' + emoji + '</span>' + label + '</button>';
 
@@ -769,13 +850,16 @@ function renderModal(){
       + '<p class="howtoFoot" style="margin-top:var(--space-3)">Fill <strong>Bedtime</strong> + <strong>Wake time</strong> and we’ll work out hours asleep for you — or just type the hours directly.</p>';
   } else {
     // Manual: no-band subjective self-report → readiness score
-    bodyHtml = manualFormHtml(h);
+    bodyHtml = manualFormHtml(h, isToday);
   }
-  const canClear = !!health;
+  const canClear = isToday ? !!health : !!past;
+  const selLabel = isToday ? 'Today’s vitals'
+    : new Date(selKey + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
   root.innerHTML = '<div class="overlay" data-action="close-vitals"><div class="panel" data-stop="1">'
-    + '<div class="panelHead"><div><div class="panelEyebrow">Manual entry</div><h2 class="panelTitle">Today’s vitals</h2></div><button type="button" class="panelClose" data-action="close-vitals">×</button></div>'
+    + '<div class="panelHead"><div><div class="panelEyebrow">' + (isToday ? 'Manual entry' : 'Editing an earlier day') + '</div><h2 class="panelTitle">' + esc(selLabel) + '</h2></div><button type="button" class="panelClose" data-action="close-vitals">×</button></div>'
+    + vitalsCalendarHtml()
     + bodyHtml
-    + '<div class="panelActions">' + (canClear ? '<button type="button" class="btn btn-link spacer" data-action="clear-vitals">clear vitals</button>' : '')
+    + '<div class="panelActions">' + (canClear ? '<button type="button" class="btn btn-link spacer" data-action="clear-vitals">' + (isToday ? 'clear vitals' : 'delete this day') + '</button>' : '')
     + '<button type="button" class="btn btn-ghost" data-action="close-vitals">Cancel</button>'
     + (src !== 'whoop' && src !== 'fitbit' ? '<button type="button" class="btn btn-primary" data-action="save-vitals">Save vitals</button>' : '')
     + '</div></div></div>';
@@ -784,6 +868,8 @@ function renderModal(){
 function openVitals(){
   ui.modalOpen = true;
   ui.draftSource = 'manual'; // manual-only for now
+  ui.vitalsDate = localDateKey();
+  ui.vitalsMonth = ui.vitalsDate.slice(0, 7);
   renderModal();
 }
 function saveVitals(){
@@ -803,9 +889,13 @@ function saveVitals(){
     if (hrv == null && rhr == null && sleepHours == null) { alert('Enter at least one of HRV, resting HR or time slept.'); return; }
     const target = (health && health.sleepTargetHours) || 8;
     const sleepPerf = sleepHours != null ? Math.round(Math.min(100, (sleepHours / target) * 100)) : null;
-    health = { source: 'manual', connected: true, ts: Date.now(), dateKey: localDateKey(), recovery: null,
+    const key = ui.vitalsDate || localDateKey();
+    // ts marks midday of the day being logged, not "now" — otherwise a record
+    // backfilled today would carry today's timestamp and sort wrongly.
+    const ts = key === localDateKey() ? Date.now() : new Date(key + 'T12:00:00').getTime();
+    const rec = { source: 'manual', connected: true, ts, dateKey: key, recovery: null,
       hrv, rhr, sleepHours, sleepPerf, sleepTargetHours: target, strain: null };
-    saveHealth(health);
+    saveHealthForDate(rec, key);
     ui.modalOpen = false;
     render();
     return;
@@ -909,13 +999,25 @@ document.addEventListener('click', e => {
   if (!btn) return;
   const action = btn.getAttribute('data-action');
   if (action === 'open-vitals') { openVitals(); return; }
+  if (action === 'vitals-day') { ui.vitalsDate = btn.getAttribute('data-day'); ui.vitalsMonth = ui.vitalsDate.slice(0, 7); renderModal(); return; }
+  if (action === 'vitals-month') { vitalsMonthShift(Number(btn.getAttribute('data-delta')) || 0); return; }
   if (action === 'open-profile') { openProfile(); return; }
   if (action === 'close-profile') { if (!stop || btn.tagName === 'BUTTON') { ui.profileOpen = false; markOnboardSeen(); renderModal(); } return; }
   if (action === 'save-profile') { saveProfile(); return; }
   if (action === 'close-vitals') { if (!stop || btn.tagName === 'BUTTON') { ui.modalOpen = false; renderModal(); } return; }
   if (action === 'src') { ui.draftSource = btn.getAttribute('data-src'); renderModal(); return; }
   if (action === 'save-vitals') { saveVitals(); return; }
-  if (action === 'clear-vitals') { if (confirm('Clear today’s vitals from the suite?')) { clearHealth(); health = null; ui.modalOpen = false; render(); } return; }
+  if (action === 'clear-vitals') {
+    const key = ui.vitalsDate || localDateKey();
+    if (key === localDateKey()) {
+      if (confirm('Clear today’s vitals from the suite?')) { clearHealth(); health = null; ui.modalOpen = false; render(); }
+    } else if (confirm('Delete the vitals saved for ' + key + '?')) {
+      // A real deletion, so it must ride as a user write and reach other devices.
+      const log = loadHealthLog(); delete log[key]; storeLog(log, 'write');
+      renderModal();
+    }
+    return;
+  }
   if (action === 'whoop-sync') { syncWhoop(); return; }
   if (action === 'whoop-disconnect') {
     fetch('/api/whoop/logout').catch(()=>{}).then(() => {
