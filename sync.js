@@ -67,6 +67,14 @@ window.PatronDB = (function () {
       || k === 'po_sync_map' || k === 'po_snapshot_ts' || k === 'po_snapshot_hash'
       || k === 'peak_schedule_v1'                 // regenerated from the file
       || k === 'po_sched_purged'
+      // Google Calendar: per-device connection state and a cache of events
+      // fetched from Google. Both are DERIVED — re-fetchable from the source of
+      // truth — and both get written while the page is loading, which is the
+      // one shape of write this engine cannot tell apart from a real edit.
+      // Syncing them would also push an OAuth grant onto your other devices.
+      // Your *choice* of which calendars to pull is a real preference and is
+      // NOT skipped: it lives in calendar_google_prefs_v1 and syncs normally.
+      || k.indexOf('gcal_') === 0
       || k.indexOf('patron_hydrated_') === 0
       || k.indexOf('patron_initreload_') === 0
       || k.indexOf('patron_snapadopt_') === 0;
