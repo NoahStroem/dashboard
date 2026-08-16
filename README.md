@@ -34,6 +34,63 @@ No fork, no setup — you get a live `your-app.vercel.app` link in about a minut
 | Creator | `creator.html` | Posting schedule, accounts, analytics |
 | Goals | `goals.html` | Goals & streaks |
 | Progress | `progress.html` | Weight log + progress photos |
+| Social | `social.html` | Force-directed graph of the people you know + contact log |
+
+## Social — the people graph
+
+`social.html` is an Obsidian-style graph of the people you know. Nodes are
+people, edges are how they're connected, and the colour of a node is **how long
+it's been since you last spoke**:
+
+| | |
+|---|---|
+| 🟢 green | contact within 30 days |
+| 🔴 red | 30+ days |
+| ⚪ grey | nothing logged yet |
+| ring | an **active contact** — someone you mean to stay close to |
+
+**A red node wearing a ring is the whole point of the page.** Those are the
+people you decided mattered and then went quiet on; they get a pulsing halo, a
+strip at the top of the page, and the count on the hub tile ("4 · need
+contact").
+
+- **Drag** nodes, **scroll/pinch** to zoom, **drag the background** to pan.
+  Hover or tap a node to light it and its neighbours and dim everyone else.
+- **Logging contact is two taps from the graph**: tap the person, tap
+  **Log contact**. It files today's date with whatever method you last used,
+  and offers an undo. Everything else — back-dating, method, a note — is in the
+  profile.
+- **Profile panel** (a bottom sheet on a phone) holds every field, that
+  person's connections, and their contact history, with "last contact: X days
+  ago" pinned at the top.
+- **Search** jumps to and focuses a person; **filters** narrow by group, tag,
+  active contacts, or red-only. Searching for someone the filters are hiding
+  clears the filters rather than doing nothing.
+- **Export / Import JSON** (⋯ menu) covers all three keys, so the data isn't
+  trapped in a browser. The same menu loads **sample data** and wipes it again.
+
+The graph is a small hand-rolled force simulation on `<canvas>` — no d3, no
+build step, nothing fetched at runtime. It holds 60fps at 150 people / 400
+links, and **stops asking for frames once the layout settles**, so a graph
+sitting open on a phone costs nothing.
+
+### Storage (three keys, and one rule)
+
+```
+social_people_v1     social_links_v1     social_contacts_v1
+```
+
+One key per thing that changes independently: logging a contact on your phone
+can't conflict with editing a profile on your laptop.
+
+**`lastContactedAt` is never stored.** Recency is derived from the contact log
+every time the graph draws. A page that recomputed it and wrote it back at load
+would look, to the sync engine, exactly like an edit you'd just made — and being
+newest it would win. That's the failure [SYNC.md](SYNC.md) exists to prevent, so
+this page makes **no writes at all** until you do something. Links pointing at a
+deleted person are skipped at render time rather than cleaned up on boot; the ⋯
+menu offers a manual tidy (a `PatronDB.derive` write, which can never overwrite
+another device).
 
 ## Quick start
 

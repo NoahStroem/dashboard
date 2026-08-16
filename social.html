@@ -1,0 +1,1668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="sync-boot.js?v=1"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#0F0F23" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Liam" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="icon" type="image/svg+xml" href="icon.svg" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+
+<title>Social · Liam</title>
+
+<!-- Fonts for the cyberpunk design system (keep as-is) -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800&family=Exo+2:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<!-- Animated neon icons (window.DASH_ICONS) -->
+<script src="icons.js?v=2"></script>
+
+<style>
+/* ============================================================
+ * Social — the people graph. Same cyberpunk base as every other
+ * page: tokens copied verbatim from _template.html, then skin.css
+ * linked last (as the template ships it) so this page wears the
+ * same skin as the rest of the suite.
+ * ============================================================ */
+:root{
+  color-scheme: dark;
+  --bg:#0F0F23; --bg-elevated:#1A1A3A;
+  --surface:rgba(139,92,246,0.06); --surface-2:rgba(139,92,246,0.11);
+  --fg:#F8FAFC; --muted:rgba(226,232,255,0.52); --muted-strong:rgba(226,232,255,0.80);
+  --border:rgba(124,58,237,0.22); --border-strong:rgba(167,139,250,0.45);
+  --brand:#8B5CF6; --brand-2:#22D3EE; --brand-ink:#0B0420;
+  --brand-soft:rgba(139,92,246,0.16); --brand-line:rgba(139,92,246,0.40); --brand-glow:rgba(139,92,246,0.65);
+  --pos:#22D3EE; --neg:#F472B6; --warn:#FBBF24;
+  --card-shadow:0 1px 0 rgba(167,139,250,0.08) inset, 0 22px 50px -28px rgba(0,0,0,0.95);
+  --space-1:.25rem;--space-2:.5rem;--space-3:.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-16:4rem;
+  --radius-md:11px; --radius-lg:18px; --radius-pill:999px;
+  --text-xs:.75rem;--text-sm:.875rem;--text-base:1rem;--text-lg:1.125rem;--text-3xl:2.5rem;
+  --ease:cubic-bezier(.2,.8,.2,1); --ease-premium:cubic-bezier(.16,1,.3,1); --duration:200ms;
+  --font-display:'Orbitron'; --font-ui:'Exo 2'; --font-mono:'JetBrains Mono';
+
+  /* Contact-state palette. Deliberately NOT --brand: the skin repoints
+   * --brand per-suite, and "when did I last talk to this person" has to
+   * read the same under any skin. */
+  --st-fresh:#34D399; --st-stale:#FB4E6D; --st-none:#8291AE;
+  --st-fresh-soft:rgba(52,211,153,.15); --st-stale-soft:rgba(251,78,109,.15); --st-none-soft:rgba(130,145,174,.14);
+  --st-ring:#F8FAFC;
+
+  /* z-index scale — everything stays under the sync pill (99998). */
+  --z-quick:40; --z-backdrop:50; --z-panel:60; --z-modal:80; --z-toast:90;
+}
+*{box-sizing:border-box} html,body{margin:0;padding:0}
+body{ background:var(--bg); color:var(--fg); font-family:var(--font-ui),-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; -webkit-font-smoothing:antialiased; overscroll-behavior-y:none; }
+.page{ position:relative; min-height:100dvh; padding:var(--space-8) var(--space-5) var(--space-16); isolation:isolate; }
+.page::before{ content:''; position:absolute; inset:0; pointer-events:none; z-index:-1;
+  background: radial-gradient(58% 42% at 82% 6%, rgba(139,92,246,0.22), transparent 70%), radial-gradient(48% 38% at 12% 92%, rgba(34,211,238,0.12), transparent 72%); }
+.shell{ max-width:1180px; margin:0 auto; }
+
+/* Header */
+.header{ display:flex; align-items:flex-end; justify-content:space-between; gap:var(--space-4); margin-bottom:var(--space-5); flex-wrap:wrap; }
+.title{ font-family:var(--font-display); font-weight:800; font-size:var(--text-3xl); line-height:1; letter-spacing:.03em; text-transform:uppercase; margin:0;
+  background:linear-gradient(120deg,#fff 35%,var(--brand-2) 75%,var(--brand)); -webkit-background-clip:text; background-clip:text; color:transparent; filter:drop-shadow(0 0 20px rgba(34,211,238,.4)); }
+.subtitle{ font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:.18em; color:var(--muted); margin:6px 0 0; }
+.headerControls{ display:flex; align-items:center; gap:var(--space-2); }
+.backLink{ display:inline-flex; align-items:center; gap:6px; padding:7px 14px; background:var(--brand-soft); border:1px solid var(--brand-line); border-radius:var(--radius-pill); color:var(--brand-2); font-size:var(--text-xs); font-weight:600; text-decoration:none; transition:border-color var(--duration) var(--ease-premium), background var(--duration) var(--ease-premium); }
+.backLink:hover{ border-color:var(--brand-2); background:rgba(34,211,238,.12); }
+
+/* Cards */
+.card{ position:relative; border:1px solid var(--border); border-radius:var(--radius-lg); background:var(--bg-elevated); box-shadow:var(--card-shadow); }
+
+/* Buttons */
+.btn{ display:inline-flex; align-items:center; justify-content:center; gap:var(--space-2); padding:.6rem var(--space-4); border-radius:var(--radius-md); font-family:var(--font-ui); font-size:var(--text-sm); font-weight:600; cursor:pointer; border:1px solid transparent; background:transparent; color:var(--fg); transition:filter var(--duration) var(--ease), border-color var(--duration) var(--ease), background var(--duration) var(--ease), box-shadow var(--duration) var(--ease); }
+.btn-primary{ background:var(--brand); color:#fff; font-weight:700; }
+.btn-primary:hover{ filter:brightness(1.1); box-shadow:0 0 22px var(--brand-glow); }
+.btn-ghost{ border:1px solid var(--border-strong); color:var(--fg); }
+.btn-ghost:hover{ border-color:var(--brand-line); background:var(--surface); }
+.btn-sm{ padding:.38rem .7rem; font-size:var(--text-xs); }
+.btn-danger{ border:1px solid rgba(251,78,109,.42); color:#FB4E6D; }
+.btn-danger:hover{ background:rgba(251,78,109,.12); border-color:#FB4E6D; }
+.btn:disabled{ opacity:.45; cursor:not-allowed; }
+.btn:focus-visible,.input:focus-visible,.select:focus-visible,.chip:focus-visible,.iconBtn:focus-visible,.searchHit:focus-visible{ outline:2px solid var(--brand-2); outline-offset:2px; }
+
+/* Inputs — same control the rest of the suite uses (creator.html) */
+.input,.select{ appearance:none; background:var(--surface); border:1px solid var(--border-strong); border-radius:var(--radius-md); color:var(--fg); font-family:inherit; font-size:13px; padding:9px 11px; outline:none; transition:border-color var(--duration) var(--ease-premium), box-shadow var(--duration) var(--ease-premium); }
+.input:focus,.select:focus{ border-color:var(--brand-line); box-shadow:0 0 0 3px var(--brand-soft); }
+.input::placeholder{ color:var(--muted); }
+.select{ background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888fae' stroke-width='2.5' stroke-linecap='round'><path d='M6 9l6 6 6-6'/></svg>"); background-repeat:no-repeat; background-position:right 9px center; padding-right:28px; }
+textarea.input{ resize:vertical; min-height:64px; line-height:1.5; }
+label.fieldLab{ display:block; font-family:var(--font-mono); font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin:0 0 5px; }
+.iconBtn{ display:inline-grid; place-items:center; width:38px; height:38px; border-radius:var(--radius-md); border:1px solid var(--border-strong); background:transparent; color:var(--muted-strong); cursor:pointer; transition:border-color var(--duration) var(--ease), color var(--duration) var(--ease), background var(--duration) var(--ease); }
+.iconBtn:hover{ border-color:var(--brand-line); color:var(--fg); background:var(--surface); }
+
+/* ---- Alarm strip: active contacts that have gone red ---- */
+.alarm{ display:flex; align-items:center; gap:var(--space-3); padding:12px 15px; margin-bottom:var(--space-4); border-radius:var(--radius-lg); border:1px solid rgba(251,78,109,.4); background:linear-gradient(100deg, rgba(251,78,109,.14), rgba(251,78,109,.04)); cursor:pointer; width:100%; text-align:left; font-family:inherit; color:var(--fg); }
+.alarm:hover{ border-color:#FB4E6D; }
+.alarm[hidden]{ display:none; }
+.alarmDot{ flex:none; width:11px; height:11px; border-radius:50%; background:var(--st-stale); box-shadow:0 0 0 4px rgba(251,78,109,.2); animation:alarmPulse 2s var(--ease) infinite; }
+@keyframes alarmPulse{ 0%,100%{ box-shadow:0 0 0 3px rgba(251,78,109,.18) } 50%{ box-shadow:0 0 0 8px rgba(251,78,109,.05) } }
+.alarmMain{ flex:1; min-width:0; }
+.alarmTitle{ display:block; font-weight:700; font-size:var(--text-sm); }
+.alarmSub{ display:block; font-family:var(--font-mono); font-size:10.5px; letter-spacing:.05em; color:var(--muted-strong); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.alarmGo{ flex:none; font-family:var(--font-mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--st-stale); }
+
+/* ---- Toolbar ---- */
+.toolbar{ display:flex; gap:var(--space-2); flex-wrap:wrap; align-items:center; margin-bottom:var(--space-4); }
+.filters{ display:flex; gap:var(--space-2); flex-wrap:wrap; align-items:center; }
+.searchWrap{ position:relative; flex:1 1 220px; min-width:180px; }
+.searchWrap .input{ width:100%; padding-left:34px; }
+.searchIcon{ position:absolute; left:11px; top:50%; transform:translateY(-50%); color:var(--muted); display:flex; pointer-events:none; }
+.searchHits{ position:absolute; top:calc(100% + 6px); left:0; right:0; z-index:var(--z-quick); background:var(--bg-elevated); border:1px solid var(--border-strong); border-radius:var(--radius-md); box-shadow:0 20px 40px -20px rgba(0,0,0,.9); overflow:hidden; max-height:280px; overflow-y:auto; }
+.searchHits[hidden]{ display:none; }
+.searchHit{ display:flex; align-items:center; gap:9px; width:100%; padding:10px 12px; min-height:44px; background:transparent; border:0; border-bottom:1px solid var(--border); color:var(--fg); font-family:inherit; font-size:13px; text-align:left; cursor:pointer; }
+.searchHit:last-child{ border-bottom:0; }
+.searchHit:hover,.searchHit[aria-selected="true"]{ background:var(--surface-2); }
+.searchHitSub{ margin-left:auto; font-family:var(--font-mono); font-size:10px; color:var(--muted); }
+.chip{ display:inline-flex; align-items:center; gap:6px; padding:8px 13px; border-radius:var(--radius-pill); border:1px solid var(--border-strong); background:transparent; color:var(--muted-strong); font-family:var(--font-ui); font-size:var(--text-xs); font-weight:600; cursor:pointer; transition:border-color var(--duration) var(--ease), color var(--duration) var(--ease), background var(--duration) var(--ease); }
+.chip:hover{ border-color:var(--brand-line); color:var(--fg); }
+.chip[aria-pressed="true"]{ background:var(--brand-soft); border-color:var(--brand-line); color:var(--fg); }
+.chip[aria-pressed="true"][data-tone="stale"]{ background:rgba(251,78,109,.16); border-color:rgba(251,78,109,.5); color:#FFC6D1; }
+.chipDot{ width:8px; height:8px; border-radius:50%; flex:none; }
+
+/* ---- Legend ---- */
+.legend{ display:flex; gap:var(--space-4); flex-wrap:wrap; align-items:center; margin-bottom:var(--space-3); font-family:var(--font-mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
+.legend i{ display:inline-flex; align-items:center; gap:6px; font-style:normal; }
+.legend b{ font-weight:inherit; }
+.legend em{ display:none; font-style:normal; }
+.legend .sw{ width:11px; height:11px; border-radius:50%; flex:none; }
+.legend .sw.ring{ box-shadow:0 0 0 2px var(--st-ring); }
+
+/* ---- Graph ---- */
+.graphCard{ position:relative; overflow:hidden; height:clamp(400px, 64dvh, 720px); }
+#graph{ display:block; width:100%; height:100%; touch-action:none; cursor:grab; }
+#graph.dragging{ cursor:grabbing; }
+.graphTools{ position:absolute; top:12px; right:12px; display:flex; flex-direction:column; gap:6px; }
+.graphHint{ position:absolute; left:14px; bottom:12px; font-family:var(--font-mono); font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); pointer-events:none; }
+.graphCount{ position:absolute; left:14px; top:12px; font-family:var(--font-mono); font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); pointer-events:none; }
+
+/* ---- Empty state ---- */
+/* Overlays the canvas. As a normal-flow sibling it would be laid out *below*
+ * the full-height canvas and clipped away by the card's overflow:hidden. */
+.empty{ position:absolute; inset:0; display:grid; align-content:center; justify-items:center; text-align:center; padding:32px 22px; gap:var(--space-4); }
+.empty[hidden]{ display:none; }
+.emptyIcon{ opacity:.75; }
+.emptyIcon svg{ width:72px; height:72px; }
+.emptyTitle{ font-family:var(--font-display); font-weight:700; font-size:var(--text-lg); }
+.emptyText{ font-size:13.5px; color:var(--muted-strong); line-height:1.6; max-width:44ch; }
+.emptyActions{ display:flex; gap:var(--space-2); flex-wrap:wrap; justify-content:center; }
+
+/* ---- Quick bar (mobile: tap a node once) ---- */
+.quickbar{ position:fixed; left:12px; right:12px; bottom:calc(12px + env(safe-area-inset-bottom)); z-index:var(--z-quick); display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:var(--radius-lg); border:1px solid var(--border-strong); background:rgba(20,20,44,.93); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); box-shadow:0 18px 40px -18px rgba(0,0,0,.95); }
+.quickbar[hidden]{ display:none; }
+.quickDot{ width:12px; height:12px; border-radius:50%; flex:none; }
+.quickMain{ flex:1; min-width:0; }
+.quickName{ display:block; font-weight:700; font-size:var(--text-sm); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.quickSub{ display:block; font-family:var(--font-mono); font-size:10px; color:var(--muted); margin-top:1px; }
+.quickbar .btn{ min-height:44px; }
+
+/* ---- Backdrop + panel ---- */
+.backdrop{ position:fixed; inset:0; z-index:var(--z-backdrop); background:rgba(6,6,18,.62); backdrop-filter:blur(2px); opacity:0; pointer-events:none; transition:opacity var(--duration) var(--ease); }
+.backdrop.open{ opacity:1; pointer-events:auto; }
+/* On a wide screen the profile is a drawer, not a modal: the graph stays lit
+ * and clickable behind it, so you can click straight from one person to the
+ * next. The backdrop is only for the mobile bottom sheet. */
+@media (min-width:768px){ .backdrop{ display:none; } }
+
+/* The suite's sync pill is fixed bottom-right at z-index 99998 — above
+ * anything this page can put on screen. Rather than fight it, move it out of
+ * the way of the panel and the quick bar while they're open. */
+#syBtn{ transition:transform 220ms var(--ease-premium), opacity 180ms var(--ease); }
+body.quickOpen #syBtn{ transform:translateY(-64px); }
+body.modalOpen #syBtn{ opacity:0; pointer-events:none; }
+@media (min-width:768px){ body.sheetOpen #syBtn{ transform:translateX(calc(-1 * min(420px, 100vw) - 12px)); } }
+@media (max-width:767px){ body.sheetOpen #syBtn{ opacity:0; pointer-events:none; } }
+.panel{ position:fixed; top:0; right:0; bottom:0; width:min(420px,100vw); z-index:var(--z-panel); background:var(--bg-elevated); border-left:1px solid var(--border-strong); box-shadow:-24px 0 60px -30px rgba(0,0,0,.95); display:flex; flex-direction:column; transform:translateX(102%); transition:transform 260ms var(--ease-premium); }
+.panel.open{ transform:translateX(0); }
+.panelHead{ display:flex; align-items:flex-start; gap:10px; padding:16px 16px 12px; border-bottom:1px solid var(--border); }
+.panelHead .grab{ display:none; }
+.panelTitleWrap{ flex:1; min-width:0; }
+.panelName{ font-family:var(--font-display); font-weight:700; font-size:19px; line-height:1.2; word-break:break-word; }
+.panelMeta{ font-family:var(--font-mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-top:4px; }
+.panelBody{ flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:14px 16px calc(96px + env(safe-area-inset-bottom)); }
+.sect{ margin-bottom:var(--space-6); }
+.sectTitle{ font-family:var(--font-mono); font-size:9.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--brand-2); margin:0 0 10px; display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.fieldGrid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.fieldGrid .full{ grid-column:1 / -1; }
+.fieldGrid .input,.fieldGrid .select{ width:100%; }
+
+/* last-contact banner, pinned at the top of the panel body */
+.lastRow{ display:flex; align-items:center; gap:12px; padding:13px 14px; border-radius:var(--radius-md); border:1px solid var(--border-strong); background:var(--surface); margin-bottom:var(--space-4); }
+.lastRow[data-state="fresh"]{ border-color:rgba(52,211,153,.45); background:var(--st-fresh-soft); }
+.lastRow[data-state="stale"]{ border-color:rgba(251,78,109,.5); background:var(--st-stale-soft); }
+.lastRow[data-state="none"]{ border-color:var(--border-strong); background:var(--st-none-soft); }
+.lastVal{ font-family:var(--font-display); font-weight:700; font-size:20px; line-height:1; }
+.lastLab{ font-family:var(--font-mono); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted-strong); margin-top:4px; display:block; }
+.lastRow .btn{ margin-left:auto; min-height:44px; }
+
+/* rows: contact history + links */
+.row{ display:flex; align-items:center; gap:10px; padding:10px 11px; border-radius:var(--radius-md); border:1px solid var(--border); background:var(--surface); margin-bottom:7px; }
+.rowMain{ flex:1; min-width:0; }
+.rowTop{ font-size:13px; font-weight:600; overflow:hidden; text-overflow:ellipsis; }
+.rowSub{ font-family:var(--font-mono); font-size:10px; color:var(--muted); margin-top:3px; overflow:hidden; text-overflow:ellipsis; }
+.rowActs{ display:flex; gap:4px; flex:none; }
+.miniBtn{ display:grid; place-items:center; width:32px; height:32px; border-radius:9px; border:1px solid transparent; background:transparent; color:var(--muted); cursor:pointer; }
+.miniBtn:hover{ background:var(--surface-2); color:var(--fg); }
+.miniBtn.danger:hover{ color:#FB4E6D; background:rgba(251,78,109,.12); }
+.addForm{ display:grid; gap:8px; padding:11px; border:1px dashed var(--border-strong); border-radius:var(--radius-md); }
+.addForm .line{ display:flex; gap:8px; flex-wrap:wrap; }
+.addForm .line > *{ flex:1; min-width:110px; }
+.methodBadge{ display:inline-block; padding:2px 8px; border-radius:var(--radius-pill); background:var(--brand-soft); border:1px solid var(--brand-line); color:var(--brand-2); font-family:var(--font-mono); font-size:9px; letter-spacing:.08em; text-transform:uppercase; }
+.strengthDots{ display:inline-flex; gap:3px; vertical-align:middle; }
+.strengthDots i{ width:5px; height:5px; border-radius:50%; background:var(--border-strong); }
+.strengthDots i.on{ background:var(--brand-2); }
+.tagList{ display:flex; gap:5px; flex-wrap:wrap; margin-top:7px; }
+.tagPill{ font-family:var(--font-mono); font-size:9.5px; letter-spacing:.06em; padding:3px 8px; border-radius:var(--radius-pill); background:var(--surface-2); border:1px solid var(--border); color:var(--muted-strong); }
+.muted{ color:var(--muted); font-size:12.5px; }
+.switchRow{ display:flex; align-items:center; gap:11px; padding:11px 12px; border-radius:var(--radius-md); border:1px solid var(--border-strong); background:var(--surface); cursor:pointer; min-height:44px; }
+.switchRow input{ width:18px; height:18px; accent-color:var(--brand); flex:none; cursor:pointer; }
+.switchRow .swTxt{ flex:1; }
+.switchRow .swTitle{ display:block; font-size:13px; font-weight:600; }
+.switchRow .swSub{ display:block; font-size:11.5px; color:var(--muted); margin-top:2px; line-height:1.45; }
+
+/* ---- Modal ---- */
+.modal{ position:fixed; inset:0; z-index:var(--z-modal); display:none; align-items:center; justify-content:center; padding:18px; background:rgba(6,6,18,.7); backdrop-filter:blur(3px); }
+.modal.open{ display:flex; }
+.modalCard{ width:min(420px,100%); max-height:88dvh; overflow-y:auto; padding:20px; border-radius:var(--radius-lg); border:1px solid var(--border-strong); background:var(--bg-elevated); box-shadow:0 30px 70px -30px rgba(0,0,0,.95); }
+.modalTitle{ font-family:var(--font-display); font-weight:700; font-size:var(--text-lg); margin:0 0 4px; }
+.modalSub{ font-size:12.5px; color:var(--muted); margin:0 0 16px; line-height:1.5; }
+.modalActs{ display:flex; gap:8px; justify-content:flex-end; margin-top:18px; flex-wrap:wrap; }
+
+/* ---- Menu ---- */
+.menuWrap{ position:relative; }
+.menu{ position:absolute; right:0; top:calc(100% + 8px); z-index:var(--z-quick); min-width:210px; padding:6px; border-radius:var(--radius-md); border:1px solid var(--border-strong); background:var(--bg-elevated); box-shadow:0 24px 50px -24px rgba(0,0,0,.95); }
+.menu[hidden]{ display:none; }
+.menuItem{ display:flex; align-items:center; gap:9px; width:100%; padding:10px 11px; min-height:44px; border:0; border-radius:9px; background:transparent; color:var(--fg); font-family:inherit; font-size:13px; text-align:left; cursor:pointer; }
+.menuItem:hover{ background:var(--surface-2); }
+.menuItem.danger{ color:#FB4E6D; }
+.menuSep{ height:1px; margin:5px 4px; background:var(--border); }
+
+/* ---- Toast ---- */
+.toast{ position:fixed; left:50%; transform:translate(-50%,14px); bottom:calc(76px + env(safe-area-inset-bottom)); z-index:var(--z-toast); display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:var(--radius-pill); border:1px solid var(--border-strong); background:rgba(20,20,44,.95); backdrop-filter:blur(10px); box-shadow:0 18px 40px -18px rgba(0,0,0,.9); font-size:13px; opacity:0; pointer-events:none; transition:opacity var(--duration) var(--ease), transform var(--duration) var(--ease); }
+.toast.show{ opacity:1; transform:translate(-50%,0); pointer-events:auto; }
+.toast button{ background:transparent; border:0; color:var(--brand-2); font-family:inherit; font-size:13px; font-weight:700; cursor:pointer; padding:4px 2px; }
+
+/* ---- Mobile: panel becomes a bottom sheet ---- */
+@media (max-width:767px){
+  .page{ padding:var(--space-6) var(--space-4) 120px; }
+  .title{ font-size:2rem; }
+  .graphCard{ height:clamp(360px, 56dvh, 560px); }
+  /* Search keeps its own full-width row; the filters become one strip you
+   * swipe sideways, so the graph isn't pushed off the bottom of the screen.
+   * (The search dropdown must not live inside the scroller, or it gets
+   * clipped — hence the two separate rows.) */
+  /* flex-wrap must go back to nowrap here: a column-direction container that
+   * is still allowed to wrap spills into extra *columns* and drags the page
+   * wider than the viewport. */
+  .toolbar{ flex-direction:column; flex-wrap:nowrap; align-items:stretch; gap:var(--space-2); margin-bottom:var(--space-3); }
+  .searchWrap{ flex:1 1 auto; min-width:0; }
+  /* min-width:0 is load-bearing: without it a nowrap flex container refuses
+   * to shrink below the sum of its children and pushes the whole page wide. */
+  .filters{ flex-wrap:nowrap; min-width:0; overflow-x:auto; overflow-y:hidden; scrollbar-width:none; -ms-overflow-style:none; padding-bottom:2px; }
+  .filters::-webkit-scrollbar{ display:none; }
+  .filters > *{ flex:0 0 auto; }
+  .legend{ gap:var(--space-3); font-size:9px; letter-spacing:.06em; margin-bottom:var(--space-2); }
+  .legend b{ display:none; }
+  .legend em{ display:inline; }
+  .legend .sw{ width:9px; height:9px; }
+  .input,.select,textarea.input{ font-size:16px; }  /* stops iOS zooming the page on focus */
+  .btn{ min-height:44px; }
+  .miniBtn{ width:44px; height:44px; }
+  .panel{ top:auto; left:0; right:0; bottom:0; width:auto; max-height:86dvh; border-left:0; border-top:1px solid var(--border-strong); border-radius:20px 20px 0 0; transform:translateY(102%); box-shadow:0 -24px 60px -30px rgba(0,0,0,.95); }
+  .panel.open{ transform:translateY(0); }
+  .panelHead{ padding-top:8px; flex-wrap:wrap; }
+  .panelHead .grab{ display:block; width:100%; }
+  .panelHead .grab::before{ content:''; display:block; width:40px; height:4px; margin:0 auto 10px; border-radius:99px; background:var(--border-strong); }
+  .fieldGrid{ grid-template-columns:1fr; }
+}
+@media (prefers-reduced-motion:reduce){
+  *{ animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
+}
+</style>
+<link rel="stylesheet" href="skin.css?v=1">
+</head>
+<body>
+<main class="page">
+  <div class="shell">
+
+    <header class="header">
+      <div>
+        <h1 class="title">Social</h1>
+        <p class="subtitle">people · connections · contact</p>
+      </div>
+      <div class="headerControls">
+        <button class="btn btn-primary" id="addPersonBtn" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          Add person
+        </button>
+        <div class="menuWrap">
+          <button class="iconBtn" id="menuBtn" type="button" aria-label="Data menu" aria-haspopup="true" aria-expanded="false">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="5" r=".6"/><circle cx="12" cy="12" r=".6"/><circle cx="12" cy="19" r=".6"/></svg>
+          </button>
+          <div class="menu" id="menu" hidden role="menu"></div>
+        </div>
+        <a class="backLink" href="index.html">← Liam</a>
+      </div>
+    </header>
+
+    <button class="alarm" id="alarmStrip" type="button" hidden></button>
+
+    <div class="toolbar">
+      <div class="searchWrap">
+        <span class="searchIcon" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span>
+        <input class="input" id="search" type="search" placeholder="Search people…" autocomplete="off" aria-label="Search people" role="combobox" aria-expanded="false" aria-controls="searchHits" />
+        <div class="searchHits" id="searchHits" role="listbox" hidden></div>
+      </div>
+      <div class="filters">
+        <select class="select" id="fGroup" aria-label="Filter by group"></select>
+        <select class="select" id="fTag" aria-label="Filter by tag"></select>
+        <button class="chip" id="fActive" type="button" aria-pressed="false">
+          <span class="chipDot" style="box-shadow:0 0 0 2px var(--st-ring);background:transparent"></span>Active
+        </button>
+        <button class="chip" id="fRed" type="button" aria-pressed="false" data-tone="stale">
+          <span class="chipDot" style="background:var(--st-stale)"></span>Needs contact
+        </button>
+        <button class="chip" id="fClear" type="button" hidden>Clear</button>
+      </div>
+    </div>
+
+    <div class="legend" aria-hidden="true">
+      <i><span class="sw" style="background:var(--st-fresh)"></span><b>within 30 days</b><em>30d</em></i>
+      <i><span class="sw" style="background:var(--st-stale)"></span><b>30+ days</b><em>30d+</em></i>
+      <i><span class="sw" style="background:var(--st-none)"></span><b>never logged</b><em>never</em></i>
+      <i><span class="sw ring" style="background:var(--st-none)"></span><b>active contact</b><em>active</em></i>
+    </div>
+
+    <section class="card graphCard" id="graphCard">
+      <canvas id="graph"></canvas>
+      <span class="graphCount" id="graphCount"></span>
+      <div class="graphTools">
+        <button class="iconBtn" id="zoomIn" type="button" aria-label="Zoom in"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+        <button class="iconBtn" id="zoomOut" type="button" aria-label="Zoom out"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"/></svg></button>
+        <button class="iconBtn" id="zoomFit" type="button" aria-label="Fit graph to view"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V5a1 1 0 0 1 1-1h4M20 9V5a1 1 0 0 0-1-1h-4M4 15v4a1 1 0 0 0 1 1h4M20 15v4a1 1 0 0 1-1 1h-4"/></svg></button>
+      </div>
+      <span class="graphHint" id="graphHint"></span>
+
+      <div class="empty" id="emptyState" hidden>
+        <span class="emptyIcon" id="emptyIcon" aria-hidden="true"></span>
+        <div>
+          <div class="emptyTitle">No one here yet</div>
+          <p class="emptyText" id="emptyText">Add the people you actually keep up with. Every person becomes a node; link them to each other and log when you last spoke, and the graph starts showing you who you've gone quiet on.</p>
+        </div>
+        <div class="emptyActions">
+          <button class="btn btn-primary" id="emptyAdd" type="button">Add your first person</button>
+          <button class="btn btn-ghost" id="emptySeed" type="button">Load sample data</button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- Quick bar: one tap selects a node, the second tap here logs contact -->
+<div class="quickbar" id="quickbar" hidden>
+  <span class="quickDot" id="quickDot"></span>
+  <span class="quickMain"><span class="quickName" id="quickName"></span><span class="quickSub" id="quickSub"></span></span>
+  <button class="btn btn-primary btn-sm" id="quickLog" type="button">Log contact</button>
+  <button class="btn btn-ghost btn-sm" id="quickOpen" type="button">Open</button>
+</div>
+
+<div class="backdrop" id="backdrop"></div>
+
+<aside class="panel" id="panel" role="dialog" aria-modal="false" aria-label="Person profile">
+  <div class="panelHead">
+    <span class="grab" aria-hidden="true"></span>
+    <div class="panelTitleWrap">
+      <div class="panelName" id="panelName">—</div>
+      <div class="panelMeta" id="panelMeta"></div>
+    </div>
+    <button class="iconBtn" id="panelClose" type="button" aria-label="Close profile">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+  <div class="panelBody" id="panelBody"></div>
+</aside>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modalCard" id="modalCard"></div>
+</div>
+
+<div class="toast" id="toast"><span id="toastMsg"></span><button type="button" id="toastAct" hidden></button></div>
+
+<input type="file" id="importFile" accept="application/json,.json" hidden />
+
+<script>
+/* ============================================================
+ * SOCIAL — an Obsidian-style graph of the people you know.
+ *
+ * Three keys, one per thing that changes independently, so logging
+ * a contact on a phone never collides with editing a profile on a
+ * laptop:
+ *     social_people_v1  ·  social_links_v1  ·  social_contacts_v1
+ *
+ * Contact recency (the node colour) is NEVER stored. It is derived
+ * from the contact log every time the graph draws. That matters:
+ * a page that recomputes-and-writes a "lastContactedAt" field at
+ * load looks, to the sync engine, exactly like an edit you just
+ * made — and being newest it wins. See SYNC.md. This page makes no
+ * writes at all until you do something.
+ * ============================================================ */
+
+const K_PEOPLE   = 'social_people_v1';
+const K_LINKS    = 'social_links_v1';
+const K_CONTACTS = 'social_contacts_v1';
+const STALE_DAYS = 30;
+const METHODS = ['in person','call','text','Snapchat','Discord','Instagram','other'];
+
+/* ---------- storage ---------- */
+function readArr(k){ try { const r = localStorage.getItem(k); const v = r ? JSON.parse(r) : null; return Array.isArray(v) ? v : []; } catch(e){ return []; } }
+// intent: 'write' = a real edit · 'derive' = the page tidying its own storage.
+function saveArr(k, arr, intent){
+  const s = JSON.stringify(arr);
+  try {
+    if (window.PatronDB && PatronDB[intent || 'write']) PatronDB[intent || 'write'](k, s);
+    else localStorage.setItem(k, s);
+  } catch(e){}
+}
+function dropKey(k){ try { if (window.PatronDB && PatronDB.remove) PatronDB.remove(k); else localStorage.removeItem(k); } catch(e){} }
+
+/* ---------- helpers ---------- */
+function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function uid(p){ return p + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function todayKey(d){ d = d || new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+function parseDay(s){ const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s||'')); return m ? new Date(+m[1], +m[2]-1, +m[3]) : null; }
+function daysSince(s){ const d = parseDay(s); if (!d) return null; const t = new Date(); t.setHours(0,0,0,0); return Math.round((t - d) / 86400000); }
+function agoLabel(n){
+  if (n == null) return 'never';
+  if (n <= 0) return 'today';
+  if (n === 1) return 'yesterday';
+  if (n < 31) return n + ' days ago';
+  if (n < 365) { const m = Math.round(n/30.4); return m + (m === 1 ? ' month ago' : ' months ago'); }
+  const y = Math.round(n/365); return y + (y === 1 ? ' year ago' : ' years ago');
+}
+function prettyDate(s){ const d = parseDay(s); return d ? d.toLocaleDateString('en-GB',{ day:'numeric', month:'short', year:'numeric' }) : String(s||''); }
+function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+
+/* ---------- state ---------- */
+let people = [], links = [], contacts = [];
+let lastBy = Object.create(null);          // personId -> newest contact date (derived, never stored)
+let degreeBy = Object.create(null);        // personId -> link count (derived)
+let filters = { group:'', tag:'', active:false, red:false };
+let selectedId = null, hoverId = null, hoverLink = null;
+let quickArmed = null;                     // node id whose quick bar is showing (mobile two-tap)
+let undoAction = null, toastTimer = 0;
+
+function isNarrow(){ return window.innerWidth < 768; }
+
+function loadAll(){
+  people   = readArr(K_PEOPLE);
+  links    = readArr(K_LINKS);
+  contacts = readArr(K_CONTACTS);
+  derive();
+}
+/* Everything below is recomputed in memory on every load and every
+ * render. Nothing here touches localStorage. */
+function derive(){
+  lastBy = Object.create(null);
+  for (const c of contacts) {
+    if (!c || !c.personId || !c.date) continue;
+    const cur = lastBy[c.personId];
+    if (!cur || c.date > cur) lastBy[c.personId] = c.date;
+  }
+  degreeBy = Object.create(null);
+  const alive = new Set(people.map(p => p && p.id));
+  for (const l of validLinks(alive)) {
+    degreeBy[l.a] = (degreeBy[l.a] || 0) + 1;
+    degreeBy[l.b] = (degreeBy[l.b] || 0) + 1;
+  }
+}
+/* Links whose endpoints both still exist. Orphans are skipped at render
+ * time rather than deleted on load — deleting during boot is the exact
+ * thing that eats data across devices. The menu offers a manual tidy. */
+function validLinks(alive){
+  alive = alive || new Set(people.map(p => p && p.id));
+  return links.filter(l => l && l.a && l.b && l.a !== l.b && alive.has(l.a) && alive.has(l.b));
+}
+function orphanCount(){
+  const alive = new Set(people.map(p => p && p.id));
+  let n = links.length - validLinks(alive).length;
+  n += contacts.filter(c => c && !alive.has(c.personId)).length;
+  return n;
+}
+function personById(id){ return people.find(p => p && p.id === id) || null; }
+function stateOf(id){
+  const d = daysSince(lastBy[id]);
+  if (d == null) return 'none';
+  return d < STALE_DAYS ? 'fresh' : 'stale';
+}
+function needsContact(p){ return !!(p && p.activeContact) && stateOf(p.id) !== 'fresh'; }
+function displayName(p){ return (p && (p.name || p.nickname)) || 'Unnamed'; }
+function contactsFor(id){ return contacts.filter(c => c && c.personId === id).sort((a,b) => String(b.date).localeCompare(String(a.date))); }
+function linksFor(id){ return validLinks().filter(l => l.a === id || l.b === id); }
+function otherEnd(l, id){ return l.a === id ? l.b : l.a; }
+function lastUsedMethod(){
+  let best = null, bestDate = '';
+  for (const c of contacts) { if (c && c.date && c.date >= bestDate) { bestDate = c.date; best = c.method; } }
+  return METHODS.indexOf(best) >= 0 ? best : 'text';
+}
+function allGroups(){ return Array.from(new Set(people.map(p => (p && p.group || '').trim()).filter(Boolean))).sort((a,b)=>a.localeCompare(b)); }
+function allTags(){ const s = new Set(); people.forEach(p => (p && Array.isArray(p.tags) ? p.tags : []).forEach(t => { t = String(t).trim(); if (t) s.add(t); })); return Array.from(s).sort((a,b)=>a.localeCompare(b)); }
+
+function passesFilters(p){
+  if (!p) return false;
+  if (filters.group && (p.group || '').trim() !== filters.group) return false;
+  if (filters.tag && !(Array.isArray(p.tags) ? p.tags : []).some(t => String(t).trim() === filters.tag)) return false;
+  if (filters.active && !p.activeContact) return false;
+  if (filters.red && stateOf(p.id) !== 'stale') return false;
+  return true;
+}
+function filtersOn(){ return !!(filters.group || filters.tag || filters.active || filters.red); }
+
+/* ============================================================
+ * FORCE SIMULATION — hand-rolled, on canvas.
+ *
+ * At the target size (~150 people) an all-pairs repulsion step is
+ * ~11k distance calculations a frame, which a phone does without
+ * noticing — a Barnes-Hut quadtree would be more code than it
+ * saves, and d3-force would be a network dependency this page
+ * doesn't need to be self-contained.
+ *
+ * The sim cools to a stop and stops asking for frames entirely,
+ * so a settled graph costs nothing while it sits on screen.
+ * ============================================================ */
+const REPEL = 5200, LINK_DIST = 76, LINK_K = 0.05, GRAVITY = 0.011, DAMP = 0.86;
+const ALPHA_MIN = 0.005, ALPHA_DECAY = 0.977, MAX_FORCE = 9;
+
+const cv = document.getElementById('graph');
+const ctx = cv.getContext('2d');
+let nodes = [], edges = [], nodeById = new Map();
+let W = 0, H = 0, dpr = 1;
+let cam = { x:0, y:0, k:1 }, camAnim = null;
+let alpha = 1, looping = false, drawQueued = false;
+let dragNode = null, panning = null, pointers = new Map(), pinch = null, movedFar = false;
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function kick(a){
+  alpha = Math.max(alpha, a == null ? 0.7 : a);
+  if (!looping) { looping = true; requestAnimationFrame(loop); }
+}
+function requestDraw(){
+  if (looping || drawQueued) return;
+  drawQueued = true;
+  requestAnimationFrame(() => { drawQueued = false; draw(); });
+}
+/* The layout blooms outward for the first second or two. Framing it once
+ * before that happens leaves the graph as a small knot in the middle, so
+ * the camera tracks the spread until the sim settles — then stops, and the
+ * view is yours. Any deliberate zoom/pan/drag hands control over early. */
+let autoFit = true;
+function stopAutoFit(){ autoFit = false; }
+
+function loop(){
+  const physics = alpha >= ALPHA_MIN || !!dragNode;
+  if (physics) { tick(); alpha *= ALPHA_DECAY; }
+  if (camAnim) stepCam();
+  else if (autoFit && physics) fitToView(true);
+  draw();
+  if (physics || camAnim) { requestAnimationFrame(loop); return; }
+  if (autoFit) { fitToView(true); autoFit = false; draw(); }
+  looping = false;
+  schedulePulse();
+}
+/* The alarm halo breathes, and a breathing thing has to be redrawn forever.
+ * Holding a 60fps rAF loop open for one pulsing ring is a battery tax on a
+ * phone that's just sitting on the graph, so once the physics has settled the
+ * pulse gets its own ~20fps timer — and only while the tab is visible. */
+let pulseTimer = 0;
+function schedulePulse(){
+  clearTimeout(pulseTimer);
+  if (reduceMotion || document.hidden || looping) return;
+  if (!nodes.some(n => n.alarm)) return;
+  pulseTimer = setTimeout(() => { if (!looping) { draw(); schedulePulse(); } }, 50);
+}
+
+function rebuildGraph(){
+  const keep = people.filter(passesFilters);
+  const visible = new Set(keep.map(p => p.id));
+  const next = new Map();
+  let i = 0;
+  for (const p of keep) {
+    let n = nodeById.get(p.id);
+    if (!n) {
+      // New nodes start on a small ring so they don't all land on one pixel.
+      const ang = (i * 2.399) % (Math.PI * 2), rad = 40 + i * 7;
+      n = { id:p.id, x:Math.cos(ang)*rad, y:Math.sin(ang)*rad, vx:0, vy:0 };
+    }
+    const deg = degreeBy[p.id] || 0;
+    n.deg = deg;
+    n.r = 6 + Math.min(11, Math.sqrt(deg) * 3.4);
+    n.name = displayName(p);
+    n.state = stateOf(p.id);
+    n.active = !!p.activeContact;
+    n.alarm = n.active && n.state === 'stale';
+    next.set(p.id, n);
+    i++;
+  }
+  nodeById = next;
+  nodes = Array.from(next.values());
+  edges = validLinks(visible).filter(l => visible.has(l.a) && visible.has(l.b)).map(l => ({
+    id:l.id, a:nodeById.get(l.a), b:nodeById.get(l.b),
+    label:l.label || '', strength:clamp(Number(l.strength) || 1, 1, 3)
+  }));
+  // Neighbour index for the Obsidian-style highlight.
+  const nb = new Map();
+  nodes.forEach(n => nb.set(n.id, new Set([n.id])));
+  edges.forEach(e => { nb.get(e.a.id).add(e.b.id); nb.get(e.b.id).add(e.a.id); });
+  neighbours = nb;
+  if (selectedId && !nodeById.has(selectedId)) { /* filtered out — keep the panel, just unhighlight */ }
+}
+let neighbours = new Map();
+
+function tick(){
+  const n = nodes.length;
+  for (let i = 0; i < n; i++) {
+    const a = nodes[i];
+    for (let j = i + 1; j < n; j++) {
+      const b = nodes[j];
+      let dx = b.x - a.x, dy = b.y - a.y, d2 = dx*dx + dy*dy;
+      if (d2 < 0.02) { dx = Math.random() - 0.5; dy = Math.random() - 0.5; d2 = dx*dx + dy*dy + 0.02; }
+      const d = Math.sqrt(d2);
+      const f = Math.min(REPEL / d2, MAX_FORCE);
+      const fx = dx / d * f, fy = dy / d * f;
+      a.vx -= fx; a.vy -= fy; b.vx += fx; b.vy += fy;
+    }
+  }
+  for (const e of edges) {
+    const a = e.a, b = e.b;
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const d = Math.hypot(dx, dy) || 0.01;
+    const rest = LINK_DIST + a.r + b.r;
+    const f = (d - rest) * LINK_K * (0.55 + e.strength * 0.3);
+    const fx = dx / d * f, fy = dy / d * f;
+    a.vx += fx; a.vy += fy; b.vx -= fx; b.vy -= fy;
+  }
+  for (const a of nodes) {
+    a.vx -= a.x * GRAVITY; a.vy -= a.y * GRAVITY;
+    if (a === dragNode) { a.vx = 0; a.vy = 0; continue; }
+    a.vx *= DAMP; a.vy *= DAMP;
+    a.x += a.vx * alpha; a.y += a.vy * alpha;
+  }
+}
+
+/* ---------- camera ---------- */
+function toWorld(sx, sy){ return { x:(sx - W/2)/cam.k + cam.x, y:(sy - H/2)/cam.k + cam.y }; }
+function toScreen(wx, wy){ return { x:(wx - cam.x)*cam.k + W/2, y:(wy - cam.y)*cam.k + H/2 }; }
+function zoomAt(sx, sy, factor){
+  stopAutoFit();
+  const w = toWorld(sx, sy);
+  cam.k = clamp(cam.k * factor, 0.2, 4);
+  cam.x = w.x - (sx - W/2)/cam.k;
+  cam.y = w.y - (sy - H/2)/cam.k;
+  requestDraw();
+}
+function animateCam(x, y, k, ms){
+  stopAutoFit();
+  camAnim = { fx:cam.x, fy:cam.y, fk:cam.k, tx:x, ty:y, tk:k, t0:performance.now(), ms:ms || 420 };
+  if (!looping) { looping = true; requestAnimationFrame(loop); }
+}
+function stepCam(){
+  const a = camAnim, p = clamp((performance.now() - a.t0) / a.ms, 0, 1);
+  const e = 1 - Math.pow(1 - p, 3);
+  cam.x = a.fx + (a.tx - a.fx)*e; cam.y = a.fy + (a.ty - a.fy)*e; cam.k = a.fk + (a.tk - a.fk)*e;
+  if (p >= 1) camAnim = null;
+}
+function fitToView(instant){
+  if (!nodes.length) return;
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const n of nodes) { minX = Math.min(minX, n.x - n.r); maxX = Math.max(maxX, n.x + n.r); minY = Math.min(minY, n.y - n.r); maxY = Math.max(maxY, n.y + n.r); }
+  // Padding has to scale with the canvas: a flat 60px margin eats a third of
+  // a phone's width and leaves the graph a knot in the middle.
+  const pad = Math.max(20, Math.min(W, H) * 0.07);
+  const k = clamp(Math.min((W - pad*2) / Math.max(1, maxX - minX), (H - pad*2) / Math.max(1, maxY - minY)), 0.2, 1.6);
+  const cx = (minX + maxX)/2, cy = (minY + maxY)/2;
+  if (instant) { cam.x = cx; cam.y = cy; cam.k = k; requestDraw(); }
+  else animateCam(cx, cy, k, 500);
+}
+function focusNode(id){
+  const n = nodeById.get(id);
+  if (!n) return;
+  animateCam(n.x, n.y, Math.max(cam.k, 1.35), 460);
+}
+
+/* ---------- drawing ---------- */
+const CSSVAR = {};
+function css(name, fallback){
+  if (CSSVAR[name]) return CSSVAR[name];
+  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  CSSVAR[name] = v || fallback;
+  return CSSVAR[name];
+}
+function stateColor(s){
+  return s === 'fresh' ? css('--st-fresh','#34D399') : s === 'stale' ? css('--st-stale','#FB4E6D') : css('--st-none','#8291AE');
+}
+function resize(){
+  const wrap = document.getElementById('graphCard');
+  const rect = wrap.getBoundingClientRect();
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  W = Math.max(1, Math.round(rect.width)); H = Math.max(1, Math.round(rect.height));
+  cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+  cv.style.width = W + 'px'; cv.style.height = H + 'px';
+  requestDraw();
+}
+function focusSet(){
+  const id = hoverId || selectedId;
+  if (!id || !neighbours.has(id)) return null;
+  return neighbours.get(id);
+}
+function draw(){
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, W, H);
+  if (!nodes.length) return;
+  const fs = focusSet();
+  const t = performance.now() / 1000;
+  /* Whether names are readable depends on how many are competing for the
+   * space, not on the zoom number — so count what's actually in view. Zoom
+   * into a cluster and the labels appear on their own. */
+  let onScreen = 0;
+  for (const n of nodes) { const S = toScreen(n.x, n.y); if (S.x > -40 && S.y > -40 && S.x < W + 40 && S.y < H + 40) onScreen++; }
+  const showLabels = onScreen <= 45;
+
+  // ---- edges ----
+  for (const e of edges) {
+    const A = toScreen(e.a.x, e.a.y), B = toScreen(e.b.x, e.b.y);
+    const lit = !fs || (fs.has(e.a.id) && fs.has(e.b.id));
+    ctx.globalAlpha = lit ? 0.55 : 0.07;
+    ctx.strokeStyle = (hoverLink && hoverLink.id === e.id) ? css('--brand-2','#22D3EE') : 'rgba(160,180,220,0.75)';
+    ctx.lineWidth = (hoverLink && hoverLink.id === e.id ? 1.6 : 0.9) + e.strength * 0.85;
+    ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+
+  // ---- hovered edge label ----
+  if (hoverLink && hoverLink.label) {
+    const A = toScreen(hoverLink.a.x, hoverLink.a.y), B = toScreen(hoverLink.b.x, hoverLink.b.y);
+    const mx = (A.x + B.x)/2, my = (A.y + B.y)/2;
+    ctx.font = '600 11px ' + css('--font-mono','monospace') + ', monospace';
+    const w = ctx.measureText(hoverLink.label).width;
+    ctx.fillStyle = 'rgba(12,12,28,.92)';
+    roundRect(mx - w/2 - 7, my - 10, w + 14, 20, 6); ctx.fill();
+    ctx.strokeStyle = css('--brand-line','rgba(139,92,246,.4)'); ctx.lineWidth = 1; ctx.stroke();
+    ctx.fillStyle = css('--brand-2','#22D3EE');
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(hoverLink.label, mx, my);
+  }
+
+  // ---- nodes ----
+  for (const n of nodes) {
+    const S = toScreen(n.x, n.y);
+    const r = n.r * Math.min(cam.k, 1.7);
+    if (S.x < -80 || S.y < -80 || S.x > W + 80 || S.y > H + 80) continue;
+    const lit = !fs || fs.has(n.id);
+    const col = stateColor(n.state);
+    ctx.globalAlpha = lit ? 1 : 0.14;
+
+    // alarm halo: active contact that has gone red. The whole point of the page.
+    if (n.alarm && lit) {
+      const pulse = reduceMotion ? 0.5 : (Math.sin(t * 2.1) + 1) / 2;
+      const halo = r + 7 + pulse * 7;
+      const g = ctx.createRadialGradient(S.x, S.y, r, S.x, S.y, halo);
+      g.addColorStop(0, 'rgba(251,78,109,0.34)');
+      g.addColorStop(1, 'rgba(251,78,109,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(S.x, S.y, halo, 0, 6.2832); ctx.fill();
+    }
+
+    // body
+    ctx.beginPath(); ctx.arc(S.x, S.y, r, 0, 6.2832);
+    ctx.fillStyle = col; ctx.fill();
+    ctx.lineWidth = 1.2; ctx.strokeStyle = 'rgba(8,8,20,.75)'; ctx.stroke();
+
+    // "supposed to be close" ring — present whatever the colour is
+    if (n.active) {
+      ctx.beginPath(); ctx.arc(S.x, S.y, r + 4.2, 0, 6.2832);
+      ctx.lineWidth = n.alarm ? 2.4 : 1.8;
+      ctx.strokeStyle = n.alarm ? css('--st-stale','#FB4E6D') : css('--st-ring','#F8FAFC');
+      ctx.stroke();
+    }
+    if (n.id === selectedId) {
+      ctx.beginPath(); ctx.arc(S.x, S.y, r + 8.5, 0, 6.2832);
+      ctx.lineWidth = 1.6; ctx.strokeStyle = css('--brand-2','#22D3EE'); ctx.stroke();
+    }
+
+    // Labels: at a readable zoom, and always for whatever is currently
+    // highlighted — hovering a node should tell you who its neighbours are.
+    if (lit && (showLabels || fs || n.id === selectedId || n.id === hoverId)) {
+      ctx.globalAlpha = lit ? (fs ? 1 : 0.86) : 0.14;
+      ctx.font = '600 ' + (n.id === selectedId || n.id === hoverId ? 12.5 : 11.5) + 'px ' + css('--font-ui','sans-serif') + ', sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      ctx.fillStyle = 'rgba(6,8,18,.85)';
+      const tw = ctx.measureText(n.name).width;
+      ctx.fillRect(S.x - tw/2 - 3, S.y + r + 4, tw + 6, 15);
+      ctx.fillStyle = n.alarm ? '#FFD2DB' : '#EAF0FF';
+      ctx.fillText(n.name, S.x, S.y + r + 5);
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+function roundRect(x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+}
+
+/* ---------- hit testing ---------- */
+function nodeAt(sx, sy){
+  let best = null, bestD = Infinity;
+  for (const n of nodes) {
+    const S = toScreen(n.x, n.y);
+    const rr = Math.max(n.r * Math.min(cam.k, 1.7), 12) + 6;   // never smaller than a finger
+    const d = Math.hypot(S.x - sx, S.y - sy);
+    if (d <= rr && d < bestD) { best = n; bestD = d; }
+  }
+  return best;
+}
+function linkAt(sx, sy){
+  let best = null, bestD = 7;
+  for (const e of edges) {
+    const A = toScreen(e.a.x, e.a.y), B = toScreen(e.b.x, e.b.y);
+    const vx = B.x - A.x, vy = B.y - A.y, len2 = vx*vx + vy*vy;
+    if (!len2) continue;
+    const t = clamp(((sx - A.x)*vx + (sy - A.y)*vy) / len2, 0, 1);
+    const d = Math.hypot(A.x + vx*t - sx, A.y + vy*t - sy);
+    if (d < bestD) { best = e; bestD = d; }
+  }
+  return best;
+}
+
+/* ---------- pointer interaction ---------- */
+function localPt(ev){ const r = cv.getBoundingClientRect(); return { x:ev.clientX - r.left, y:ev.clientY - r.top }; }
+
+cv.addEventListener('pointerdown', ev => {
+  cv.setPointerCapture(ev.pointerId);
+  const p = localPt(ev);
+  pointers.set(ev.pointerId, p);
+  if (pointers.size === 2) {
+    const [a, b] = Array.from(pointers.values());
+    pinch = { d:Math.hypot(a.x - b.x, a.y - b.y), cx:(a.x + b.x)/2, cy:(a.y + b.y)/2 };
+    dragNode = null; panning = null;
+    return;
+  }
+  movedFar = false;
+  const hit = nodeAt(p.x, p.y);
+  if (hit) { dragNode = hit; cv.classList.add('dragging'); kick(0.4); }
+  else { panning = { x:p.x, y:p.y, camX:cam.x, camY:cam.y }; cv.classList.add('dragging'); }
+});
+cv.addEventListener('pointermove', ev => {
+  const p = localPt(ev);
+  if (pointers.has(ev.pointerId)) pointers.set(ev.pointerId, p);
+
+  if (pinch && pointers.size === 2) {
+    const [a, b] = Array.from(pointers.values());
+    const d = Math.hypot(a.x - b.x, a.y - b.y);
+    const cx = (a.x + b.x)/2, cy = (a.y + b.y)/2;
+    stopAutoFit();
+    if (pinch.d > 0) zoomAt(cx, cy, d / pinch.d);
+    cam.x -= (cx - pinch.cx) / cam.k; cam.y -= (cy - pinch.cy) / cam.k;
+    pinch = { d:d, cx:cx, cy:cy };
+    movedFar = true;
+    requestDraw();
+    return;
+  }
+  if (dragNode) {
+    const w = toWorld(p.x, p.y);
+    dragNode.x = w.x; dragNode.y = w.y;
+    movedFar = true;
+    stopAutoFit();
+    kick(0.35);
+    return;
+  }
+  if (panning) {
+    const dx = (p.x - panning.x) / cam.k, dy = (p.y - panning.y) / cam.k;
+    if (Math.abs(p.x - panning.x) > 4 || Math.abs(p.y - panning.y) > 4) { movedFar = true; stopAutoFit(); }
+    cam.x = panning.camX - dx; cam.y = panning.camY - dy;
+    requestDraw();
+    return;
+  }
+  // hover (mouse only — a finger has no hover)
+  if (ev.pointerType === 'mouse') {
+    const hn = nodeAt(p.x, p.y);
+    const hl = hn ? null : linkAt(p.x, p.y);
+    const nid = hn ? hn.id : null;
+    if (nid !== hoverId || (hl && hl.id) !== (hoverLink && hoverLink.id)) {
+      hoverId = nid; hoverLink = hl;
+      cv.style.cursor = hn ? 'pointer' : (panning ? 'grabbing' : 'grab');
+      requestDraw();
+    }
+  }
+});
+function endPointer(ev){
+  const p = localPt(ev);
+  pointers.delete(ev.pointerId);
+  if (pointers.size < 2) pinch = null;
+  const wasDrag = dragNode, wasPan = panning;
+  dragNode = null; panning = null;
+  cv.classList.remove('dragging');
+  if (movedFar) { kick(0.2); return; }
+
+  const hit = nodeAt(p.x, p.y);
+  if (hit) onNodeActivate(hit.id, ev.pointerType);
+  else if (wasPan || wasDrag) { clearSelection(); }
+}
+cv.addEventListener('pointerup', endPointer);
+cv.addEventListener('pointercancel', ev => { pointers.delete(ev.pointerId); pinch = null; dragNode = null; panning = null; cv.classList.remove('dragging'); });
+cv.addEventListener('pointerleave', () => { if (hoverId || hoverLink) { hoverId = null; hoverLink = null; requestDraw(); } });
+cv.addEventListener('wheel', ev => { ev.preventDefault(); const p = localPt(ev); zoomAt(p.x, p.y, ev.deltaY < 0 ? 1.12 : 1/1.12); }, { passive:false });
+
+/* Desktop: click opens the profile. Touch: first tap highlights and arms
+ * the quick bar, so "log a contact" is two taps from the graph. */
+function onNodeActivate(id, pointerType){
+  const touch = pointerType === 'touch' || pointerType === 'pen' || isNarrow();
+  if (!touch) { selectedId = id; quickArmed = null; renderQuickbar(); openPanel(id); requestDraw(); return; }
+  if (quickArmed === id) { openPanel(id); return; }
+  selectedId = id; quickArmed = id;
+  renderQuickbar(); requestDraw();
+}
+function clearSelection(){
+  if (!selectedId && !quickArmed) return;
+  selectedId = null; quickArmed = null;
+  renderQuickbar(); requestDraw();
+}
+
+/* ============================================================
+ * CHROME — header counts, filters, search, empty state
+ * ============================================================ */
+function renderChrome(){
+  const need = people.filter(needsContact);
+  const strip = document.getElementById('alarmStrip');
+  if (need.length) {
+    strip.hidden = false;
+    strip.innerHTML = '<span class="alarmDot" aria-hidden="true"></span>'
+      + '<span class="alarmMain"><span class="alarmTitle">' + need.length + ' ' + (need.length === 1 ? 'person you keep close needs' : 'people you keep close need') + ' contact</span>'
+      + '<span class="alarmSub">' + esc(need.slice(0,4).map(p => displayName(p) + ' · ' + agoLabel(daysSince(lastBy[p.id]))).join('   ·   ')) + (need.length > 4 ? '   +' + (need.length - 4) + ' more' : '') + '</span></span>'
+      + '<span class="alarmGo">Show →</span>';
+  } else strip.hidden = true;
+
+  // filter selects, preserving the current choice
+  const gSel = document.getElementById('fGroup'), tSel = document.getElementById('fTag');
+  gSel.innerHTML = '<option value="">All groups</option>' + allGroups().map(g => '<option value="' + esc(g) + '"' + (filters.group === g ? ' selected' : '') + '>' + esc(g) + '</option>').join('');
+  tSel.innerHTML = '<option value="">All tags</option>' + allTags().map(t => '<option value="' + esc(t) + '"' + (filters.tag === t ? ' selected' : '') + '>' + esc(t) + '</option>').join('');
+  document.getElementById('fActive').setAttribute('aria-pressed', String(filters.active));
+  document.getElementById('fRed').setAttribute('aria-pressed', String(filters.red));
+  document.getElementById('fClear').hidden = !filtersOn();
+
+  const shown = nodes.length, total = people.length;
+  document.getElementById('graphCount').textContent = total
+    ? (shown === total ? total + ' people · ' + edges.length + ' links' : shown + ' of ' + total + ' people')
+    : '';
+  document.getElementById('graphHint').textContent = total
+    ? (isNarrow() ? 'drag · pinch to zoom · tap twice to open' : 'drag nodes · scroll to zoom · click to open')
+    : '';
+
+  const empty = document.getElementById('emptyState');
+  const noneAtAll = total === 0;
+  const filteredOut = total > 0 && shown === 0;
+  empty.hidden = !(noneAtAll || filteredOut);
+  if (filteredOut) {
+    document.querySelector('.emptyTitle').textContent = 'Nothing matches those filters';
+    document.getElementById('emptyText').textContent = 'You have ' + total + ' ' + (total === 1 ? 'person' : 'people') + ' saved — none of them match what you’ve narrowed to.';
+    document.getElementById('emptyAdd').textContent = 'Clear filters';
+    document.getElementById('emptySeed').hidden = true;
+  } else if (noneAtAll) {
+    document.querySelector('.emptyTitle').textContent = 'No one here yet';
+    document.getElementById('emptyText').textContent = 'Add the people you actually keep up with. Every person becomes a node; link them to each other and log when you last spoke, and the graph starts showing you who you’ve gone quiet on.';
+    document.getElementById('emptyAdd').textContent = 'Add your first person';
+    document.getElementById('emptySeed').hidden = false;
+  }
+  document.getElementById('graph').style.opacity = empty.hidden ? '1' : '0.25';
+}
+
+function renderQuickbar(){
+  const bar = document.getElementById('quickbar');
+  const p = quickArmed ? personById(quickArmed) : null;
+  if (!p || !isNarrow()) { bar.hidden = true; document.body.classList.remove('quickOpen'); return; }
+  const st = stateOf(p.id), d = daysSince(lastBy[p.id]);
+  bar.hidden = false;
+  document.body.classList.add('quickOpen');
+  document.getElementById('quickDot').style.background = stateColor(st);
+  document.getElementById('quickDot').style.boxShadow = p.activeContact ? '0 0 0 2px var(--st-ring)' : 'none';
+  document.getElementById('quickName').textContent = displayName(p);
+  document.getElementById('quickSub').textContent = 'last contact: ' + agoLabel(d);
+}
+
+/* ---------- search ---------- */
+const searchEl = document.getElementById('search'), hitsEl = document.getElementById('searchHits');
+let hitIdx = -1, hitIds = [];
+function renderHits(){
+  const q = searchEl.value.trim().toLowerCase();
+  if (!q) { hitsEl.hidden = true; hitIds = []; hitIdx = -1; searchEl.setAttribute('aria-expanded','false'); return; }
+  const matches = people.filter(p => {
+    const hay = [p.name, p.nickname, p.group].concat(Array.isArray(p.tags) ? p.tags : []).join(' ').toLowerCase();
+    return hay.indexOf(q) >= 0;
+  }).slice(0, 8);
+  hitIds = matches.map(p => p.id);
+  hitIdx = matches.length ? 0 : -1;
+  hitsEl.innerHTML = matches.length
+    ? matches.map((p, i) => '<button class="searchHit" type="button" role="option" aria-selected="' + (i === 0) + '" data-id="' + esc(p.id) + '">'
+        + '<span class="chipDot" style="background:' + stateColor(stateOf(p.id)) + (p.activeContact ? ';box-shadow:0 0 0 2px var(--st-ring)' : '') + '"></span>'
+        + '<span>' + esc(displayName(p)) + '</span>'
+        + '<span class="searchHitSub">' + esc(p.group || '') + ' · ' + agoLabel(daysSince(lastBy[p.id])) + '</span></button>').join('')
+    : '<div class="searchHit" style="cursor:default;color:var(--muted)">No one matches “' + esc(searchEl.value.trim()) + '”</div>';
+  hitsEl.hidden = false;
+  searchEl.setAttribute('aria-expanded','true');
+}
+function pickHit(id){
+  if (!id) return;
+  searchEl.value = ''; hitsEl.hidden = true; searchEl.setAttribute('aria-expanded','false');
+  // A filtered-out person can't be jumped to — drop the filters rather than
+  // silently doing nothing.
+  if (!nodeById.has(id)) { filters = { group:'', tag:'', active:false, red:false }; rebuildGraph(); renderChrome(); }
+  selectedId = id; quickArmed = isNarrow() ? id : null;
+  focusNode(id); renderQuickbar(); requestDraw();
+  if (!isNarrow()) openPanel(id);
+}
+searchEl.addEventListener('input', renderHits);
+searchEl.addEventListener('keydown', ev => {
+  if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') {
+    if (!hitIds.length) return;
+    ev.preventDefault();
+    hitIdx = (hitIdx + (ev.key === 'ArrowDown' ? 1 : -1) + hitIds.length) % hitIds.length;
+    Array.from(hitsEl.querySelectorAll('.searchHit')).forEach((el, i) => el.setAttribute('aria-selected', String(i === hitIdx)));
+  } else if (ev.key === 'Enter') {
+    ev.preventDefault();
+    if (hitIdx >= 0) pickHit(hitIds[hitIdx]);
+  } else if (ev.key === 'Escape') {
+    if (searchEl.value) { ev.stopPropagation(); searchEl.value = ''; renderHits(); }
+  }
+});
+hitsEl.addEventListener('click', ev => { const b = ev.target.closest('[data-id]'); if (b) pickHit(b.dataset.id); });
+document.addEventListener('click', ev => { if (!ev.target.closest('.searchWrap')) hitsEl.hidden = true; });
+
+/* ============================================================
+ * PROFILE PANEL
+ * ============================================================ */
+const panel = document.getElementById('panel'), backdrop = document.getElementById('backdrop');
+let panelId = null;
+
+function openPanel(id){
+  panelId = id;
+  renderPanel();
+  panel.classList.add('open');
+  backdrop.classList.add('open');
+  document.body.classList.add('sheetOpen');
+  panel.setAttribute('aria-modal', isNarrow() ? 'true' : 'false');
+}
+function closePanel(){
+  panelId = null;
+  panel.classList.remove('open');
+  backdrop.classList.remove('open');
+  document.body.classList.remove('sheetOpen');
+}
+function panelHasFocus(){ return panel.contains(document.activeElement) && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName); }
+
+function renderPanel(){
+  if (!panelId) return;
+  const p = personById(panelId);
+  if (!p) { closePanel(); return; }
+  const st = stateOf(p.id), d = daysSince(lastBy[p.id]);
+  const log = contactsFor(p.id), myLinks = linksFor(p.id);
+  const soc = p.socials || {};
+
+  document.getElementById('panelName').textContent = displayName(p) + (p.nickname && p.name ? ' · ' + p.nickname : '');
+  document.getElementById('panelMeta').textContent = [p.group || 'no group', (degreeBy[p.id] || 0) + ' link' + ((degreeBy[p.id] || 0) === 1 ? '' : 's'), p.activeContact ? 'active contact' : ''].filter(Boolean).join(' · ');
+
+  const tagStr = (Array.isArray(p.tags) ? p.tags : []).join(', ');
+  const others = people.filter(o => o.id !== p.id && !myLinks.some(l => otherEnd(l, p.id) === o.id)).sort((a,b) => displayName(a).localeCompare(displayName(b)));
+
+  document.getElementById('panelBody').innerHTML =
+    /* last contact — pinned at the top, contact log kept separate from the profile fields */
+    '<div class="lastRow" data-state="' + st + '">'
+      + '<div><div class="lastVal">' + esc(agoLabel(d)) + '</div><span class="lastLab">last contact</span></div>'
+      + '<button class="btn btn-primary" data-act="quickLog">Log contact</button>'
+    + '</div>'
+
+    + '<div class="sect">'
+      + '<h3 class="sectTitle">Contact history <span style="color:var(--muted)">' + log.length + '</span></h3>'
+      + (log.length ? log.map(c =>
+          '<div class="row">'
+          + '<div class="rowMain"><div class="rowTop">' + esc(prettyDate(c.date)) + ' <span class="methodBadge">' + esc(c.method || 'other') + '</span></div>'
+          + (c.note ? '<div class="rowSub">' + esc(c.note) + '</div>' : '<div class="rowSub">' + esc(agoLabel(daysSince(c.date))) + '</div>')
+          + '</div>'
+          + '<div class="rowActs">'
+            + '<button class="miniBtn" data-act="editContact" data-id="' + esc(c.id) + '" aria-label="Edit entry"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>'
+            + '<button class="miniBtn danger" data-act="delContact" data-id="' + esc(c.id) + '" aria-label="Delete entry"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg></button>'
+          + '</div></div>').join('')
+        : '<p class="muted">Nothing logged yet — the node stays grey until you do.</p>')
+      + '<form class="addForm" data-form="contact" style="margin-top:9px">'
+        + '<div class="line">'
+          + '<div style="flex:1 1 130px"><label class="fieldLab" for="cDate">Date</label><input class="input" id="cDate" name="date" type="date" value="' + todayKey() + '" max="' + todayKey() + '" style="width:100%" required /></div>'
+          + '<div style="flex:1 1 130px"><label class="fieldLab" for="cMethod">How</label><select class="select" id="cMethod" name="method" style="width:100%">' + METHODS.map(m => '<option' + (m === lastUsedMethod() ? ' selected' : '') + '>' + esc(m) + '</option>').join('') + '</select></div>'
+        + '</div>'
+        + '<input class="input" name="note" placeholder="Note (optional)" />'
+        + '<button class="btn btn-ghost" type="submit">Add entry</button>'
+      + '</form>'
+    + '</div>'
+
+    + '<div class="sect">'
+      + '<h3 class="sectTitle">Profile</h3>'
+      + '<label class="switchRow" style="margin-bottom:11px"><input type="checkbox" data-f="activeContact"' + (p.activeContact ? ' checked' : '') + ' />'
+        + '<span class="swTxt"><span class="swTitle">Active contact</span><span class="swSub">Someone you mean to stay close to. Gets a ring on the graph, and goes to alarm if they turn red.</span></span></label>'
+      + '<div class="fieldGrid">'
+        + field('Name', 'name', p.name, 'text', 'full')
+        + field('Nickname', 'nickname', p.nickname, 'text')
+        + field('Group', 'group', p.group, 'text', '', 'family, gym, work…')
+        + field('Tags (comma separated)', 'tags', tagStr, 'text', 'full', 'climbing, uni, Vietnam')
+        + field('Birthday', 'birthday', p.birthday, 'date')
+        + field('Phone', 'phone', p.phone, 'tel')
+        + field('Instagram', 'social:instagram', soc.instagram, 'text')
+        + field('Snapchat', 'social:snapchat', soc.snapchat, 'text')
+        + field('Discord', 'social:discord', soc.discord, 'text')
+        + field('Other', 'social:other', soc.other, 'text')
+        + '<div class="full"><label class="fieldLab" for="fNotes">Notes</label><textarea class="input" id="fNotes" data-f="notes" style="width:100%" placeholder="Anything worth remembering">' + esc(p.notes || '') + '</textarea></div>'
+      + '</div>'
+    + '</div>'
+
+    + '<div class="sect">'
+      + '<h3 class="sectTitle">Connections <span style="color:var(--muted)">' + myLinks.length + '</span></h3>'
+      + (myLinks.length ? myLinks.map(l => {
+          const o = personById(otherEnd(l, p.id));
+          return '<div class="row">'
+            + '<div class="rowMain"><div class="rowTop">' + esc(o ? displayName(o) : 'Unknown') + '</div>'
+            + '<div class="rowSub">' + esc(l.label || 'no label') + ' · <span class="strengthDots">' + [1,2,3].map(i => '<i class="' + (i <= (l.strength || 1) ? 'on' : '') + '"></i>').join('') + '</span></div></div>'
+            + '<div class="rowActs">'
+              + '<button class="miniBtn" data-act="editLink" data-id="' + esc(l.id) + '" aria-label="Edit connection"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>'
+              + '<button class="miniBtn danger" data-act="delLink" data-id="' + esc(l.id) + '" aria-label="Remove connection"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>'
+            + '</div></div>';
+        }).join('')
+        : '<p class="muted">Not connected to anyone yet. They still show up on the graph — just floating.</p>')
+      + (others.length
+        ? '<form class="addForm" data-form="link" style="margin-top:9px">'
+          + '<select class="select" name="other" required><option value="">Connect to…</option>' + others.map(o => '<option value="' + esc(o.id) + '">' + esc(displayName(o)) + '</option>').join('') + '</select>'
+          + '<div class="line">'
+            + '<input class="input" name="label" placeholder="brother, gym buddy, met in Vietnam…" />'
+            + '<select class="select" name="strength" aria-label="Strength" style="flex:0 1 120px"><option value="1">Loose</option><option value="2" selected>Solid</option><option value="3">Tight</option></select>'
+          + '</div>'
+          + '<button class="btn btn-ghost" type="submit">Add connection</button>'
+        + '</form>'
+        : '')
+    + '</div>'
+
+    + '<div class="sect">'
+      + '<button class="btn btn-danger" data-act="delPerson" style="width:100%">Delete ' + esc(displayName(p)) + '</button>'
+      + '<p class="muted" style="margin-top:8px">Removes their profile, their ' + myLinks.length + ' connection' + (myLinks.length === 1 ? '' : 's') + ' and all ' + log.length + ' log entr' + (log.length === 1 ? 'y' : 'ies') + '.</p>'
+    + '</div>';
+}
+function field(label, key, val, type, cls, ph){
+  const id = 'f_' + key.replace(/[^a-z]/gi,'');
+  return '<div class="' + (cls || '') + '"><label class="fieldLab" for="' + id + '">' + esc(label) + '</label>'
+    + '<input class="input" id="' + id + '" data-f="' + esc(key) + '" type="' + (type || 'text') + '" value="' + esc(val || '') + '"'
+    + (ph ? ' placeholder="' + esc(ph) + '"' : '') + ' style="width:100%" /></div>';
+}
+
+/* ---------- mutations (every one of these is a real user edit) ---------- */
+function touchPerson(p){ p.updatedAt = new Date().toISOString(); }
+function savePeople(){ saveArr(K_PEOPLE, people); }
+function saveLinks(){ saveArr(K_LINKS, links); }
+function saveContacts(){ saveArr(K_CONTACTS, contacts); }
+
+function addPerson(fields){
+  const now = new Date().toISOString();
+  const p = Object.assign({
+    id: uid('p_'), name:'', nickname:'', group:'', tags:[], birthday:'', phone:'',
+    socials:{}, notes:'', activeContact:false, createdAt:now, updatedAt:now
+  }, fields || {});
+  people.push(p);
+  savePeople();
+  refresh();
+  return p;
+}
+function updatePerson(id, key, raw){
+  const p = personById(id);
+  if (!p) return;
+  if (key === 'tags') p.tags = String(raw).split(',').map(s => s.trim()).filter(Boolean);
+  else if (key.indexOf('social:') === 0) { p.socials = p.socials || {}; const k = key.slice(7); if (String(raw).trim()) p.socials[k] = String(raw).trim(); else delete p.socials[k]; }
+  else if (key === 'activeContact') p.activeContact = !!raw;
+  else p[key] = typeof raw === 'string' ? raw.trim() : raw;
+  touchPerson(p);
+  savePeople();
+  refresh({ keepPanel:true });
+}
+function deletePerson(id){
+  const p = personById(id);
+  if (!p) return;
+  people = people.filter(x => x.id !== id);
+  links = links.filter(l => l.a !== id && l.b !== id);
+  contacts = contacts.filter(c => c.personId !== id);
+  savePeople(); saveLinks(); saveContacts();
+  if (selectedId === id) selectedId = null;
+  if (quickArmed === id) quickArmed = null;
+  nodeById.delete(id);
+  closePanel();
+  refresh();
+  toast('Deleted ' + displayName(p));
+}
+function addLink(a, b, label, strength){
+  if (!a || !b || a === b) return;
+  if (links.some(l => l && ((l.a === a && l.b === b) || (l.a === b && l.b === a)))) { toast('Already connected'); return; }
+  links.push({ id:uid('l_'), a:a, b:b, label:String(label || '').trim(), strength:clamp(Number(strength) || 2, 1, 3) });
+  saveLinks();
+  refresh({ keepPanel:true });
+}
+function updateLink(id, label, strength){
+  const l = links.find(x => x && x.id === id);
+  if (!l) return;
+  l.label = String(label || '').trim();
+  l.strength = clamp(Number(strength) || 1, 1, 3);
+  saveLinks();
+  refresh({ keepPanel:true });
+}
+function deleteLink(id){ links = links.filter(l => l && l.id !== id); saveLinks(); refresh({ keepPanel:true }); }
+
+function addContact(personId, date, method, note){
+  const entry = { id:uid('c_'), personId:personId, date:date || todayKey(), method:method || 'other', note:String(note || '').trim() };
+  if (!entry.note) delete entry.note;
+  contacts.push(entry);
+  saveContacts();
+  refresh({ keepPanel:true });
+  return entry;
+}
+function updateContact(id, date, method, note){
+  const c = contacts.find(x => x && x.id === id);
+  if (!c) return;
+  c.date = date || c.date; c.method = method || c.method;
+  note = String(note || '').trim();
+  if (note) c.note = note; else delete c.note;
+  saveContacts();
+  refresh({ keepPanel:true });
+}
+function deleteContact(id){ contacts = contacts.filter(c => c && c.id !== id); saveContacts(); refresh({ keepPanel:true }); }
+
+/* Two taps from the graph: tap the node, tap "Log contact". Uses today and
+ * whatever method you last used, with an undo — the fast path is the one
+ * that gets used on a phone. */
+function quickLog(personId){
+  const p = personById(personId);
+  if (!p) return;
+  const entry = addContact(personId, todayKey(), lastUsedMethod(), '');
+  toast('Logged ' + displayName(p) + ' · ' + entry.method, 'Undo', () => { deleteContact(entry.id); });
+}
+
+/* ============================================================
+ * Refresh — recompute derived data and repaint. Node positions
+ * survive, so an edit (or another device's edit) never re-throws
+ * the layout.
+ * ============================================================ */
+function refresh(opts){
+  opts = opts || {};
+  derive();
+  rebuildGraph();
+  renderChrome();
+  renderQuickbar();
+  if (!opts.keepPanel || !panelHasFocus()) renderPanel();
+  kick(opts.keepPanel ? 0.12 : 0.3);
+}
+function reloadFromStorage(){
+  loadAll();
+  rebuildGraph();
+  renderChrome();
+  renderQuickbar();
+  if (!panelHasFocus()) renderPanel();
+  requestDraw();
+}
+
+/* ============================================================
+ * Modals + toast
+ * ============================================================ */
+const modal = document.getElementById('modal'), modalCard = document.getElementById('modalCard');
+let modalSubmit = null;
+function openModal(html, onSubmit){
+  modalCard.innerHTML = html;
+  modalSubmit = onSubmit || null;
+  modal.classList.add('open');
+  document.body.classList.add('modalOpen');
+  const first = modalCard.querySelector('input,select,textarea');
+  if (first) setTimeout(() => first.focus(), 40);
+}
+function closeModal(){ modal.classList.remove('open'); document.body.classList.remove('modalOpen'); modalCard.innerHTML = ''; modalSubmit = null; }
+modal.addEventListener('click', ev => { if (ev.target === modal) closeModal(); });
+modalCard.addEventListener('click', ev => { if (ev.target.closest('[data-modal-cancel]')) closeModal(); });
+modalCard.addEventListener('submit', ev => {
+  ev.preventDefault();
+  if (!modalSubmit) return;
+  const data = {};
+  new FormData(ev.target).forEach((v, k) => { data[k] = v; });
+  const fn = modalSubmit;
+  closeModal();
+  fn(data);
+});
+
+function toast(msg, actionLabel, action){
+  const el = document.getElementById('toast'), btn = document.getElementById('toastAct');
+  document.getElementById('toastMsg').textContent = msg;
+  if (actionLabel) { btn.hidden = false; btn.textContent = actionLabel; undoAction = action; }
+  else { btn.hidden = true; undoAction = null; }
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.classList.remove('show'); undoAction = null; }, actionLabel ? 6000 : 2600);
+}
+document.getElementById('toastAct').addEventListener('click', () => {
+  const fn = undoAction; undoAction = null;
+  document.getElementById('toast').classList.remove('show');
+  if (fn) fn();
+});
+
+function addPersonModal(){
+  openModal(
+    '<h2 class="modalTitle" id="modalTitle">Add a person</h2>'
+    + '<p class="modalSub">Name is all you need — everything else is editable on their profile.</p>'
+    + '<form>'
+      + '<div style="display:grid;gap:11px">'
+        + '<div><label class="fieldLab" for="mName">Name</label><input class="input" id="mName" name="name" style="width:100%" required autocomplete="off" /></div>'
+        + '<div><label class="fieldLab" for="mGroup">Group</label><input class="input" id="mGroup" name="group" list="groupList" style="width:100%" placeholder="family, gym, military, school…" autocomplete="off" />'
+          + '<datalist id="groupList">' + allGroups().map(g => '<option value="' + esc(g) + '"></option>').join('') + '</datalist></div>'
+        + '<label class="switchRow"><input type="checkbox" name="activeContact" />'
+          + '<span class="swTxt"><span class="swTitle">Active contact</span><span class="swSub">Someone you mean to stay close to.</span></span></label>'
+      + '</div>'
+      + '<div class="modalActs"><button class="btn btn-ghost" type="button" data-modal-cancel>Cancel</button><button class="btn btn-primary" type="submit">Add person</button></div>'
+    + '</form>',
+    data => {
+      const p = addPerson({ name:String(data.name || '').trim(), group:String(data.group || '').trim(), activeContact:!!data.activeContact });
+      if (people.length <= 2) { autoFit = true; kick(0.9); }
+      selectedId = p.id; quickArmed = isNarrow() ? p.id : null;
+      renderQuickbar();
+      openPanel(p.id);
+    }
+  );
+}
+function editContactModal(id){
+  const c = contacts.find(x => x && x.id === id);
+  if (!c) return;
+  openModal(
+    '<h2 class="modalTitle" id="modalTitle">Edit contact</h2>'
+    + '<form><div style="display:grid;gap:11px">'
+      + '<div><label class="fieldLab" for="eDate">Date</label><input class="input" id="eDate" name="date" type="date" value="' + esc(c.date) + '" style="width:100%" required /></div>'
+      + '<div><label class="fieldLab" for="eMethod">How</label><select class="select" id="eMethod" name="method" style="width:100%">' + METHODS.map(m => '<option' + (m === c.method ? ' selected' : '') + '>' + esc(m) + '</option>').join('') + '</select></div>'
+      + '<div><label class="fieldLab" for="eNote">Note</label><input class="input" id="eNote" name="note" value="' + esc(c.note || '') + '" style="width:100%" /></div>'
+    + '</div>'
+    + '<div class="modalActs"><button class="btn btn-ghost" type="button" data-modal-cancel>Cancel</button><button class="btn btn-primary" type="submit">Save</button></div></form>',
+    data => updateContact(id, data.date, data.method, data.note)
+  );
+}
+function editLinkModal(id){
+  const l = links.find(x => x && x.id === id);
+  if (!l) return;
+  const other = personById(otherEnd(l, panelId));
+  openModal(
+    '<h2 class="modalTitle" id="modalTitle">Connection</h2>'
+    + '<p class="modalSub">' + esc(displayName(personById(panelId) || {})) + ' ↔ ' + esc(other ? displayName(other) : 'Unknown') + '</p>'
+    + '<form><div style="display:grid;gap:11px">'
+      + '<div><label class="fieldLab" for="lLabel">Label</label><input class="input" id="lLabel" name="label" value="' + esc(l.label || '') + '" placeholder="brother, gym buddy, met in Vietnam…" style="width:100%" /></div>'
+      + '<div><label class="fieldLab" for="lStrength">Strength</label><select class="select" id="lStrength" name="strength" style="width:100%">'
+        + [['1','Loose'],['2','Solid'],['3','Tight']].map(o => '<option value="' + o[0] + '"' + (String(l.strength) === o[0] ? ' selected' : '') + '>' + o[1] + '</option>').join('') + '</select></div>'
+    + '</div>'
+    + '<div class="modalActs"><button class="btn btn-ghost" type="button" data-modal-cancel>Cancel</button><button class="btn btn-primary" type="submit">Save</button></div></form>',
+    data => updateLink(id, data.label, data.strength)
+  );
+}
+function confirmModal(title, body, confirmLabel, onYes){
+  openModal(
+    '<h2 class="modalTitle" id="modalTitle">' + esc(title) + '</h2>'
+    + '<p class="modalSub">' + body + '</p>'
+    + '<form><div class="modalActs"><button class="btn btn-ghost" type="button" data-modal-cancel>Cancel</button>'
+    + '<button class="btn btn-danger" type="submit">' + esc(confirmLabel) + '</button></div></form>',
+    () => onYes()
+  );
+}
+
+/* ============================================================
+ * Export / import / sample data / wipe
+ * ============================================================ */
+function exportJson(){
+  const payload = { app:'social', version:1, exportedAt:new Date().toISOString(),
+    social_people_v1:people, social_links_v1:links, social_contacts_v1:contacts };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type:'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'social-' + todayKey() + '.json';
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  toast('Exported ' + people.length + ' people');
+}
+function importJson(file){
+  const fr = new FileReader();
+  fr.onload = () => {
+    let d;
+    try { d = JSON.parse(fr.result); } catch(e){ toast('That file isn’t valid JSON'); return; }
+    const np = Array.isArray(d[K_PEOPLE]) ? d[K_PEOPLE] : null;
+    if (!np) { toast('No social data in that file'); return; }
+    const nl = Array.isArray(d[K_LINKS]) ? d[K_LINKS] : [];
+    const nc = Array.isArray(d[K_CONTACTS]) ? d[K_CONTACTS] : [];
+    confirmModal('Replace everything?',
+      'The file holds <b>' + np.length + '</b> people, <b>' + nl.length + '</b> links and <b>' + nc.length + '</b> log entries. '
+      + 'This replaces what’s on this device now (' + people.length + ' people) and syncs the replacement to your other devices.',
+      'Replace', () => {
+        people = np; links = nl; contacts = nc;
+        savePeople(); saveLinks(); saveContacts();
+        selectedId = null; quickArmed = null; closePanel();
+        nodeById = new Map();
+        autoFit = true;
+        refresh();
+        kick(0.9);
+        toast('Imported ' + people.length + ' people');
+      });
+  };
+  fr.readAsText(file);
+}
+function wipeAll(){
+  confirmModal('Wipe all social data?',
+    'Deletes all <b>' + people.length + '</b> people, <b>' + links.length + '</b> connections and <b>' + contacts.length + '</b> log entries — here and on your other devices. Export first if you want it back.',
+    'Wipe everything', () => {
+      people = []; links = []; contacts = [];
+      dropKey(K_PEOPLE); dropKey(K_LINKS); dropKey(K_CONTACTS);
+      selectedId = null; quickArmed = null; closePanel();
+      nodeById = new Map();
+      refresh();
+      toast('All social data wiped');
+    });
+}
+function tidyOrphans(){
+  const alive = new Set(people.map(p => p && p.id));
+  const before = links.length + contacts.length;
+  links = validLinks(alive);
+  contacts = contacts.filter(c => c && alive.has(c.personId));
+  // derive(): the page cleaning up its own storage, never an edit that can
+  // overwrite another device. See SYNC.md.
+  saveArr(K_LINKS, links, 'derive');
+  saveArr(K_CONTACTS, contacts, 'derive');
+  refresh();
+  toast('Tidied ' + (before - links.length - contacts.length) + ' orphaned rows');
+}
+
+/* Sample data — dated relative to today so the states are always live.
+ * Only ever runs from the button; nothing is seeded on load. */
+function seedSample(){
+  const now = new Date().toISOString();
+  const day = n => { const d = new Date(); d.setDate(d.getDate() - n); return todayKey(d); };
+  const P = (name, group, tags, active, extra) => Object.assign({
+    id:uid('p_'), name:name, nickname:'', group:group, tags:tags, birthday:'', phone:'',
+    socials:{}, notes:'', activeContact:!!active, createdAt:now, updatedAt:now
+  }, extra || {});
+
+  const list = [
+    P('Mikkel Strøm','family',['brother'],true,{ nickname:'Mik', phone:'+45 20 11 44 08', notes:'Little brother. Always up for a session.' }),
+    P('Anne Strøm','family',['mum'],true,{ birthday:'1972-04-18' }),
+    P('Frederik Holm','gym',['lifting','spotter'],true,{ socials:{ instagram:'@frederikholm' } }),
+    P('Sofie Bech','school',['uni','study group'],false,{}),
+    P('Emil Lund','military',['squad'],true,{ notes:'Same platoon. Moved to Aalborg.' }),
+    P('Jonas Riis','military',['squad'],false,{}),
+    P('Laura Vestergaard','school',['uni'],false,{ socials:{ snapchat:'lauravg' } }),
+    P('Anders Kjær','gym',['lifting'],false,{}),
+    P('Mathilde Dahl','work',['team'],false,{}),
+    P('Rasmus Toft','work',['team','manager'],true,{}),
+    P('Clara Nguyen','Asia trip',['Vietnam','hostel'],false,{ notes:'Met in Hội An. Lives in Melbourne now.' }),
+    // Active but never logged: a grey node wearing the ring. Shows up in
+    // "needs contact" without ever having gone red.
+    P('Oliver Bang','Asia trip',['Vietnam','bikes'],true,{ socials:{ instagram:'@ollie.rides' } }),
+    P('Nanna Krogh','school',['gymnasium'],true,{}),
+    P('Victor Åberg','gym',['climbing'],false,{}),
+    P('Signe Møller','family',['cousin'],false,{})
+  ];
+  const id = n => list[n].id;
+  const L = (a, b, label, s) => ({ id:uid('l_'), a:id(a), b:id(b), label:label, strength:s });
+  const newLinks = [
+    L(0,1,'mother',3), L(0,14,'cousins',2), L(1,14,'aunt',2),
+    L(0,2,'gym buddies',3), L(2,7,'training partners',2), L(2,13,'climbing',1),
+    L(3,6,'study group',2), L(3,12,'best friends',3), L(6,12,'gymnasium',2),
+    L(4,5,'same squad',3), L(0,4,'served together',3), L(0,5,'served together',2),
+    L(8,9,'same team',2), L(9,0,'manager',1),
+    L(10,11,'travelled together',3), L(0,10,'met in Vietnam',2), L(0,11,'met in Vietnam',2),
+    L(0,3,'school',1), L(0,12,'school',2)
+  ];
+  const C = (n, d, m, note) => { const e = { id:uid('c_'), personId:id(n), date:day(d), method:m }; if (note) e.note = note; return e; };
+  const newContacts = [
+    C(0, 1, 'text'), C(0, 6, 'in person', 'Trained legs'), C(0, 20, 'call'),
+    C(1, 3, 'call', 'Sunday call'), C(1, 12, 'in person'),
+    C(2, 2, 'in person', 'Push day'), C(2, 9, 'Snapchat'),
+    C(3, 41, 'Instagram'),
+    C(4, 63, 'Discord', 'Long overdue'),
+    C(5, 128, 'text'),
+    C(6, 8, 'Snapchat'),
+    C(7, 34, 'in person'),
+    C(8, 5, 'text'),
+    C(9, 47, 'call'),
+    C(10, 190, 'Instagram', 'She posted from Melbourne'),
+    C(12, 38, 'in person', 'Coffee'),
+    C(13, 22, 'text'),
+    C(14, 96, 'other')
+    // 11 (Oliver) is deliberately left with no entries — a grey node.
+    // The result: 3 active contacts gone red (Emil 63d, Rasmus 47d, Nanna 38d)
+    // and 1 active contact never logged (Oliver) = 4 people needing contact,
+    // which is exactly what the hub tile counts.
+  ];
+
+  people = people.concat(list);
+  links = links.concat(newLinks);
+  contacts = contacts.concat(newContacts);
+  savePeople(); saveLinks(); saveContacts();
+  nodeById = new Map();
+  autoFit = true;
+  refresh();
+  kick(0.9);
+  toast('Loaded ' + list.length + ' sample people');
+}
+
+/* ============================================================
+ * Wiring
+ * ============================================================ */
+document.getElementById('addPersonBtn').addEventListener('click', addPersonModal);
+document.getElementById('emptyAdd').addEventListener('click', () => {
+  if (people.length) { filters = { group:'', tag:'', active:false, red:false }; refresh(); }
+  else addPersonModal();
+});
+document.getElementById('emptySeed').addEventListener('click', seedSample);
+document.getElementById('panelClose').addEventListener('click', closePanel);
+backdrop.addEventListener('click', closePanel);
+document.getElementById('zoomIn').addEventListener('click', () => zoomAt(W/2, H/2, 1.25));
+document.getElementById('zoomOut').addEventListener('click', () => zoomAt(W/2, H/2, 1/1.25));
+document.getElementById('zoomFit').addEventListener('click', () => fitToView());
+document.getElementById('alarmStrip').addEventListener('click', () => {
+  filters.active = true; filters.red = true;
+  refresh(); fitToView();
+});
+document.getElementById('fGroup').addEventListener('change', e => { filters.group = e.target.value; refresh(); });
+document.getElementById('fTag').addEventListener('change', e => { filters.tag = e.target.value; refresh(); });
+document.getElementById('fActive').addEventListener('click', () => { filters.active = !filters.active; refresh(); });
+document.getElementById('fRed').addEventListener('click', () => { filters.red = !filters.red; refresh(); });
+document.getElementById('fClear').addEventListener('click', () => { filters = { group:'', tag:'', active:false, red:false }; refresh(); fitToView(); });
+
+document.getElementById('quickLog').addEventListener('click', () => { if (quickArmed) quickLog(quickArmed); });
+document.getElementById('quickOpen').addEventListener('click', () => { if (quickArmed) openPanel(quickArmed); });
+
+/* menu */
+const menuBtn = document.getElementById('menuBtn'), menuEl = document.getElementById('menu');
+function renderMenu(){
+  const orph = orphanCount();
+  menuEl.innerHTML =
+    '<button class="menuItem" role="menuitem" data-m="export"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M8 11l4 4 4-4M4 21h16"/></svg>Export JSON</button>'
+    + '<button class="menuItem" role="menuitem" data-m="import"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3M8 7l4-4 4 4M4 21h16"/></svg>Import JSON</button>'
+    + '<div class="menuSep"></div>'
+    + '<button class="menuItem" role="menuitem" data-m="seed"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><circle cx="5" cy="6" r="2"/><circle cx="19" cy="7" r="2"/><path d="M7 7l3 3M17 8l-3 3"/></svg>Load sample data</button>'
+    + (orph ? '<button class="menuItem" role="menuitem" data-m="tidy"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13"/></svg>Tidy ' + orph + ' orphaned row' + (orph === 1 ? '' : 's') + '</button>' : '')
+    + '<div class="menuSep"></div>'
+    + '<button class="menuItem danger" role="menuitem" data-m="wipe"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>Wipe all data</button>';
+}
+menuBtn.addEventListener('click', ev => {
+  ev.stopPropagation();
+  const open = menuEl.hidden;
+  if (open) renderMenu();
+  menuEl.hidden = !open;
+  menuBtn.setAttribute('aria-expanded', String(open));
+});
+document.addEventListener('click', ev => {
+  if (!menuEl.hidden && !ev.target.closest('.menuWrap')) { menuEl.hidden = true; menuBtn.setAttribute('aria-expanded','false'); }
+});
+menuEl.addEventListener('click', ev => {
+  const b = ev.target.closest('[data-m]');
+  if (!b) return;
+  menuEl.hidden = true; menuBtn.setAttribute('aria-expanded','false');
+  const m = b.dataset.m;
+  if (m === 'export') exportJson();
+  else if (m === 'import') document.getElementById('importFile').click();
+  else if (m === 'seed') seedSample();
+  else if (m === 'tidy') tidyOrphans();
+  else if (m === 'wipe') wipeAll();
+});
+document.getElementById('importFile').addEventListener('change', ev => {
+  const f = ev.target.files && ev.target.files[0];
+  if (f) importJson(f);
+  ev.target.value = '';
+});
+
+/* panel delegation */
+document.getElementById('panelBody').addEventListener('click', ev => {
+  const b = ev.target.closest('[data-act]');
+  if (!b) return;
+  const act = b.dataset.act, id = b.dataset.id;
+  if (act === 'quickLog') quickLog(panelId);
+  else if (act === 'editContact') editContactModal(id);
+  else if (act === 'delContact') deleteContact(id);
+  else if (act === 'editLink') editLinkModal(id);
+  else if (act === 'delLink') deleteLink(id);
+  else if (act === 'delPerson') {
+    const p = personById(panelId);
+    if (!p) return;
+    confirmModal('Delete ' + displayName(p) + '?',
+      'Their profile, <b>' + linksFor(p.id).length + '</b> connection(s) and <b>' + contactsFor(p.id).length + '</b> log entr(ies) go with them. This can’t be undone.',
+      'Delete', () => deletePerson(p.id));
+  }
+});
+document.getElementById('panelBody').addEventListener('change', ev => {
+  const f = ev.target.closest('[data-f]');
+  if (!f || !panelId) return;
+  updatePerson(panelId, f.dataset.f, f.type === 'checkbox' ? f.checked : f.value);
+});
+document.getElementById('panelBody').addEventListener('submit', ev => {
+  ev.preventDefault();
+  const form = ev.target, kind = form.dataset.form;
+  const data = {};
+  new FormData(form).forEach((v, k) => { data[k] = v; });
+  if (kind === 'contact') addContact(panelId, data.date, data.method, data.note);
+  else if (kind === 'link') { if (data.other) addLink(panelId, data.other, data.label, data.strength); }
+});
+/* Enter submits the inline profile fields (textarea keeps its newlines). */
+document.getElementById('panelBody').addEventListener('keydown', ev => {
+  if (ev.key === 'Enter' && ev.target.matches('input[data-f]')) { ev.preventDefault(); ev.target.blur(); }
+});
+
+/* Esc closes the topmost thing */
+document.addEventListener('keydown', ev => {
+  if (ev.key !== 'Escape') return;
+  if (modal.classList.contains('open')) { closeModal(); return; }
+  if (!menuEl.hidden) { menuEl.hidden = true; menuBtn.setAttribute('aria-expanded','false'); return; }
+  if (!hitsEl.hidden) { hitsEl.hidden = true; return; }
+  if (panel.classList.contains('open')) { closePanel(); return; }
+  clearSelection();
+});
+
+/* resize + visibility */
+if (window.ResizeObserver) new ResizeObserver(resize).observe(document.getElementById('graphCard'));
+window.addEventListener('resize', () => { resize(); renderChrome(); renderQuickbar(); });
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) { clearTimeout(pulseTimer); return; }
+  requestDraw(); schedulePulse();
+});
+
+/* Another device changed something: re-read and repaint in place. Node
+ * positions are kept, so the graph doesn't jump. Without this the engine
+ * would fall back to reloading the whole page. */
+if (window.PatronDB && PatronDB.onChange) PatronDB.onChange(function(){ reloadFromStorage(); });
+
+/* ---- boot: read only, never write ---- */
+try { document.getElementById('emptyIcon').innerHTML = (window.DASH_ICONS && window.DASH_ICONS['social.html']) || ''; } catch(e){}
+loadAll();
+resize();
+rebuildGraph();
+renderChrome();
+// A quick settle pass before the first paint, so the graph opens laid out
+// instead of exploding outward from the middle.
+for (let i = 0; i < 90 && nodes.length; i++) tick();
+fitToView(true);
+kick(0.9);
+</script>
+<!-- Cross-device sync. Anything this page saves under a normal localStorage key
+     syncs on its own, key by key, merged rather than overwritten when two devices
+     change the same thing. sync-ui.js adds the status pill. These four lines plus
+     sync-boot.js in <head> belong on every page that saves data — see SYNC.md. -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="sync-merge.js?v=1"></script>
+<script src="sync.js?v=4"></script>
+<script src="sync-ui.js?v=5"></script>
+<script src="brand.js?v=16"></script>
+</body>
+</html>

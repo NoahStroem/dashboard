@@ -24,7 +24,7 @@ img{max-width:100%;height:auto}
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800&family=Exo+2:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<script src="icons.js?v=1"></script>
+<script src="icons.js?v=2"></script>
 <!-- Calendar data model + storage. Defines window.CalendarModel / CalendarStore
      and reads nothing until asked, so it is safe this early. -->
 <script src="calendar-model.js?v=1"></script>
@@ -333,6 +333,7 @@ const APPS = [
   { file: 'food.html',        name: 'Intake',      tag: 'Water · food · supplements · stimulants', icon: '🥤', wide: true },
   { file: 'fitband.html',     name: 'Vitals',      tag: 'HRV · resting HR · sleep · trends',      icon: '🔋', wide: true },
   { file: 'mentor.html',      name: 'Mentor',      tag: 'Nova · 3D avatar + live chat',           icon: '🌟', wide: true },
+  { file: 'social.html',      name: 'Social',      tag: 'People · connections · contact',         icon: '🕸️', wide: true },
   { file: 'goals.html',       name: 'Goals',       tag: 'Goals & streaks',                       icon: '🎯' },
   { file: 'progress.html',    name: 'Progress',    tag: 'Weight log · strength',                 icon: '📈' },
 ];
@@ -692,6 +693,22 @@ function statFor(file){
     else if (file === 'food.html') { const m = lsGet('macros_standalone_v1'); const log = m && m[localDateKey()]; if (Array.isArray(log) && log.length) { const cal = log.reduce((a,e)=>a+(Number(e.cal)||0),0); return { value: fmtNum(cal), label: 'kcal today' }; } const w = lsGet('water_standalone_v1'); if (w && w.logs) { const ml = w.logs[localDateKey()] || 0; if (ml>0) return { value: fmtWaterMl(ml), label: 'today' }; } const s = lsGet('supplements_standalone_v1'); if (s && Array.isArray(s.items) && s.items.length) { const tk = (s.taken && s.taken[activeDateKey()]) || {}; const n = s.items.filter(i => tk[i.id]).length; return { value: n + '/' + s.items.length, label: 'supplements today' }; } }
     else if (file === 'stimulant.html') { const s = lsGet('stimulant_standalone_v1'); if (s && Array.isArray(s.logs)) { const k = localDateKey(); const mg = s.logs.filter(l => l && localDateKey(new Date(l.t)) === k).reduce((a,l)=>a+(Number(l.mg)||0),0); if (mg>0) return { value: mg + ' mg', label: 'caffeine today' }; } }
     else if (file === 'fitband.html') { const rec = estRecovery(health); if (rec != null) return { value: Math.round(rec) + '%', label: isEstRecovery(health) ? 'recovery · est' : 'recovery' }; }
+    // Social: people you marked "active contact" who have gone 30+ days (or were
+    // never logged at all). Derived here at render time from the two keys —
+    // recency is never stored, and this tile never writes. See SYNC.md.
+    else if (file === 'social.html') { const ppl = lsGet('social_people_v1');
+      if (Array.isArray(ppl) && ppl.length) {
+        const log = lsGet('social_contacts_v1'), last = {};
+        if (Array.isArray(log)) log.forEach(c => { if (c && c.personId && c.date && (!last[c.personId] || c.date > last[c.personId])) last[c.personId] = c.date; });
+        const t0 = new Date(); t0.setHours(0,0,0,0);
+        const n = ppl.filter(p => {
+          if (!p || !p.activeContact) return false;
+          const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(last[p.id] || ''));
+          if (!m) return true;
+          return Math.round((t0 - new Date(+m[1], +m[2]-1, +m[3])) / 86400000) >= 30;
+        }).length;
+        return { value: String(n), label: n === 1 ? 'needs contact' : 'need contact' };
+      } }
   } catch (e) {}
   return null;
 }
@@ -710,6 +727,7 @@ const ART = {
   'enhancers.html':'linear-gradient(135deg,#6EE7B7,#22D3EE)',
   'food.html':'linear-gradient(135deg,#22D3EE,#6EE7B7)',
   'mentor.html':'linear-gradient(135deg,#6EE7B7,#34D399)',
+  'social.html':'linear-gradient(135deg,#8B5CF6,#F472B6)',
 };
 function artFor(file){ return ART[file] || 'linear-gradient(135deg,#8B5CF6,#22D3EE)'; }
 /* Animated neon icons live in icons.js (window.DASH_ICONS), keyed by page. */
