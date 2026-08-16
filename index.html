@@ -25,6 +25,12 @@ img{max-width:100%;height:auto}
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800&family=Exo+2:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <script src="icons.js?v=1"></script>
+<!-- Calendar data model + storage. Defines window.CalendarModel / CalendarStore
+     and reads nothing until asked, so it is safe this early. -->
+<script src="calendar-model.js?v=1"></script>
+<!-- Read-only here: the hub never authorises with Google, it only reads the
+     cache that calendar.html fills. No GIS library is loaded on this page. -->
+<script src="google-calendar.js?v=1"></script>
 <style>
 /* ============================================================
  * Liam — the main dashboard. Bento hub linking every app
@@ -180,6 +186,24 @@ body { background: var(--bg); color: var(--fg); font-family: var(--font-ui), -ap
 .gPct[data-tone="idle"] { color: var(--muted); }
 .goalsTile .vVal { white-space: nowrap; }
 .goalsTile a.btn { text-decoration: none; }
+
+/* Coming up tile — the next few calendar entries. Same tile chrome as vitals
+ * and life goals; only the body differs. Full UI lives in calendar.html. */
+.comingTile .vitalsEyebrow { color: var(--brand); }
+.comingTile .vitalsBody { display:block; }
+.comingTile a.btn { text-decoration: none; }
+.cuList { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; }
+.cuRow { display:grid; grid-template-columns: 58px minmax(0,1fr) auto; align-items:baseline; gap: var(--space-3); padding: var(--space-2) 0; border-bottom: 1px solid var(--border); }
+.cuRow:last-child { border-bottom:0; }
+.cuWhen { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; color: var(--muted); font-variant-numeric: tabular-nums; white-space:nowrap; text-transform: uppercase; }
+.cuMain { display:flex; align-items:center; gap: var(--space-2); min-width:0; }
+.cuTitle { font-size: 13px; font-weight: 600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.cuDot { width: 7px; height: 7px; border-radius: 50%; background: var(--cu-tag, var(--brand)); box-shadow: 0 0 8px var(--cu-tag, var(--brand)); flex-shrink:0; }
+.cuRel { font-family: var(--font-mono); font-size: 10px; color: var(--muted); white-space:nowrap; }
+/* Mirrored from Google — provenance, not a warning. */
+.cuSrc { display:grid; place-items:center; width:15px; height:15px; border-radius:4px; border:1px solid var(--border); font-family: var(--font-mono); font-size: 8.5px; font-weight:700; color: var(--muted); flex-shrink:0; }
+.cuRow[data-overdue] .cuWhen, .cuRow[data-overdue] .cuRel { color: var(--neg); }
+@media (max-width: 520px) { .cuRow { grid-template-columns: minmax(0,1fr) auto; } .cuWhen { grid-column: 1 / -1; order:-1; } }
 
 /* Buttons */
 .btn { display:inline-flex; align-items:center; justify-content:center; gap: var(--space-2); padding: 0.6rem var(--space-4); border-radius: var(--radius-md); font-size: var(--text-sm); font-family: var(--font-ui); font-weight: 600; cursor: pointer; border: 1px solid transparent; background: transparent; color: var(--fg); white-space: nowrap; transition: background var(--duration) var(--ease), border-color var(--duration) var(--ease), color var(--duration) var(--ease), filter var(--duration) var(--ease), box-shadow var(--duration) var(--ease); }
@@ -702,6 +726,60 @@ function cardHtml(a){
     + '</div></a>';
 }
 
+/* ---- Coming up: the next few calendar entries ----
+ * Read-only. The tile is a window onto calendar.html, which owns every edit;
+ * this only ever loads and renders, so it can't overwrite another device. */
+function comingUpTileHtml(){
+  var rows = [], total = 0, googleCount = 0;
+  try {
+    if (!window.CalendarModel || !window.CalendarStore) return '';
+    const M = window.CalendarModel;
+    const events = CalendarStore.loadEvents(), reminders = CalendarStore.loadReminders();
+    // Mirrored Google events, if calendar.html has connected and cached any.
+    // Any failure at all yields [] and the tile falls back to local-only.
+    let gEvents = [];
+    try { if (window.GoogleCalendar) gEvents = GoogleCalendar.cachedEvents(); } catch(e){ gEvents = []; }
+    googleCount = gEvents.length;
+    total = events.length + reminders.length + gEvents.length;
+    const now = new Date();
+    rows = M.upcoming(events.concat(gEvents), reminders, { now: now, days: 30 }).slice(0, 4).map(function(r){
+      const cat = M.category(r.category);
+      const overdue = M.isOverdue(r, now);
+      const fromGoogle = !!(r.event && r.event.source === 'google');
+      const when = M.clockLabel(r.when, r.allDay) || (r.when ? M.relativeTime(r.when, now, true) : 'someday');
+      return '<li class="cuRow"' + (overdue ? ' data-overdue="true"' : '')
+        + (fromGoogle ? ' data-source="google"' : '') + '>'
+        + '<span class="cuWhen">' + esc(when) + '</span>'
+        + '<span class="cuMain">'
+          + (cat ? '<span class="cuDot" style="--cu-tag:' + esc(cat.color) + '" aria-hidden="true"></span>' : '')
+          + (fromGoogle ? '<span class="cuSrc" title="From Google Calendar">G</span>' : '')
+          + '<span class="cuTitle">' + esc(r.title || 'Untitled') + '</span></span>'
+        + '<span class="cuRel">' + esc(overdue ? 'overdue' : (M.relativeTime(r.when, now, r.allDay) || '')) + '</span>'
+        + '</li>';
+    });
+  } catch(e){ return ''; }
+
+  const body = rows.length
+    ? '<ul class="cuList">' + rows.join('') + '</ul>'
+    : '<div class="vitalsEmpty"><span class="vitalsEmptyTitle">Nothing coming up</span>'
+      + '<span class="vitalsEmptyBody">' + (total
+          ? 'Nothing saved falls in the next 30 days.'
+          : 'No events or reminders yet.') + '</span></div>';
+
+  const localCount = total - googleCount;
+  const footNote = total
+    ? (googleCount ? localCount + ' saved · ' + googleCount + ' from Google' : total + ' saved')
+    : 'nothing saved yet';
+
+  return '<section class="vitals comingTile">'
+    + '<div class="vitalsHead"><span class="vitalsEyebrow">Coming up</span>'
+    + (rows.length ? '<span class="srcBadge"><span class="srcDot"></span>' + (googleCount ? 'Calendar · Google' : 'Calendar') + '</span>' : '')
+    + '</div>'
+    + '<div class="vitalsBody">' + body + '</div>'
+    + '<div class="vitalsFoot"><span class="vitalsSync">' + esc(footNote) + '</span>'
+    + '<a class="btn btn-ghost" href="calendar.html">Open calendar</a></div></section>';
+}
+
 /* ---- Daily "did you log it?" reminders, read from each app's storage ---- */
 function loggedWeightToday(){ try { const s = lsGet('progress_standalone_v1'); return !!(s && Array.isArray(s.entries) && s.entries.some(e => e && e.dateKey === localDateKey())); } catch(e){ return false; } }
 function remindersHtml(){
@@ -715,7 +793,7 @@ function remindersHtml(){
 function render(){
   try { const bn = brandName(); document.title = (bn === 'Dashboard' ? 'Dashboard' : bn + ' · dashboard'); } catch(e){}
   document.getElementById('app').innerHTML =
-    headerHtml() + remindersHtml() + '<div class="bento">' + vitalsTileHtml() + goalsTileHtml() + APPS.map(cardHtml).join('') + '</div>';
+    headerHtml() + remindersHtml() + '<div class="bento">' + vitalsTileHtml() + comingUpTileHtml() + goalsTileHtml() + APPS.map(cardHtml).join('') + '</div>';
   renderModal();
 }
 
